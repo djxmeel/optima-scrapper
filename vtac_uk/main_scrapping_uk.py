@@ -55,7 +55,7 @@ def scrape_item(driver, subcategories_ids, url):
             continue
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'x_url': driver.current_url, 'list_price': '', 'imgs': [], 'icons': [], 'x_features': '', 'x_videos': []}
+    item = {'x_url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'x_mas_info': '', 'videos': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -88,7 +88,7 @@ def scrape_item(driver, subcategories_ids, url):
             driver.find_element(By.ID, 'tab-label-features').click()
 
             # <li> que no contiene <span> -> Feature
-            item['x_features'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
+            item['x_mas_info'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
 
         if 'x_Peso_bruto_kg' in item:
             item['weight'] = float(item['x_Peso_bruto_kg'].replace(',', '.'))
@@ -291,7 +291,7 @@ def begin_items_info_extraction(start_from):
 
 def dump_product_info_lite(products_data, counter):
     for product in products_data:
-        del product['imgs'], product['icons']
+        del product['imgs'], product['icons'], product['videos']
 
     Util.dump_to_json(products_data, f"{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
     print('DUMPED LITE PRODUCT INFO ')
