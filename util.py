@@ -65,7 +65,6 @@ class Util:
 
     @staticmethod
     def src_to_base64(src):
-        print(src)
         response = requests.get(src)
         return base64.b64encode(response.content).decode('utf-8')
 
