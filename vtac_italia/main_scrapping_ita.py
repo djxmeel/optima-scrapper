@@ -49,7 +49,7 @@ def scrape_item(driver, subcategories, url):
         subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'x_url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': '', 'videos': [], 'mas info': '', 'imgs': [], 'icons': []}
+    item = {'x_url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [], 'x_mas_info': '', 'imgs': [], 'icons': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -122,7 +122,7 @@ def scrape_item(driver, subcategories, url):
                                              f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
             'innerHTML')
 
-        item['mas info'] = desc_innerHTML
+        item['x_mas_info'] = desc_innerHTML
     except NoSuchElementException:
         print('Producto no tiene descripción')
 
@@ -310,8 +310,7 @@ def begin_items_info_extraction(start_from):
 
 def dump_product_info_lite(products_data, counter):
     for product in products_data:
-        del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos'], product[
-            'mas info']
+        del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
 
     Util.dump_to_json(products_data, f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
     print('DUMPED LITE PRODUCT INFO ')

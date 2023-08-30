@@ -12,19 +12,19 @@ from util import Util
 # VTAC ES SCRAPER
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO = False
+IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
 IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS = True
+IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
 DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 2
+JSON_DUMP_FREQUENCY = 100
 
-SUBCATEGORIES_IDS = ["product-attributes", "product-packaging", "product-features"]
+DLs_XPATH = '//div[@class="downloads"]//a'
 
 CATEGORIES_LINKS = [
     'https://v-tac.es/sistemas-solares.html',
@@ -34,111 +34,67 @@ CATEGORIES_LINKS = [
 ]
 
 
-def scrape_item(driver, subcategories_ids, url):
+def scrape_item(driver, url):
     try:
         # Se conecta el driver instanciado a la URL
         driver.get(url)
     except:
         print(f'ERROR extrayendo los datos de {url}. Reintentando...')
         time.sleep(5)
-        scrape_item(driver, subcategories_ids, url)
+        scrape_item(driver, url)
         return
 
-    subcategories_li_elements = []
-
-    for subcat_id in subcategories_ids:
-        try:
-            subcategories_li_elements += driver.find_elements(By.XPATH, f'//div[@id = "{subcat_id}"]//ul/li')
-        except NoSuchElementException:
-            continue
+    NAME_XPATH = "//h3[@itemprop='name']"
+    SKU_XPATH = "//div[@class='sku-inner']"
+    KEYS_XPATH = "//div[@class='product-field product-field-type-S']//strong"
+    VALUES_XPATH = "//div[@class='product-field product-field-type-S']/div"
+    ENERGY_TAG_XPATH = "//img[@alt = 'Energy Class']"
+    GRAPH_DIMENSIONS_XPATH = "//img[@alt = 'Dimensions']"
+    PRODUCT_DESC_XPATH = "//div[@class='product-description']"
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'x_url': driver.current_url, 'list_price': '', 'imgs': [], 'icons': [], 'x_features': ''}
+    item = {'x_url': driver.current_url, 'list_price': 0, 'imgs': [], 'x_mas_info': '', 'videos': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-    # Para cada subcategoria, extraemos sus campos
-    for subcat_li in subcategories_li_elements:
-        try:
-            # <li> que contienen el campo y valor (<span1> campo <span2> valor)
-            key_value_spans = subcat_li.find_elements(By.TAG_NAME, 'span')
-
-            # Si el elemento <li> no contiene <span>. <li> es un Feature
-            if len(key_value_spans) < 1:
-                raise NoSuchElementException
-
-            # Si el span2 no es un texto plano, se ignora (ejemplo : botón)
-            try:
-                if len(key_value_spans) > 1:
-                    key_value_spans[1].find_element(By.TAG_NAME, 'a')
-                    continue
-            except NoSuchElementException:
-                pass
-
-            key = Util.format_field_odoo(Util.translate_from_to_spanish('en', key_value_spans[0].text))
-            value = Util.translate_from_to_spanish('en', key_value_spans[1].text)
-
-            # Guardado de campos y valor en la estructura de datos
-            item[key] = value
-            print(f'{key} = {value}')
-        except NoSuchElementException:
-            # Se hace click() sobre el botón de Features para acceder al texto
-            driver.find_element(By.ID, 'tab-label-features').click()
-
-            # <li> que no contiene <span> -> Feature
-            item['x_features'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
-
-        if 'x_Peso_bruto_kg' in item:
-            item['weight'] = float(item['x_Peso_bruto_kg'].replace(',', '.'))
-            del item['x_Peso_bruto_kg']
-
     # Extracción del SKU
     try:
-        item['x_SKU'] = f'VS{Util.get_sku_from_link_es(driver)}'
+        item['x_SKU'] = f"VS{driver.find_element(By.XPATH, SKU_XPATH).text.split(' ')[1]}"
     except NoSuchElementException:
-        print('SKU NO ENCONTRADO')
+        print(f'SKU NOT FOUND FOR URL {driver.current_url}')
 
-    # Extracción del precio
+    # Extracción de los campos
+    keys = driver.find_elements(By.XPATH, KEYS_XPATH)
+    values = driver.find_elements(By.XPATH, VALUES_XPATH)
+
+    if len(keys) == len(values):
+        for key, value in zip(keys, values):
+            item[key.text] = value.text
+    else:
+        print(f'ERROR: NUMBER OF KEYS AND VALUES LENGTHS DO NOT MATCH FOR {driver.current_url}')
+
+    # Extracción de la etiqueta energética y dimensiones gráficas
     try:
-        item['list_price'] = driver.find_element(By.XPATH,
-                                                 f'/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[3]/div/div/div[2]/div[1]/span').text
-
-        item['list_price'] = float(item['list_price'].replace('£', ''))
+        energy_tag_src = driver.find_element(By.XPATH, ENERGY_TAG_XPATH).get_attribute('src')
+        item['imgs'].append(Util.src_to_base64(energy_tag_src))
     except NoSuchElementException:
-        print('PRECIO NO ENCONTRADO')
+        pass
 
-    # Extracción del titulo
-    item['name'] = Util.translate_from_to_spanish('en',
-        driver.find_element(By.XPATH, '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
-
-    # Formateo del titulo
-    item['name'] = f'[{item["x_SKU"]}] {item["name"]}'
-
-    # Extracción de imágenes
     try:
-        # Find the image elements and extract their data
-        image_elements = driver.find_element(By.ID, 'main-carousel').find_elements(By.TAG_NAME, 'img')
-
-        for index, image_element in enumerate(image_elements):
-            src = image_element.get_attribute('src')
-            item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
-
-        print(f'ENCODED IMAGES')
+        graph_dimensions_src = driver.find_element(By.XPATH, GRAPH_DIMENSIONS_XPATH).get_attribute('src')
+        item['imgs'].append(Util.src_to_base64(graph_dimensions_src))
     except NoSuchElementException:
-        print('PRODUCT HAS NO IMGS')
+        pass
 
-    # Extracción de iconos
+    # Extracción de la descripción del producto
     try:
-        icons = driver.find_elements(By.XPATH, '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
-
-        for icon in icons:
-            item['icons'].append(icon.screenshot_as_base64)
-
-        print(f'ENCODED ICONS')
+        product_desc = driver.find_element(By.XPATH, PRODUCT_DESC_XPATH).get_attribute('innerHTML')
+        item['x_mas_info'] = product_desc
     except NoSuchElementException:
-        print('PRODUCT HAS NO ICONS')
+        pass
 
-    print(item['name'])
+    # Extracción del título
+    item['x_titulo'] = driver.find_element(By.XPATH, NAME_XPATH).text
 
     return item
 
@@ -251,7 +207,7 @@ def begin_items_info_extraction(start_from):
 
     try:
         for link in links[start_from:]:
-            products_data.append(scrape_item(DRIVER, SUBCATEGORIES_IDS, link))
+            products_data.append(scrape_item(DRIVER, link))
             counter += 1
             print(f'{counter}/{len(links)}\n')
 
@@ -272,7 +228,7 @@ def begin_items_info_extraction(start_from):
 
 def dump_product_info_lite(products_data, counter):
     for product in products_data:
-        del product['imgs'], product['icons']
+        del product['imgs'], product['videos']
 
     Util.dump_to_json(products_data, f"{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
     print('DUMPED LITE PRODUCT INFO ')
