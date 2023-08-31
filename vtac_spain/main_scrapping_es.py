@@ -12,17 +12,17 @@ from util import Util
 # VTAC ES SCRAPER
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO = True
+IF_EXTRACT_ITEM_INFO = False
 # PDFs productos
-IF_DL_ITEM_PDF = True
+IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 100
+JSON_DUMP_FREQUENCY = 5
 
 DLs_XPATH = '//div[@class="downloads"]//a'
 
@@ -273,13 +273,13 @@ def extract_distinct_fields_to_excel():
              }
         )
 
-    Util.dump_to_json(excel_dicts, Util.VTAC_PRODUCTS_FIELDS_FILE)
+    Util.dump_to_json(excel_dicts, f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
 
     # Read the JSON file
-    data = pd.read_json(Util.VTAC_PRODUCTS_FIELDS_FILE)
+    data = pd.read_json(f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
 
     # Write the DataFrame to an Excel file
-    excel_file_path = "DISTINCT_FIELDS_EXCEL.xlsx"
+    excel_file_path = f"{Util.VTAC_ES_DIR}/DISTINCT_FIELDS_EXCEL.xlsx"
     data.to_excel(excel_file_path,
                   index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
