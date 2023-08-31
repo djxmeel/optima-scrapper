@@ -1,10 +1,12 @@
 import base64
 import json
 import os
+import time
 
 import pandas as pd
 import requests
 from googletrans import Translator
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 
@@ -71,7 +73,25 @@ class Util:
         return base64.b64encode(response.content).decode('utf-8')
 
     @staticmethod
-    def get_sku_from_link_ita(link):
+    def get_sku_from_link(driver, link, country):
+        try:
+            driver.get(link)
+        except:
+            time.sleep(5)
+            return Util.get_sku_from_link(driver, link, country)
+
+        if country == 'ITA':
+            return Util.get_sku_from_link_ita(driver)
+        elif country == 'UK':
+            return Util.get_sku_from_link_uk(driver)
+        elif country == 'ES':
+            return Util.get_sku_from_link_es(driver)
+        else:
+            raise Exception('Invalid country')
+
+    @staticmethod
+    def get_sku_from_link_ita(driver):
+        link = driver.current_url
         return str(link).split('/')[6]
 
     @staticmethod
@@ -80,7 +100,7 @@ class Util:
 
     @staticmethod
     def get_sku_from_link_es(driver):
-        return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text
+        return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
 
     @staticmethod
     def load_json_data(file_path):
