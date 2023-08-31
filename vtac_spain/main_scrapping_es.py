@@ -10,16 +10,23 @@ import logging
 
 # VTAC ES SCRAPER
 
+# TODO Ángulo de haz -> Ángulo de apertura
+# TODO Código de orden -> SKU
+# TODO EAN Código -> EAN
+# TODO Código de producto -> Código de familia
+# TODO Las condiciones de trabajo -> Temperaturas de trabajo
+# TODO Hora de inicio al 100% encendido -> Tiempo de inicio al 100% encendido
+
 logger = Util.setup_logger('ES_LOG.txt')
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
-IF_DL_ITEM_PDF = False
+IF_DL_ITEM_PDF = True
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 DRIVER = webdriver.Firefox()
 
