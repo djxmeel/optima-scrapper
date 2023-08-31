@@ -14,7 +14,7 @@ from util import Util
 # Datos productos
 IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
-IF_DL_ITEM_PDF = False
+IF_DL_ITEM_PDF = True
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
@@ -46,8 +46,7 @@ def scrape_item(driver, url):
 
     NAME_XPATH = "//h3[@itemprop='name']"
     SKU_XPATH = "//div[@class='sku-inner']"
-    KEYS_XPATH = "//div[@class='product-field product-field-type-S']//strong"
-    VALUES_XPATH = "//div[@class='product-field product-field-type-S']/div"
+    KEYS_VALUES_XPATH = "//div[@class='product-field product-field-type-S']"
     ENERGY_TAG_XPATH = "//img[@alt = 'Energy Class']"
     GRAPH_DIMENSIONS_XPATH = "//img[@alt = 'Dimensions']"
     PRODUCT_DESC_XPATH = "//div[@class='product-description']"
@@ -64,14 +63,19 @@ def scrape_item(driver, url):
         print(f'SKU NOT FOUND FOR URL {driver.current_url}')
 
     # Extracción de los campos
-    keys = driver.find_elements(By.XPATH, KEYS_XPATH)
-    values = driver.find_elements(By.XPATH, VALUES_XPATH)
+    keys_values = driver.find_elements(By.XPATH, KEYS_VALUES_XPATH)
 
-    if len(keys) == len(values):
-        for key, value in zip(keys, values):
-            item[key.text] = value.text
-    else:
-        print(f'ERROR: NUMBER OF KEYS AND VALUES LENGTHS DO NOT MATCH FOR {driver.current_url}')
+    for key_value in keys_values:
+        key = key_value.find_element(By.TAG_NAME, "strong")
+        try:
+            value = key_value.find_element(By.TAG_NAME, "div")
+        except NoSuchElementException:
+            print(f'Field {key.text} has no value.')
+            item[key.text] = ''
+            continue
+
+        item[key.text] = value.text
+
 
     # Extracción de la etiqueta energética y dimensiones gráficas
     try:
