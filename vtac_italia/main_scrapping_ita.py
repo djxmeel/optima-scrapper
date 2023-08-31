@@ -2,7 +2,6 @@ import json
 import time
 import requests
 import os
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
@@ -10,14 +9,16 @@ from util import Util
 
 # VTAC ITALIA SCRAPER
 
+logger = Util.setup_logger('ITA_LOG.txt')
+
 # Datos productos
 IF_EXTRACT_ITEM_INFO = False
 # PDFs productos
-IF_DL_ITEM_PDF = False
+IF_DL_ITEM_PDF = True
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
 
 DRIVER = webdriver.Firefox()
@@ -139,6 +140,7 @@ def scrape_item(driver, subcategories, url):
 
             item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
+        # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'x_Volume' in item:
             item['volume'] = float(item['x_Volume'].replace(',', '.').replace('m³', ''))
             del item['x_Volume']
@@ -225,7 +227,7 @@ def extract_all_links(driver, categories):
     return extracted
 
 
-def download_pdfs_of_sku(driver, url, sku):
+def download_pdfs_of_sku(driver, sku):
     """
     Downloads PDF from a given URL.
 
@@ -235,10 +237,11 @@ def download_pdfs_of_sku(driver, url, sku):
     sku (str): SKU of the product.
 
     """
-    driver.get(url)
     time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
     pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'
+
+    pdf_elements = []
 
     try:
         pdf_elements = driver.find_elements(By.XPATH, pdf_download_xpath)
@@ -260,17 +263,26 @@ def download_pdfs_of_sku(driver, url, sku):
     except NoSuchElementException:
         print(f'No PDFs found for SKU -> {sku}')
 
+    return len(pdf_elements)
 
-def begin_items_PDF_download():  # TODO DUPLICATE CHECK
+
+def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
     # Read the JSON file
     with open(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}') as f:
         loaded_links = json.load(f)
 
-    for index, link in enumerate(loaded_links):
-        sku = Util.get_sku_from_link_ita(link)
+    counter = begin_from
+    try:
+        for link in loaded_links[begin_from:]:
+            sku = Util.get_sku_from_link(DRIVER, link, 'ITA')
 
-        download_pdfs_of_sku(DRIVER, link, sku)
-        print(f'DOWNLOADED PDFS OF : {link}  {index + 1}/{len(loaded_links)}')
+            found = download_pdfs_of_sku(DRIVER, sku)
+            print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
+            counter += 1
+    except KeyError:
+        print("Error en la descarga de PDFs. Reintentando...")
+        time.sleep(5)
+        begin_items_PDF_download(counter)
 
 
 def begin_items_info_extraction(start_from):
@@ -316,51 +328,6 @@ def dump_product_info_lite(products_data, counter):
     print('DUMPED LITE PRODUCT INFO ')
 
 
-# GET ALL DISTINCT FIELDS IN A SET AND EXTRACT THEM TO EXCEL
-def extract_distinct_fields_to_excel():
-    file_list = Util.get_all_files_in_directory(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}')
-    json_data = []
-    fields = set()
-
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data.extend(json.load(file))
-
-    for product in json_data:
-        for attr in product.keys():
-            fields.add(attr)
-
-    excel_dicts = []
-
-    print(f'FOUND {len(fields)} DISTINCT FIELDS')
-
-    for field in fields:
-        # Filter out non-custom fields
-        if not field.startswith('x_'):
-            continue
-
-        excel_dicts.append(
-            {'Nombre de campo': field,
-             'Etiqueta de campo': field,
-             'Modelo': 'product.template',
-             'Tipo de campo': 'texto',
-             'Indexado': True,
-             'Almacenado': True,
-             'Sólo lectura': False,
-             'Modelo relacionado': ''
-             }
-        )
-
-    Util.dump_to_json(excel_dicts, f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
-
-    # Read the JSON file
-    data = pd.read_json(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
-
-    # Write the DataFrame to an Excel file
-    excel_file_path = "DISTINCT_FIELDS_EXCEL.xlsx"
-    data.to_excel(excel_file_path, index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
-
-
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
@@ -386,7 +353,7 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    extract_distinct_fields_to_excel()
+    Util.extract_distinct_fields_to_excel(Util.VTAC_ITA_DIR)
     print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 DRIVER.close()

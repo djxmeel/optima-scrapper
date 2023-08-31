@@ -3,7 +3,6 @@ import math
 import time
 import requests
 import os
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
@@ -12,8 +11,10 @@ from util import Util
 
 # VTAC UK SCRAPER
 
+logger = Util.setup_logger('UK_LOG.txt')
+
 # Datos productos
-IF_EXTRACT_ITEM_INFO = True
+IF_EXTRACT_ITEM_INFO = False
 # PDFs productos
 IF_DL_ITEM_PDF = True
 # Enlaces productos en la página de origen
@@ -105,7 +106,7 @@ def scrape_item(driver, subcategories_ids, url):
         item['list_price'] = driver.find_element(By.XPATH,
                                                  f'/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[3]/div/div/div[2]/div[1]/span').text
 
-        item['list_price'] = float(item['list_price'].replace('£', ''))
+        item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '.'))
     except NoSuchElementException:
         print('PRECIO NO ENCONTRADO')
 
@@ -197,6 +198,8 @@ def download_pdfs_of_sku(driver, sku):
 
     pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
 
+    pdf_elements = []
+
     try:
         # Specs tab certificates
         pdf_elements = driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
@@ -221,18 +224,16 @@ def download_pdfs_of_sku(driver, sku):
             else:
                 # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
-            try:
-                # Use custom name keeping only the file extension
-                extension = filename.split('.')[-1]
-                filename = f'{pdf_element.find_elements(By.TAG_NAME, "span")[1].text}.{extension}'
-            except NoSuchElementException:
-                pass
+
+            filename = filename.replace('%20', '_')
 
             with open(f'{nested_dir}/{filename}', 'wb') as file:
                 file.write(response.content)
 
     except NoSuchElementException:
         print(f'No PDFs found for SKU -> {sku}')
+
+    return len(pdf_elements)
 
 
 def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
@@ -243,11 +244,10 @@ def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
     counter = begin_from
     try:
         for link in loaded_links[begin_from:]:
-            DRIVER.get(link)
-            sku = Util.get_sku_from_link_uk(DRIVER)
+            sku = Util.get_sku_from_link(DRIVER, link, 'UK')
 
-            download_pdfs_of_sku(DRIVER, sku)
-            print(f'DOWNLOADED PDFS OF : {link}  {counter + 1}/{len(loaded_links)}')
+            found = download_pdfs_of_sku(DRIVER, sku)
+            print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
             counter += 1
     except KeyError:
         print("Error en la descarga de PDFs. Reintentando...")
@@ -297,52 +297,6 @@ def dump_product_info_lite(products_data, counter):
     print('DUMPED LITE PRODUCT INFO ')
 
 
-# GET ALL DISTINCT FIELDS IN A SET AND EXTRACT THEM TO EXCEL
-def extract_distinct_fields_to_excel():
-    file_list = Util.get_all_files_in_directory(f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}')
-    json_data = []
-    fields = set()
-
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data.extend(json.load(file))
-
-    for product in json_data:
-        for attr in product.keys():
-            fields.add(attr)
-
-    excel_dicts = []
-
-    print(f'FOUND {len(fields)} DISTINCT FIELDS')
-
-    for field in fields:
-        # Filter out non-custom fields
-        if not field.startswith('x_'):
-            continue
-
-        excel_dicts.append(
-            {'Nombre de campo': field,
-             'Etiqueta de campo': field,
-             'Modelo': 'product.template',
-             'Tipo de campo': 'texto',
-             'Indexado': True,
-             'Almacenado': True,
-             'Sólo lectura': False,
-             'Modelo relacionado': ''
-             }
-        )
-
-    Util.dump_to_json(excel_dicts, f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
-
-    # Read the JSON file
-    data = pd.read_json(f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
-
-    # Write the DataFrame to an Excel file
-    excel_file_path = f'{Util.VTAC_UK_DIR}/DISTINCT_FIELDS_EXCEL.xlsx'
-    data.to_excel(excel_file_path,
-                  index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
-
-
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}')
@@ -365,7 +319,7 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    extract_distinct_fields_to_excel()
+    Util.extract_distinct_fields_to_excel(Util.VTAC_UK_DIR)
     print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 DRIVER.close()

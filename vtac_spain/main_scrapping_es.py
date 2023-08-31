@@ -2,18 +2,20 @@ import json
 import time
 import requests
 import os
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from util import Util
+import logging
 
 # VTAC ES SCRAPER
+
+logger = Util.setup_logger('ES_LOG.txt')
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
-IF_DL_ITEM_PDF = True
+IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
@@ -22,8 +24,6 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 DRIVER = webdriver.Firefox()
 
 JSON_DUMP_FREQUENCY = 100
-
-DLs_XPATH = '//div[@class="downloads"]//a'
 
 CATEGORIES_LINKS = [
     'https://v-tac.es/sistemas-solares.html',
@@ -70,19 +70,19 @@ def scrape_item(driver, url):
             value = key_value.find_element(By.TAG_NAME, "div")
         except NoSuchElementException:
             print(f'Field {key.text} has no value.')
-            item[key.text] = ''
+            item[Util.format_field_odoo(key.text)] = ''
             continue
 
-        item[key.text] = value.text
+        item[Util.format_field_odoo(key.text)] = value.text
 
-
-    # Extracción de la etiqueta energética y dimensiones gráficas
+    # Extracción de la etiqueta energética
     try:
         energy_tag_src = driver.find_element(By.XPATH, ENERGY_TAG_XPATH).get_attribute('src')
         item['imgs'].append(Util.src_to_base64(energy_tag_src))
     except NoSuchElementException:
         pass
 
+    # Extracción de las dimensiones gráficas
     try:
         graph_dimensions_src = driver.find_element(By.XPATH, GRAPH_DIMENSIONS_XPATH).get_attribute('src')
         item['imgs'].append(Util.src_to_base64(graph_dimensions_src))
@@ -97,7 +97,15 @@ def scrape_item(driver, url):
         pass
 
     # Extracción del título
-    item['x_titulo'] = driver.find_element(By.XPATH, NAME_XPATH).text
+    item['name'] = driver.find_element(By.XPATH, NAME_XPATH).text
+
+    # Uso de los campos de ODOO para el volumen y el peso si están disponibles
+    if 'x_volumen_del_articulo' in item.keys():
+        item['volume'] = float(item['x_volumen_del_articulo'].replace(',', '.'))
+        del item['x_volumen_del_articulo']
+    if 'x_peso_del_articulo' in item.keys():
+        item['weight'] = float(item['x_peso_del_articulo'].replace(',', '.'))
+        del item['x_peso_del_articulo']
 
     return item
 
@@ -141,17 +149,14 @@ def download_pdfs_of_sku(driver, sku):
     """
     time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
-    pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
+    DLs_XPATH = '//div[@class="downloads"]//a'
+    pdf_elements = []
 
     try:
-        # Specs tab certificates
-        pdf_elements = [driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")]
+        # Get the <a> elements
+        pdf_elements = driver.find_elements(By.XPATH, DLs_XPATH)
 
-        # Downloads tab
-        driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
-        pdf_elements.append(driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a"))
-
-        print(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
+        print(f'Found {len(pdf_elements)} attachments in SKU {sku}')
 
         for pdf_element in pdf_elements:
             url = pdf_element.get_attribute('href')
@@ -168,11 +173,15 @@ def download_pdfs_of_sku(driver, sku):
                 # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
 
+            filename = filename.replace('%20', '_')
+
             with open(f'{nested_dir}/{filename}', 'wb') as file:
                 file.write(response.content)
 
     except NoSuchElementException:
         print(f'No PDFs found for SKU -> {sku}')
+
+    return len(pdf_elements)
 
 
 def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
@@ -183,11 +192,10 @@ def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
     counter = begin_from
     try:
         for link in loaded_links[begin_from:]:
-            DRIVER.get(link)
-            sku = Util.get_sku_from_link_es(DRIVER)
+            sku = Util.get_sku_from_link(DRIVER, link, 'ES')
 
-            download_pdfs_of_sku(DRIVER, sku)
-            print(f'DOWNLOADED PDFS OF : {link}  {counter + 1}/{len(loaded_links)}')
+            found = download_pdfs_of_sku(DRIVER, sku)
+            print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
             counter += 1
     except:
         print("Error en la descarga de PDFs. Reintentando...")
@@ -237,52 +245,6 @@ def dump_product_info_lite(products_data, counter):
     print('DUMPED LITE PRODUCT INFO ')
 
 
-# GET ALL DISTINCT FIELDS IN A SET AND EXTRACT THEM TO EXCEL
-def extract_distinct_fields_to_excel():
-    file_list = Util.get_all_files_in_directory(f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}')
-    json_data = []
-    fields = set()
-
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data.extend(json.load(file))
-
-    for product in json_data:
-        for attr in product.keys():
-            fields.add(attr)
-
-    excel_dicts = []
-
-    print(f'FOUND {len(fields)} DISTINCT FIELDS')
-
-    for field in fields:
-        # Filter out non-custom fields
-        if not field.startswith('x_'):
-            continue
-
-        excel_dicts.append(
-            {'Nombre de campo': field,
-             'Etiqueta de campo': field,
-             'Modelo': 'product.template',
-             'Tipo de campo': 'texto',
-             'Indexado': True,
-             'Almacenado': True,
-             'Sólo lectura': False,
-             'Modelo relacionado': ''
-             }
-        )
-
-    Util.dump_to_json(excel_dicts, Util.VTAC_PRODUCTS_FIELDS_FILE)
-
-    # Read the JSON file
-    data = pd.read_json(Util.VTAC_PRODUCTS_FIELDS_FILE)
-
-    # Write the DataFrame to an Excel file
-    excel_file_path = "DISTINCT_FIELDS_EXCEL.xlsx"
-    data.to_excel(excel_file_path,
-                  index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
-
-
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE_ES}')
@@ -305,7 +267,7 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    extract_distinct_fields_to_excel()
+    Util.extract_distinct_fields_to_excel(Util.VTAC_ES_DIR)
     print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 DRIVER.close()

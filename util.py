@@ -1,9 +1,13 @@
 import base64
 import json
 import os
+import time
+
+import pandas as pd
 import requests
 from googletrans import Translator
 from selenium.webdriver.common.by import By
+import logging
 
 
 class Util:
@@ -25,6 +29,27 @@ class Util:
     VTAC_PRODUCTS_FIELDS_FILE = 'VTAC_PRODUCTS_FIELDS.json'
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
+
+    @staticmethod
+    def setup_logger(target_file):
+        # Create or get a logger
+        logger = logging.getLogger(__name__)
+
+        # Set log level
+        logger.setLevel(logging.DEBUG)
+
+        # Create a file handler
+        fh = logging.FileHandler(target_file)
+        fh.setLevel(logging.DEBUG)
+
+        # Create a formatter and set the formatter for the handler
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+
+        # Add the handler to logger
+        logger.addHandler(fh)
+
+        return logger
 
     @staticmethod
     def dump_to_json(dump, filename):
@@ -69,7 +94,25 @@ class Util:
         return base64.b64encode(response.content).decode('utf-8')
 
     @staticmethod
-    def get_sku_from_link_ita(link):
+    def get_sku_from_link(driver, link, country):
+        try:
+            driver.get(link)
+        except:
+            time.sleep(5)
+            return Util.get_sku_from_link(driver, link, country)
+
+        if country == 'ITA':
+            return Util.get_sku_from_link_ita(driver)
+        elif country == 'UK':
+            return Util.get_sku_from_link_uk(driver)
+        elif country == 'ES':
+            return Util.get_sku_from_link_es(driver)
+        else:
+            raise Exception('Invalid country')
+
+    @staticmethod
+    def get_sku_from_link_ita(driver):
+        link = driver.current_url
         return str(link).split('/')[6]
 
     @staticmethod
@@ -78,7 +121,7 @@ class Util:
 
     @staticmethod
     def get_sku_from_link_es(driver):
-        return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text
+        return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
 
     @staticmethod
     def load_json_data(file_path):
@@ -126,3 +169,47 @@ class Util:
             .replace(".", "_") \
             .replace("ñ", "n")
         return f'x_{field}'[:61]
+
+    @staticmethod
+    def extract_distinct_fields_to_excel(directory_path):
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCT_INFO_LITE}')
+        json_data = []
+        fields = set()
+
+        for file_path in file_list:
+            with open(file_path, "r") as file:
+                json_data.extend(json.load(file))
+
+        for product in json_data:
+            for attr in product.keys():
+                # Filter out non-custom fields
+                if attr.startswith('x_'):
+                    fields.add(attr)
+
+        excel_dicts = []
+
+        print(f'FOUND {len(fields)} DISTINCT FIELDS')
+
+        for field in fields:
+            excel_dicts.append(
+                {'Nombre de campo': field,
+                 'Etiqueta de campo': field,
+                 'Modelo': 'product.template',
+                 'Tipo de campo': 'texto',
+                 'Indexado': True,
+                 'Almacenado': True,
+                 'Sólo lectura': False,
+                 'Modelo relacionado': ''
+                 }
+            )
+
+        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+
+        # Read the JSON file
+        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+
+        # Write the DataFrame to an Excel file
+        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXCEL.xlsx"
+        data.to_excel(excel_file_path,
+                      index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
+
