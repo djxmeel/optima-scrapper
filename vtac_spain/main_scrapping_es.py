@@ -71,11 +71,10 @@ def scrape_item(driver, url):
             value = key_value.find_element(By.TAG_NAME, "div")
         except NoSuchElementException:
             print(f'Field {key.text} has no value.')
-            item[key.text] = ''
+            item[Util.format_field_odoo(key.text)] = ''
             continue
 
-        item[key.text] = value.text
-
+        item[Util.format_field_odoo(key.text)] = value.text
 
     # Extracción de la etiqueta energética y dimensiones gráficas
     try:
@@ -98,7 +97,15 @@ def scrape_item(driver, url):
         pass
 
     # Extracción del título
-    item['x_titulo'] = driver.find_element(By.XPATH, NAME_XPATH).text
+    item['name'] = driver.find_element(By.XPATH, NAME_XPATH).text
+
+    # Uso de los campos de ODOO para el volumen y el peso si están disponibles
+    if 'x_volumen_del_articulo' in item.keys():
+        item['volume'] = item['x_volumen_del_articulo']
+        del item['x_volumen_del_articulo']
+    if 'x_peso_del_articulo' in item.keys():
+        item['weight'] = item['x_peso_del_articulo']
+        del item['x_peso_del_articulo']
 
     return item
 
@@ -250,17 +257,15 @@ def extract_distinct_fields_to_excel():
 
     for product in json_data:
         for attr in product.keys():
-            fields.add(attr)
+            # Filter out non-custom fields
+            if attr.startswith('x_'):
+                fields.add(attr)
 
     excel_dicts = []
 
     print(f'FOUND {len(fields)} DISTINCT FIELDS')
 
     for field in fields:
-        # Filter out non-custom fields
-        if not field.startswith('x_'):
-            continue
-
         excel_dicts.append(
             {'Nombre de campo': field,
              'Etiqueta de campo': field,
