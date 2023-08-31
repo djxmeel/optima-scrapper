@@ -245,50 +245,6 @@ def dump_product_info_lite(products_data, counter):
     print('DUMPED LITE PRODUCT INFO ')
 
 
-# GET ALL DISTINCT FIELDS IN A SET AND EXTRACT THEM TO EXCEL
-def extract_distinct_fields_to_excel():
-    file_list = Util.get_all_files_in_directory(f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}')
-    json_data = []
-    fields = set()
-
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data.extend(json.load(file))
-
-    for product in json_data:
-        for attr in product.keys():
-            # Filter out non-custom fields
-            if attr.startswith('x_'):
-                fields.add(attr)
-
-    excel_dicts = []
-
-    print(f'FOUND {len(fields)} DISTINCT FIELDS')
-
-    for field in fields:
-        excel_dicts.append(
-            {'Nombre de campo': field,
-             'Etiqueta de campo': field,
-             'Modelo': 'product.template',
-             'Tipo de campo': 'texto',
-             'Indexado': True,
-             'Almacenado': True,
-             'Sólo lectura': False,
-             'Modelo relacionado': ''
-             }
-        )
-
-    Util.dump_to_json(excel_dicts, f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
-
-    # Read the JSON file
-    data = pd.read_json(f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
-
-    # Write the DataFrame to an Excel file
-    excel_file_path = f"{Util.VTAC_ES_DIR}/DISTINCT_FIELDS_EXCEL.xlsx"
-    data.to_excel(excel_file_path,
-                  index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
-
-
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE_ES}')
@@ -311,7 +267,7 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    extract_distinct_fields_to_excel()
+    Util.extract_distinct_fields_to_excel(Util.VTAC_ES_DIR)
     print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 DRIVER.close()
