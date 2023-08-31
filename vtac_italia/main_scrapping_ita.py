@@ -139,6 +139,7 @@ def scrape_item(driver, subcategories, url):
 
             item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
+        # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'x_Volume' in item:
             item['volume'] = float(item['x_Volume'].replace(',', '.').replace('m³', ''))
             del item['x_Volume']

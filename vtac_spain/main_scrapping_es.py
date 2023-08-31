@@ -101,10 +101,10 @@ def scrape_item(driver, url):
 
     # Uso de los campos de ODOO para el volumen y el peso si están disponibles
     if 'x_volumen_del_articulo' in item.keys():
-        item['volume'] = item['x_volumen_del_articulo']
+        item['volume'] = float(item['x_volumen_del_articulo'].replace(',', '.'))
         del item['x_volumen_del_articulo']
     if 'x_peso_del_articulo' in item.keys():
-        item['weight'] = item['x_peso_del_articulo']
+        item['weight'] = float(item['x_peso_del_articulo'].replace(',', '.'))
         del item['x_peso_del_articulo']
 
     return item

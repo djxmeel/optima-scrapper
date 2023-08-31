@@ -105,7 +105,7 @@ def scrape_item(driver, subcategories_ids, url):
         item['list_price'] = driver.find_element(By.XPATH,
                                                  f'/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[3]/div/div/div[2]/div[1]/span').text
 
-        item['list_price'] = float(item['list_price'].replace('£', ''))
+        item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '.'))
     except NoSuchElementException:
         print('PRECIO NO ENCONTRADO')
 
