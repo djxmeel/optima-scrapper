@@ -1,9 +1,7 @@
 import json
-import math
 import time
 import requests
 import os
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
@@ -12,19 +10,17 @@ from util import Util
 # VTAC ES SCRAPER
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO = False
+IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
 IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
 DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 5
-
-DLs_XPATH = '//div[@class="downloads"]//a'
+JSON_DUMP_FREQUENCY = 100
 
 CATEGORIES_LINKS = [
     'https://v-tac.es/sistemas-solares.html',
@@ -76,13 +72,14 @@ def scrape_item(driver, url):
 
         item[Util.format_field_odoo(key.text)] = value.text
 
-    # Extracción de la etiqueta energética y dimensiones gráficas
+    # Extracción de la etiqueta energética
     try:
         energy_tag_src = driver.find_element(By.XPATH, ENERGY_TAG_XPATH).get_attribute('src')
         item['imgs'].append(Util.src_to_base64(energy_tag_src))
     except NoSuchElementException:
         pass
 
+    # Extracción de las dimensiones gráficas
     try:
         graph_dimensions_src = driver.find_element(By.XPATH, GRAPH_DIMENSIONS_XPATH).get_attribute('src')
         item['imgs'].append(Util.src_to_base64(graph_dimensions_src))
@@ -149,17 +146,14 @@ def download_pdfs_of_sku(driver, sku):
     """
     time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
-    pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
+    DLs_XPATH = '//div[@class="downloads"]//a'
+    pdf_elements = []
 
     try:
-        # Specs tab certificates
-        pdf_elements = [driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")]
+        # Get the <a> elements
+        pdf_elements = driver.find_elements(By.XPATH, DLs_XPATH)
 
-        # Downloads tab
-        driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
-        pdf_elements.append(driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a"))
-
-        print(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
+        print(f'Found {len(pdf_elements)} attachments in SKU {sku}')
 
         for pdf_element in pdf_elements:
             url = pdf_element.get_attribute('href')
@@ -176,11 +170,15 @@ def download_pdfs_of_sku(driver, sku):
                 # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
 
+            filename = filename.replace('%20', '_')
+
             with open(f'{nested_dir}/{filename}', 'wb') as file:
                 file.write(response.content)
 
     except NoSuchElementException:
         print(f'No PDFs found for SKU -> {sku}')
+
+    return len(pdf_elements)
 
 
 def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
@@ -191,11 +189,10 @@ def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
     counter = begin_from
     try:
         for link in loaded_links[begin_from:]:
-            DRIVER.get(link)
-            sku = Util.get_sku_from_link_es(DRIVER)
+            sku = Util.get_sku_from_link(DRIVER, link, 'ES')
 
-            download_pdfs_of_sku(DRIVER, sku)
-            print(f'DOWNLOADED PDFS OF : {link}  {counter + 1}/{len(loaded_links)}')
+            found = download_pdfs_of_sku(DRIVER, sku)
+            print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
             counter += 1
     except:
         print("Error en la descarga de PDFs. Reintentando...")

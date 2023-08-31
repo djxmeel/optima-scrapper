@@ -3,7 +3,6 @@ import math
 import time
 import requests
 import os
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
@@ -13,7 +12,7 @@ from util import Util
 # VTAC UK SCRAPER
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO = True
+IF_EXTRACT_ITEM_INFO = False
 # PDFs productos
 IF_DL_ITEM_PDF = True
 # Enlaces productos en la página de origen
@@ -197,6 +196,8 @@ def download_pdfs_of_sku(driver, sku):
 
     pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
 
+    pdf_elements = []
+
     try:
         # Specs tab certificates
         pdf_elements = driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
@@ -221,18 +222,16 @@ def download_pdfs_of_sku(driver, sku):
             else:
                 # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
-            try:
-                # Use custom name keeping only the file extension
-                extension = filename.split('.')[-1]
-                filename = f'{pdf_element.find_elements(By.TAG_NAME, "span")[1].text}.{extension}'
-            except NoSuchElementException:
-                pass
+
+            filename = filename.replace('%20', '_')
 
             with open(f'{nested_dir}/{filename}', 'wb') as file:
                 file.write(response.content)
 
     except NoSuchElementException:
         print(f'No PDFs found for SKU -> {sku}')
+
+    return len(pdf_elements)
 
 
 def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
@@ -243,11 +242,10 @@ def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
     counter = begin_from
     try:
         for link in loaded_links[begin_from:]:
-            DRIVER.get(link)
-            sku = Util.get_sku_from_link_uk(DRIVER)
+            sku = Util.get_sku_from_link(DRIVER, link, 'UK')
 
-            download_pdfs_of_sku(DRIVER, sku)
-            print(f'DOWNLOADED PDFS OF : {link}  {counter + 1}/{len(loaded_links)}')
+            found = download_pdfs_of_sku(DRIVER, sku)
+            print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
             counter += 1
     except KeyError:
         print("Error en la descarga de PDFs. Reintentando...")
