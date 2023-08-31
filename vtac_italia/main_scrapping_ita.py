@@ -9,6 +9,8 @@ from util import Util
 
 # VTAC ITALIA SCRAPER
 
+logger = Util.setup_logger('ITA_LOG.txt')
+
 # Datos productos
 IF_EXTRACT_ITEM_INFO = False
 # PDFs productos

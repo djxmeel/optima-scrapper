@@ -6,8 +6,8 @@ import time
 import pandas as pd
 import requests
 from googletrans import Translator
-from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
+import logging
 
 
 class Util:
@@ -29,6 +29,27 @@ class Util:
     VTAC_PRODUCTS_FIELDS_FILE = 'VTAC_PRODUCTS_FIELDS.json'
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
+
+    @staticmethod
+    def setup_logger(target_file):
+        # Create or get a logger
+        logger = logging.getLogger(__name__)
+
+        # Set log level
+        logger.setLevel(logging.DEBUG)
+
+        # Create a file handler
+        fh = logging.FileHandler(target_file)
+        fh.setLevel(logging.DEBUG)
+
+        # Create a formatter and set the formatter for the handler
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+
+        # Add the handler to logger
+        logger.addHandler(fh)
+
+        return logger
 
     @staticmethod
     def dump_to_json(dump, filename):

@@ -6,8 +6,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from util import Util
+import logging
 
 # VTAC ES SCRAPER
+
+logger = Util.setup_logger('ES_LOG.txt')
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO = True
