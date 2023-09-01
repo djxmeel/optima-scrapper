@@ -6,6 +6,7 @@ import time
 import pandas as pd
 import requests
 from googletrans import Translator
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import logging
 
@@ -83,14 +84,15 @@ class Util:
         """
         try:
             translator = Translator()
-
             detected_language = translator.detect(text).lang
 
             if detected_language == _from:
                 translation = translator.translate(text, src=detected_language, dest='es')
                 return translation.text
-        except:
-            pass
+        except KeyError:
+            print('ERROR TRANSLATING TEXT. Retrying...')
+            time.sleep(1)
+            return Util.translate_from_to_spanish(_from, text)
 
         return text
 
@@ -123,7 +125,13 @@ class Util:
 
     @staticmethod
     def get_sku_from_link_uk(driver):
-        return driver.find_element(By.XPATH, "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+        try:
+            return driver.find_element(By.XPATH, "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+        except NoSuchElementException:
+            print("ERROR getting SKU. Retrying...")
+            time.sleep(5)
+            driver.get(driver.current_url)
+            return Util.get_sku_from_link_uk(driver)
 
     @staticmethod
     def get_sku_from_link_es(driver):
@@ -225,7 +233,7 @@ class Util:
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
     @staticmethod
-    def begin_items_PDF_download(scraper, links_path, begin_from=0):  # TODO DUPLICATE CHECK
+    def begin_items_PDF_download(scraper, links_path, country, begin_from=0):  # TODO DUPLICATE CHECK
         # Read the JSON file
         with open(links_path) as f:
             loaded_links = json.load(f)
@@ -233,7 +241,7 @@ class Util:
         counter = begin_from
         try:
             for link in loaded_links[begin_from:]:
-                sku = Util.get_sku_from_link(scraper.DRIVER, link, 'ITA')
+                sku = Util.get_sku_from_link(scraper.DRIVER, link, country)
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
                 print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
@@ -260,7 +268,7 @@ class Util:
         try:
             for link in links[start_from:]:
                 products_data.append(
-                    scraper.scrape_item(scraper.DRIVER, scraper.SUBCATEGORIES_IDS, link))
+                    scraper.scrape_item(scraper.DRIVER, link, scraper.SUBCATEGORIES))
                 counter += 1
                 print(f'{counter}/{len(links)}\n')
 
@@ -273,8 +281,7 @@ class Util:
                     scraper.dump_product_info_lite(products_data, counter)
 
                     products_data.clear()
-
-        except:
+        except KeyError:
             print('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
