@@ -278,5 +278,5 @@ class Util:
             print('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, counter - counter % scraper.JSON_DUMP_FREQUENCY)
+            Util.begin_items_info_extraction(scraper, links_path, extraction_dir, counter - counter % scraper.JSON_DUMP_FREQUENCY)
 
