@@ -9,350 +9,353 @@ from util import Util
 
 # VTAC ITALIA SCRAPER
 
-logger = Util.setup_logger(Util.ITA_LOG_FILE_PATH)
+class ScraperVtacItalia:
+    logger = Util.setup_logger(Util.ITA_LOG_FILE_PATH)
 
-# Datos productos
-IF_EXTRACT_ITEM_INFO = False
-# PDFs productos
-IF_DL_ITEM_PDF = True
-# Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS = False
-# Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+    # Datos productos
+    IF_EXTRACT_ITEM_INFO = False
+    # PDFs productos
+    IF_DL_ITEM_PDF = True
+    # Enlaces productos en la página de origen
+    IF_EXTRACT_ITEM_LINKS = False
+    # Todos los campos de los productos a implementar en ODOO
+    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
-DRIVER = webdriver.Firefox()
+    DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 50
+    JSON_DUMP_FREQUENCY = 50
+    BEGIN_FROM = 0
 
-SUBCATEGORIES = ["Specifiche tecniche", "Packaging"]
+    SUBCATEGORIES = ["Specifiche tecniche", "Packaging"]
 
-CATEGORIES_LINKS = [
-    'https://led-italia.it/prodotti/M4E-fotovoltaico',
-    'https://led-italia.it/prodotti/M54-illuminazione-led',
-    'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
-]
+    CATEGORIES_LINKS = [
+        'https://led-italia.it/prodotti/M4E-fotovoltaico',
+        'https://led-italia.it/prodotti/M54-illuminazione-led',
+        'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
+    ]
+    @staticmethod
+    def scrape_item(driver, subcategories, url):
+        try:
+            # Se conecta el driver instanciado a la URL
+            driver.get(url)
+        except:
+            print(f'ERROR extrayendo los datos de {url}. Reintentando...')
+            time.sleep(5)
+            ScraperVtacItalia.scrape_item(driver, subcategories, url)
+            return
 
+        subcategories_elements = []
 
-def scrape_item(driver, subcategories, url):
-    try:
-        # Se conecta el driver instanciado a la URL
-        driver.get(url)
-    except:
-        print(f'ERROR extrayendo los datos de {url}. Reintentando...')
-        time.sleep(5)
-        scrape_item(driver, subcategories, url)
-        return
+        for subcat in subcategories:
+            subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
 
-    subcategories_elements = []
+        # Diccionario que almacena todos los datos de un artículo
+        item = {'url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [],
+                'descripcion': '',
+                'imgs': [], 'icons': []}
 
-    for subcat in subcategories:
-        subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
+        print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-    # Diccionario que almacena todos los datos de un artículo
-    item = {'url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [], 'descripcion': '',
-            'imgs': [], 'icons': []}
+        # Extracción de los enlaces de videos
+        iframes = driver.find_elements(By.XPATH, '//main//iframe')
 
-    print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
+        for iframe in iframes:
+            item['videos'].append(iframe.get_attribute('src'))
 
-    # Extracción de los enlaces de videos
-    iframes = driver.find_elements(By.XPATH, '//main//iframe')
+        # Extracción del kit
+        try:
+            kit_anchor = driver.find_elements(By.XPATH, f'//h4[text() = \'Il kit comprende\']/parent::div//a')
 
-    for iframe in iframes:
-        item['videos'].append(iframe.get_attribute('src'))
+            for anchor in kit_anchor:
+                kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
-    # Extracción del kit
-    try:
-        kit_anchor = driver.find_elements(By.XPATH, f'//h4[text() = \'Il kit comprende\']/parent::div//a')
+                kit_info = {'link': anchor.get_attribute('href'),
+                            'sku': kit_span.find_element(By.TAG_NAME, 'span').text,
+                            'cantidad': kit_span.text.split('x')[0]
+                            }
 
-        for anchor in kit_anchor:
-            kit_span = anchor.find_element(By.TAG_NAME, 'span')
+                item['kit'].append(kit_info)
 
-            kit_info = {'link': anchor.get_attribute('href'),
-                        'sku': kit_span.find_element(By.TAG_NAME, 'span').text,
-                        'cantidad': kit_span.text.split('x')[0]
-                        }
+        except NoSuchElementException:
+            print('EL ARTICULO NO TIENE KIT')
 
-            item['kit'].append(kit_info)
+        # Extracción de los accesorios
+        try:
+            acces_li_tags = driver.find_elements(By.XPATH, f'//h4[text() = \'Accessori inclusi\']/parent::div//ul/li')
 
-    except NoSuchElementException:
-        print('EL ARTICULO NO TIENE KIT')
+            for li in acces_li_tags:
+                acces_cantidad = li.find_element(By.TAG_NAME, 'span')
+                acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
-    # Extracción de los accesorios
-    try:
-        acces_li_tags = driver.find_elements(By.XPATH, f'//h4[text() = \'Accessori inclusi\']/parent::div//ul/li')
+                acces_info = {'link': acces_anchor.get_attribute('href'),
+                              'sku': acces_anchor.find_element(By.TAG_NAME, 'b').text,
+                              'cantidad': acces_cantidad.text.split('x')[0]
+                              }
 
-        for li in acces_li_tags:
-            acces_cantidad = li.find_element(By.TAG_NAME, 'span')
-            acces_anchor = li.find_element(By.TAG_NAME, 'a')
+                item['accesorios'].append(acces_info)
 
-            acces_info = {'link': acces_anchor.get_attribute('href'),
-                          'sku': acces_anchor.find_element(By.TAG_NAME, 'b').text,
-                          'cantidad': acces_cantidad.text.split('x')[0]
-                          }
+        except NoSuchElementException:
+            print('EL ARTICULO NO TIENE ACCESORIOS')
 
-            item['accesorios'].append(acces_info)
-
-    except NoSuchElementException:
-        print('EL ARTICULO NO TIENE ACCESORIOS')
-
-    # Extracción del precio
-    try:
-        item['list_price'] = driver.find_element(By.XPATH,
-                                                 f'//*[normalize-space() = \'Prezzo di listino\']/parent::span/span[2]').text
-
-        if item['list_price'].__contains__('('):
-            item['list_price'] = item['list_price'].split('(')[0]
-
-        item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
-    except NoSuchElementException:
+        # Extracción del precio
         try:
             item['list_price'] = driver.find_element(By.XPATH,
-                                                     f'//*[normalize-space() = \'Prezzo al pubblico\']/parent::span').text[
-                                 19:-9]
+                                                     f'//*[normalize-space() = \'Prezzo di listino\']/parent::span/span[2]').text
 
             if item['list_price'].__contains__('('):
                 item['list_price'] = item['list_price'].split('(')[0]
 
             item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
         except NoSuchElementException:
-            print('PRECIO NO ENCONTRADO')
+            try:
+                item['list_price'] = driver.find_element(By.XPATH,
+                                                         f'//*[normalize-space() = \'Prezzo al pubblico\']/parent::span').text[
+                                     19:-9]
 
-    # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
-    try:
-        desc_innerHTML = driver.find_element(By.XPATH,
-                                             f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
-            'innerHTML')
+                if item['list_price'].__contains__('('):
+                    item['list_price'] = item['list_price'].split('(')[0]
 
-        item['descripcion'] = desc_innerHTML
-    except NoSuchElementException:
-        print('Producto no tiene descripción')
+                item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
+            except NoSuchElementException:
+                print('PRECIO NO ENCONTRADO')
 
-    # Para cada subcategoria, extraemos sus campos
-    for subcat in subcategories_elements:
-        # Divs que contienen el campo y valor (<b> Campo | <span> Valor)
-        fields = subcat.find_element(By.TAG_NAME, 'div') \
-            .find_elements(By.TAG_NAME, 'div')
-
-        # Guardado de campos y valor en la estructura de datos
-        for field in fields:
-            key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
-
-            item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
-
-        # Uso de los campos de ODOO para el volumen y el peso si están disponibles
-        if 'Volumen' in item:
-            item['volume'] = float(item['Volumen'].replace(',', '.').replace('m³', ''))
-            del item['Volume']
-        if 'Peso' in item:
-            item['weight'] = float(item['Peso'].replace(',', '.').replace('Kg', ''))
-            del item['Peso']
-
-    # Extracción del titulo
-    item['name'] = Util.translate_from_to_spanish('it',
-                                                  driver.find_element(By.XPATH,
-                                                                      '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
-
-    # Extracción de iconos
-    try:
-        icons = driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/div[2]/div[2]/div[4]/div[2]/img')
-
-        # Mapeo de icons a una lista de sus base64
-        item['icons'] = [Util.src_to_base64(icon.get_attribute('src')) for icon in icons]
-        print(f'ENCODED ICONS')
-    except NoSuchElementException:
-        print('PRODUCT HAS NO ICONS')
-
-    try:
-        # Find the image elements and extract their data
-        image_elements = driver.find_element(By.ID, 'images-slider-list') \
-            .find_elements(By.TAG_NAME, 'img')
-
-        for index, image_element in enumerate(image_elements):
-            src = image_element.get_attribute('src')
-            item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
-
-        print(f'ENCODED IMAGES')
-    except NoSuchElementException:
-        print('PRODUCT HAS NO IMGS')
-
-    # Formateo del SKU
-    item['SKU'] = f'VS{item["SKU"]}'
-
-    # Formateo del titulo
-    item['name'] = f'[{item["SKU"]}] {item["name"]}'
-
-    print(item['name'])
-
-    return item
-
-
-def extract_all_links(driver, categories):
-    extracted = set()
-    for cat in categories:
+        # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
-            driver.get(cat)
-        except:
-            print("ERROR navegando a la página. Reintentando...")
-            extract_all_links(driver, categories)
-            return
+            desc_innerHTML = driver.find_element(By.XPATH,
+                                                 f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
+                'innerHTML')
 
-        item_subcats = [link.get_attribute('href') for link in
-                        driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/a')]
+            item['descripcion'] = desc_innerHTML
+        except NoSuchElementException:
+            print('Producto no tiene descripción')
 
-        for item_subcat in item_subcats:
-            current_page = 0
-            do_page_exist = True
+        # Para cada subcategoria, extraemos sus campos
+        for subcat in subcategories_elements:
+            # Divs que contienen el campo y valor (<b> Campo | <span> Valor)
+            fields = subcat.find_element(By.TAG_NAME, 'div') \
+                .find_elements(By.TAG_NAME, 'div')
 
-            while do_page_exist:
-                if item_subcat.__contains__('?sub'):
-                    driver.get(f'{item_subcat}&page={current_page}')
-                else:
-                    driver.get(f'{item_subcat}?page={current_page}')
+            # Guardado de campos y valor en la estructura de datos
+            for field in fields:
+                key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
 
-                time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
-                articles_in_page = driver.find_elements(By.XPATH, '/html/body/main/div/div/div[2]/div[2]/div[2]/div/a')
-                print(f'FOUND {len(articles_in_page)} ARTICLES')
+                item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
-                before = len(extracted)
+            # Uso de los campos de ODOO para el volumen y el peso si están disponibles
+            if 'Volumen' in item:
+                item['volume'] = float(item['Volumen'].replace(',', '.').replace('m³', ''))
+                del item['Volume']
+            if 'Peso' in item:
+                item['weight'] = float(item['Peso'].replace(',', '.').replace('Kg', ''))
+                del item['Peso']
 
-                if len(articles_in_page) > 0:
-                    for article in articles_in_page:
-                        extracted.add(article.get_attribute('href').split('?asq=')[0])
-                else:
-                    do_page_exist = False
+        # Extracción del titulo
+        item['name'] = Util.translate_from_to_spanish('it',
+                                                      driver.find_element(By.XPATH,
+                                                                          '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
 
-                print(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
-                current_page += 1
+        # Extracción de iconos
+        try:
+            icons = driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/div[2]/div[2]/div[4]/div[2]/img')
 
-    return extracted
+            # Mapeo de icons a una lista de sus base64
+            item['icons'] = [Util.src_to_base64(icon.get_attribute('src')) for icon in icons]
+            print(f'ENCODED ICONS')
+        except NoSuchElementException:
+            print('PRODUCT HAS NO ICONS')
 
+        try:
+            # Find the image elements and extract their data
+            image_elements = driver.find_element(By.ID, 'images-slider-list') \
+                .find_elements(By.TAG_NAME, 'img')
 
-def download_pdfs_of_sku(driver, sku):
-    """
-    Downloads PDF from a given URL.
+            for index, image_element in enumerate(image_elements):
+                src = image_element.get_attribute('src')
+                item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
 
-    Parameters:
-    driver: Selenium WebDriver instance.
-    url (str): URL to download the PDF from.
-    sku (str): SKU of the product.
+            print(f'ENCODED IMAGES')
+        except NoSuchElementException:
+            print('PRODUCT HAS NO IMGS')
 
-    """
-    time.sleep(Util.PDF_DOWNLOAD_DELAY)
+        # Formateo del SKU
+        item['SKU'] = f'VS{item["SKU"]}'
 
-    pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'
+        # Formateo del titulo
+        item['name'] = f'[{item["SKU"]}] {item["name"]}'
 
-    pdf_elements = []
+        print(item['name'])
 
-    try:
-        pdf_elements = driver.find_elements(By.XPATH, pdf_download_xpath)
-        print(f'Found {len(pdf_elements)} elements in SKU {sku}')
+        return item
 
-        for pdf_element in pdf_elements:
-            response = requests.get(pdf_element.get_attribute('href'))
-            name = pdf_element.get_attribute('data-tippy-content')
+    @staticmethod
+    def extract_all_links(driver, categories):
+        extracted = set()
+        for cat in categories:
+            try:
+                driver.get(cat)
+            except:
+                print("ERROR navegando a la página. Reintentando...")
+                ScraperVtacItalia.extract_all_links(driver, categories)
+                return
 
-            if '/' in name:
-                name = name.replace('/', '-')
+            item_subcats = [link.get_attribute('href') for link in
+                            driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/a')]
 
-            nested_dir = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
-            os.makedirs(nested_dir, exist_ok=True)
+            for item_subcat in item_subcats:
+                current_page = 0
+                do_page_exist = True
 
-            with open(f'{nested_dir}/{name}.pdf', 'wb') as file:
-                file.write(response.content)
+                while do_page_exist:
+                    if item_subcat.__contains__('?sub'):
+                        driver.get(f'{item_subcat}&page={current_page}')
+                    else:
+                        driver.get(f'{item_subcat}?page={current_page}')
 
-    except NoSuchElementException:
-        print(f'No PDFs found for SKU -> {sku}')
+                    time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
+                    articles_in_page = driver.find_elements(By.XPATH,
+                                                            '/html/body/main/div/div/div[2]/div[2]/div[2]/div/a')
+                    print(f'FOUND {len(articles_in_page)} ARTICLES')
 
-    return len(pdf_elements)
+                    before = len(extracted)
 
+                    if len(articles_in_page) > 0:
+                        for article in articles_in_page:
+                            extracted.add(article.get_attribute('href').split('?asq=')[0])
+                    else:
+                        do_page_exist = False
 
-def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
-    # Read the JSON file
-    with open(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}') as f:
-        loaded_links = json.load(f)
+                    print(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
+                    current_page += 1
 
-    counter = begin_from
-    try:
-        for link in loaded_links[begin_from:]:
-            sku = Util.get_sku_from_link(DRIVER, link, 'ITA')
+        return extracted
 
-            found = download_pdfs_of_sku(DRIVER, sku)
-            print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
-            counter += 1
-    except KeyError:
-        print("Error en la descarga de PDFs. Reintentando...")
-        time.sleep(5)
-        begin_items_PDF_download(counter)
+    @staticmethod
+    def download_pdfs_of_sku(driver, sku):
+        """
+        Downloads PDF from a given URL.
 
+        Parameters:
+        driver: Selenium WebDriver instance.
+        url (str): URL to download the PDF from.
+        sku (str): SKU of the product.
 
-def begin_items_info_extraction(start_from):
-    """
-    Begins item info extraction.
+        """
+        time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
-    Parameters:
-    start_from (int): The index to start extraction from.
-    """
-    # Load links from JSON file
-    links = Util.load_json_data(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
+        pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'
 
-    products_data = []
-    counter = start_from
+        pdf_elements = []
 
-    try:
-        for link in links[start_from:]:
-            products_data.append(scrape_item(DRIVER, SUBCATEGORIES, link))
-            counter += 1
-            print(f'{counter}/{len(links)}\n')
+        try:
+            pdf_elements = driver.find_elements(By.XPATH, pdf_download_xpath)
+            print(f'Found {len(pdf_elements)} elements in SKU {sku}')
 
-            # Save each X to a JSON
-            if counter % JSON_DUMP_FREQUENCY == 0 or counter == len(links):
-                filename = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
-                Util.dump_to_json(products_data, filename)
+            for pdf_element in pdf_elements:
+                response = requests.get(pdf_element.get_attribute('href'))
+                name = pdf_element.get_attribute('data-tippy-content')
 
-                # Dump lighter version of json
-                dump_product_info_lite(products_data, counter)
+                if '/' in name:
+                    name = name.replace('/', '-')
 
-                products_data.clear()
+                nested_dir = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+                os.makedirs(nested_dir, exist_ok=True)
 
-    except Exception as e:
-        print(e)
-        products_data.clear()
-        begin_items_info_extraction(counter - counter % JSON_DUMP_FREQUENCY)
+                with open(f'{nested_dir}/{name}.pdf', 'wb') as file:
+                    file.write(response.content)
 
+        except NoSuchElementException:
+            print(f'No PDFs found for SKU -> {sku}')
 
-def dump_product_info_lite(products_data, counter):
-    for product in products_data:
-        del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
+        return len(pdf_elements)
 
-    Util.dump_to_json(products_data,
-                      f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-    print('DUMPED LITE PRODUCT INFO ')
+    @staticmethod
+    def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
+        # Read the JSON file
+        with open(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}') as f:
+            loaded_links = json.load(f)
+
+        counter = begin_from
+        try:
+            for link in loaded_links[begin_from:]:
+                sku = Util.get_sku_from_link(ScraperVtacItalia.DRIVER, link, 'ITA')
+
+                found = ScraperVtacItalia.download_pdfs_of_sku(ScraperVtacItalia.DRIVER, sku)
+                print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
+                counter += 1
+        except KeyError:
+            print("Error en la descarga de PDFs. Reintentando...")
+            time.sleep(5)
+            ScraperVtacItalia.begin_items_PDF_download(counter)
+
+    @staticmethod
+    def begin_items_info_extraction(start_from):
+        """
+        Begins item info extraction.
+
+        Parameters:
+        start_from (int): The index to start extraction from.
+        """
+        # Load links from JSON file
+        links = Util.load_json_data(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
+
+        products_data = []
+        counter = start_from
+
+        try:
+            for link in links[start_from:]:
+                products_data.append(ScraperVtacItalia.scrape_item(ScraperVtacItalia.DRIVER, ScraperVtacItalia.SUBCATEGORIES, link))
+                counter += 1
+                print(f'{counter}/{len(links)}\n')
+
+                # Save each X to a JSON
+                if counter % ScraperVtacItalia.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
+                    filename = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    Util.dump_to_json(products_data, filename)
+
+                    # Dump lighter version of json
+                    ScraperVtacItalia.dump_product_info_lite(products_data, counter)
+
+                    products_data.clear()
+
+        except Exception as e:
+            print(e)
+            products_data.clear()
+            ScraperVtacItalia.begin_items_info_extraction(counter - counter % ScraperVtacItalia.JSON_DUMP_FREQUENCY)
+
+    @staticmethod
+    def dump_product_info_lite(products_data, counter):
+        for product in products_data:
+            del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
+
+        Util.dump_to_json(products_data,
+                          f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
+        print('DUMPED LITE PRODUCT INFO ')
 
 
 # LINK EXTRACTION
-if IF_EXTRACT_ITEM_LINKS:
+if ScraperVtacItalia.IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
-    extracted_links = extract_all_links(DRIVER, CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
+    extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER, ScraperVtacItalia.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
     Util.dump_to_json(list(extracted_links),
                       f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')  # DUMPING LINKS TO JSON
     print(f'FINISHED LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
 
 # PRODUCTS INFO EXTRACTION
-if IF_EXTRACT_ITEM_INFO:
+if ScraperVtacItalia.IF_EXTRACT_ITEM_INFO:
     print(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
-    begin_items_info_extraction(0)  # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
+    ScraperVtacItalia.begin_items_info_extraction(ScraperVtacItalia.BEGIN_FROM)  # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
-if IF_DL_ITEM_PDF:
+if ScraperVtacItalia.IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
-    begin_items_PDF_download()
+    ScraperVtacItalia.begin_items_PDF_download()
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
-if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
+if ScraperVtacItalia.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
     Util.extract_distinct_fields_to_excel(Util.VTAC_ITA_DIR)
     print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
-DRIVER.close()
+ScraperVtacItalia.DRIVER.close()
