@@ -9,7 +9,7 @@ from util import Util
 
 # VTAC ES SCRAPER
 
-logger = Util.setup_logger('ES_LOG.txt')
+logger = Util.setup_logger(Util.ES_LOG_FILE_PATH)
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO = True

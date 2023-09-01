@@ -32,6 +32,10 @@ class Util:
 
     ODOO_DEFAULT_FIELDS = ['list_price', 'volume', 'weight', 'name']
 
+    ES_LOG_FILE_PATH = 'logs/es.log'
+    ITA_LOG_FILE_PATH = 'logs/ita.log'
+    UK_LOG_FILE_PATH = 'logs/uk.log'
+
     @staticmethod
     def setup_logger(target_file):
         # Create or get a logger

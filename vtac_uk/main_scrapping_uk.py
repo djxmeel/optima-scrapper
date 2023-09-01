@@ -11,7 +11,7 @@ from util import Util
 
 # VTAC UK SCRAPER
 
-logger = Util.setup_logger('UK_LOG.txt')
+logger = Util.setup_logger(Util.UK_LOG_FILE_PATH)
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO = True
