@@ -243,3 +243,40 @@ class Util:
             time.sleep(5)
             Util.begin_items_PDF_download(scraper, links_path, counter)
 
+    @staticmethod
+    def begin_items_info_extraction(scraper, links_path, extraction_dir, start_from=0):
+        """
+        Begins item info extraction.
+
+        Parameters:
+        start_from (int): The index to start extraction from.
+        """
+        # Load links from JSON file
+        links = Util.load_json_data(links_path)
+
+        products_data = []
+        counter = start_from
+
+        try:
+            for link in links[start_from:]:
+                products_data.append(
+                    scraper.scrape_item(scraper.DRIVER, scraper.SUBCATEGORIES_IDS, link))
+                counter += 1
+                print(f'{counter}/{len(links)}\n')
+
+                # Save each X to a JSON
+                if counter % scraper.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
+                    filename = f'{extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    Util.dump_to_json(products_data, filename)
+
+                    # Dump lighter version of json
+                    scraper.dump_product_info_lite(products_data, counter)
+
+                    products_data.clear()
+
+        except:
+            print('ERROR con extracción de información de productos. Reintentando...')
+            time.sleep(2)
+            products_data.clear()
+            Util.begin_items_info_extraction(scraper, counter - counter % scraper.JSON_DUMP_FREQUENCY)
+

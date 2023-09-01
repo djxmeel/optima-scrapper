@@ -269,41 +269,6 @@ class ScraperVtacItalia:
         return len(pdf_elements)
 
     @staticmethod
-    def begin_items_info_extraction(start_from):
-        """
-        Begins item info extraction.
-
-        Parameters:
-        start_from (int): The index to start extraction from.
-        """
-        # Load links from JSON file
-        links = Util.load_json_data(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
-
-        products_data = []
-        counter = start_from
-
-        try:
-            for link in links[start_from:]:
-                products_data.append(ScraperVtacItalia.scrape_item(ScraperVtacItalia.DRIVER, ScraperVtacItalia.SUBCATEGORIES, link))
-                counter += 1
-                print(f'{counter}/{len(links)}\n')
-
-                # Save each X to a JSON
-                if counter % ScraperVtacItalia.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
-                    filename = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
-                    Util.dump_to_json(products_data, filename)
-
-                    # Dump lighter version of json
-                    ScraperVtacItalia.dump_product_info_lite(products_data, counter)
-
-                    products_data.clear()
-
-        except Exception as e:
-            print(e)
-            products_data.clear()
-            ScraperVtacItalia.begin_items_info_extraction(counter - counter % ScraperVtacItalia.JSON_DUMP_FREQUENCY)
-
-    @staticmethod
     def dump_product_info_lite(products_data, counter):
         for product in products_data:
             del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
@@ -324,13 +289,22 @@ if ScraperVtacItalia.IF_EXTRACT_ITEM_LINKS:
 # PRODUCTS INFO EXTRACTION
 if ScraperVtacItalia.IF_EXTRACT_ITEM_INFO:
     print(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
-    ScraperVtacItalia.begin_items_info_extraction(ScraperVtacItalia.BEGIN_FROM)  # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
+    # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
+    Util.begin_items_info_extraction(
+        ScraperVtacItalia,
+        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
+        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
+        ScraperVtacItalia.BEGIN_FROM
+    )
     print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
 if ScraperVtacItalia.IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
-    Util.begin_items_PDF_download(ScraperVtacItalia, f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
+    Util.begin_items_PDF_download(
+        ScraperVtacItalia,
+        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}'
+    )
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
