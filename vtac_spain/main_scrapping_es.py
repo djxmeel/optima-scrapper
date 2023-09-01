@@ -6,16 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from util import Util
-import logging
 
 # VTAC ES SCRAPER
-
-# TODO Ángulo de haz -> Ángulo de apertura
-# TODO Código de orden -> SKU
-# TODO EAN Código -> EAN
-# TODO Código de producto -> Código de familia
-# TODO Las condiciones de trabajo -> Temperaturas de trabajo
-# TODO Hora de inicio al 100% encendido -> Tiempo de inicio al 100% encendido
 
 logger = Util.setup_logger('ES_LOG.txt')
 
@@ -30,7 +22,7 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 100
+JSON_DUMP_FREQUENCY = 2
 
 CATEGORIES_LINKS = [
     'https://v-tac.es/sistemas-solares.html',
@@ -62,12 +54,6 @@ def scrape_item(driver, url):
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-    # Extracción del SKU
-    try:
-        item['x_SKU'] = f"VS{driver.find_element(By.XPATH, SKU_XPATH).text.split(' ')[1]}"
-    except NoSuchElementException:
-        print(f'SKU NOT FOUND FOR URL {driver.current_url}')
-
     # Extracción de los campos
     keys_values = driver.find_elements(By.XPATH, KEYS_VALUES_XPATH)
 
@@ -77,10 +63,33 @@ def scrape_item(driver, url):
             value = key_value.find_element(By.TAG_NAME, "div")
         except NoSuchElementException:
             print(f'Field {key.text} has no value.')
-            item[Util.format_field_odoo(key.text)] = ''
+            item[key.text] = ''
             continue
 
-        item[Util.format_field_odoo(key.text)] = value.text
+        # TODO Format fields NOT in scrape_item() function, instead format when creating the ODOO fields dictionaries
+        item[key.text] = value.text
+
+    # Extracción del SKU
+    if 'Código de orden' in item.keys():
+        item['x_SKU'] = f'VS{item["Código de orden"]}'
+        del item['Código de orden']
+
+    # Renombrado de campos determinados
+    if 'Ángulo de haz' in item.keys():
+        item['Ángulo de apertura'] = item['Ángulo de haz']
+        del item['Ángulo de haz']
+    if 'EAN Código' in item.keys():
+        item['EAN'] = item['EAN Código']
+        del item['EAN Código']
+    if 'Código de producto' in item.keys():
+        item['Código de familia'] = item['Código de producto']
+        del item['Código de producto']
+    if 'Las condiciones de trabajo' in item.keys():
+        item['Temperaturas de trabajo'] = item['Las condiciones de trabajo']
+        del item['Las condiciones de trabajo']
+    if 'Hora de inicio al 100% encendido' in item.keys():
+        item['Tiempo de inicio al 100% encendido'] = item['Hora de inicio al 100% encendido']
+        del item['Hora de inicio al 100% encendido']
 
     # Extracción de la etiqueta energética
     try:
@@ -107,7 +116,7 @@ def scrape_item(driver, url):
     item['name'] = driver.find_element(By.XPATH, NAME_XPATH).text
 
     # Uso de los campos de ODOO para el volumen y el peso si están disponibles
-    if 'x_volumen_del_articulo' in item.keys():
+    if 'Volumen del artículo' in item.keys():
         item['volume'] = float(item['x_volumen_del_articulo'].replace(',', '.'))
         del item['x_volumen_del_articulo']
     if 'x_peso_del_articulo' in item.keys():
