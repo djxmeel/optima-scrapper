@@ -24,7 +24,7 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 50
+JSON_DUMP_FREQUENCY = 10
 
 SUBCATEGORIES_IDS = ["product-attributes", "product-packaging", "product-features"]
 
@@ -251,7 +251,7 @@ def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
             counter += 1
     except KeyError:
         print("Error en la descarga de PDFs. Reintentando...")
-        time.sleep(5)
+        time.sleep(Util.PDF_DOWNLOAD_DELAY)
         begin_items_PDF_download(counter)
 
 
@@ -285,7 +285,7 @@ def begin_items_info_extraction(start_from):
                 products_data.clear()
 
     except:
-        time.sleep(5)
+        time.sleep(2)
         products_data.clear()
         begin_items_info_extraction(counter - counter % JSON_DUMP_FREQUENCY)
 
