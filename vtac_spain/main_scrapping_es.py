@@ -43,14 +43,13 @@ def scrape_item(driver, url):
         return
 
     NAME_XPATH = "//h3[@itemprop='name']"
-    SKU_XPATH = "//div[@class='sku-inner']"
     KEYS_VALUES_XPATH = "//div[@class='product-field product-field-type-S']"
     ENERGY_TAG_XPATH = "//img[@alt = 'Energy Class']"
     GRAPH_DIMENSIONS_XPATH = "//img[@alt = 'Dimensions']"
     PRODUCT_DESC_XPATH = "//div[@class='product-description']"
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'Más info': '', 'videos': []}
+    item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'descripcion': '', 'videos': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -107,7 +106,7 @@ def scrape_item(driver, url):
     # Extracción de la descripción del producto
     try:
         product_desc = driver.find_element(By.XPATH, PRODUCT_DESC_XPATH).get_attribute('innerHTML')
-        item['Más info'] = product_desc
+        item['descripcion'] = product_desc
     except NoSuchElementException:
         pass
 

@@ -20,7 +20,6 @@ IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
-
 DRIVER = webdriver.Firefox()
 
 JSON_DUMP_FREQUENCY = 50
@@ -50,7 +49,8 @@ def scrape_item(driver, subcategories, url):
         subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'x_url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [], 'x_mas_info': '', 'imgs': [], 'icons': []}
+    item = {'url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [], 'descripcion': '',
+            'imgs': [], 'icons': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -123,7 +123,7 @@ def scrape_item(driver, subcategories, url):
                                              f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
             'innerHTML')
 
-        item['x_mas_info'] = desc_innerHTML
+        item['descripcion'] = desc_innerHTML
     except NoSuchElementException:
         print('Producto no tiene descripción')
 
@@ -136,21 +136,21 @@ def scrape_item(driver, subcategories, url):
         # Guardado de campos y valor en la estructura de datos
         for field in fields:
             key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
-            key = Util.format_field_odoo(key)
 
             item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
-        if 'x_Volume' in item:
-            item['volume'] = float(item['x_Volume'].replace(',', '.').replace('m³', ''))
-            del item['x_Volume']
-        if 'x_Peso' in item:
-            item['weight'] = float(item['x_Peso'].replace(',', '.').replace('Kg', ''))
-            del item['x_Peso']
+        if 'Volumen' in item:
+            item['volume'] = float(item['Volumen'].replace(',', '.').replace('m³', ''))
+            del item['Volume']
+        if 'Peso' in item:
+            item['weight'] = float(item['Peso'].replace(',', '.').replace('Kg', ''))
+            del item['Peso']
 
     # Extracción del titulo
     item['name'] = Util.translate_from_to_spanish('it',
-        driver.find_element(By.XPATH, '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
+                                                  driver.find_element(By.XPATH,
+                                                                      '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
 
     # Extracción de iconos
     try:
@@ -176,10 +176,10 @@ def scrape_item(driver, subcategories, url):
         print('PRODUCT HAS NO IMGS')
 
     # Formateo del SKU
-    item['x_SKU'] = f'VS{item["x_SKU"]}'
+    item['SKU'] = f'VS{item["SKU"]}'
 
     # Formateo del titulo
-    item['name'] = f'[{item["x_SKU"]}] {item["name"]}'
+    item['name'] = f'[{item["SKU"]}] {item["name"]}'
 
     print(item['name'])
 
@@ -324,7 +324,8 @@ def dump_product_info_lite(products_data, counter):
     for product in products_data:
         del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
 
-    Util.dump_to_json(products_data, f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
+    Util.dump_to_json(products_data,
+                      f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
     print('DUMPED LITE PRODUCT INFO ')
 
 
@@ -332,9 +333,9 @@ def dump_product_info_lite(products_data, counter):
 if IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
     extracted_links = extract_all_links(DRIVER, CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
-    Util.dump_to_json(list(extracted_links), f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')  # DUMPING LINKS TO JSON
+    Util.dump_to_json(list(extracted_links),
+                      f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')  # DUMPING LINKS TO JSON
     print(f'FINISHED LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
-
 
 # PRODUCTS INFO EXTRACTION
 if IF_EXTRACT_ITEM_INFO:
@@ -342,13 +343,11 @@ if IF_EXTRACT_ITEM_INFO:
     begin_items_info_extraction(0)  # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
-
 # PDF DL
 if IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
     begin_items_PDF_download()
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
-
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:

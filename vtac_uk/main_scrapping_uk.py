@@ -56,7 +56,7 @@ def scrape_item(driver, subcategories_ids, url):
             continue
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'x_url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'x_mas_info': '', 'videos': []}
+    item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -78,7 +78,7 @@ def scrape_item(driver, subcategories_ids, url):
             except NoSuchElementException:
                 pass
 
-            key = Util.format_field_odoo(Util.translate_from_to_spanish('en', key_value_spans[0].text))
+            key = Util.translate_from_to_spanish('en', key_value_spans[0].text)
             value = Util.translate_from_to_spanish('en', key_value_spans[1].text)
 
             # Guardado de campos y valor en la estructura de datos
@@ -89,15 +89,15 @@ def scrape_item(driver, subcategories_ids, url):
             driver.find_element(By.ID, 'tab-label-features').click()
 
             # <li> que no contiene <span> -> Feature
-            item['x_mas_info'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
+            item['descripcion'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
 
-        if 'x_Peso_bruto_kg' in item:
-            item['weight'] = float(item['x_Peso_bruto_kg'].replace(',', '.'))
-            del item['x_Peso_bruto_kg']
+        if 'Peso bruto (kg)' in item:
+            item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
+            del item['Peso bruto (kg)']
 
     # Extracción del SKU
     try:
-        item['x_SKU'] = f'VS{Util.get_sku_from_link_uk(driver)}'
+        item['SKU'] = f'VS{Util.get_sku_from_link_uk(driver)}'
     except NoSuchElementException:
         print('SKU NO ENCONTRADO')
 
@@ -115,7 +115,7 @@ def scrape_item(driver, subcategories_ids, url):
         driver.find_element(By.XPATH, '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
     # Formateo del titulo
-    item['name'] = f'[{item["x_SKU"]}] {item["name"]}'
+    item['name'] = f'[{item["SKU"]}] {item["name"]}'
 
     # Extracción de imágenes
     try:
@@ -125,7 +125,7 @@ def scrape_item(driver, subcategories_ids, url):
         for image_div_element in image_div_elements:
             # Check if data-type attr exists. If so, image-element is a VIDEO
             if image_div_element.get_attribute('data-type') is not None:
-                item['x_videos'].append(image_div_element.get_attribute('data-video-url'))
+                item['videos'].append(image_div_element.get_attribute('data-video-url'))
             else:
                 # If div element does not have attr data-type, it contains an img
                 src = image_div_element.find_element(By.TAG_NAME, 'img').get_attribute('src')
