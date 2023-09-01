@@ -192,7 +192,7 @@ class Util:
 
         for field in fields:
             excel_dicts.append(
-                {'Nombre de campo': field,
+                {'Nombre de campo': Util.format_field_odoo(field),
                  'Etiqueta de campo': field,
                  'Modelo': 'product.template',
                  'Tipo de campo': 'texto',
