@@ -269,25 +269,6 @@ class ScraperVtacItalia:
         return len(pdf_elements)
 
     @staticmethod
-    def begin_items_PDF_download(begin_from=0):  # TODO DUPLICATE CHECK
-        # Read the JSON file
-        with open(f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}') as f:
-            loaded_links = json.load(f)
-
-        counter = begin_from
-        try:
-            for link in loaded_links[begin_from:]:
-                sku = Util.get_sku_from_link(ScraperVtacItalia.DRIVER, link, 'ITA')
-
-                found = ScraperVtacItalia.download_pdfs_of_sku(ScraperVtacItalia.DRIVER, sku)
-                print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
-                counter += 1
-        except KeyError:
-            print("Error en la descarga de PDFs. Reintentando...")
-            time.sleep(5)
-            ScraperVtacItalia.begin_items_PDF_download(counter)
-
-    @staticmethod
     def begin_items_info_extraction(start_from):
         """
         Begins item info extraction.
@@ -349,7 +330,7 @@ if ScraperVtacItalia.IF_EXTRACT_ITEM_INFO:
 # PDF DL
 if ScraperVtacItalia.IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
-    ScraperVtacItalia.begin_items_PDF_download()
+    Util.begin_items_PDF_download(ScraperVtacItalia, f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL

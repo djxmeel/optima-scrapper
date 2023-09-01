@@ -224,3 +224,22 @@ class Util:
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
+    @staticmethod
+    def begin_items_PDF_download(scraper, links_path, begin_from=0):  # TODO DUPLICATE CHECK
+        # Read the JSON file
+        with open(links_path) as f:
+            loaded_links = json.load(f)
+
+        counter = begin_from
+        try:
+            for link in loaded_links[begin_from:]:
+                sku = Util.get_sku_from_link(scraper.DRIVER, link, 'ITA')
+
+                found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
+                print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
+                counter += 1
+        except KeyError:
+            print("Error en la descarga de PDFs. Reintentando...")
+            time.sleep(5)
+            Util.begin_items_PDF_download(scraper, links_path, counter)
+
