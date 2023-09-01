@@ -12,8 +12,9 @@ from util import Util
 class ScraperVtacUk:
     logger = Util.setup_logger(Util.UK_LOG_FILE_PATH)
 
+    # TODO test pdf and info extraction
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = True
+    IF_EXTRACT_ITEM_INFO = False
     # PDFs productos
     IF_DL_ITEM_PDF = True
     # Enlaces productos en la página de origen
@@ -24,9 +25,9 @@ class ScraperVtacUk:
     DRIVER = webdriver.Firefox()
 
     JSON_DUMP_FREQUENCY = 10
-    BEGIN_FROM = 0
+    BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES_IDS = ["product-attributes", "product-packaging", "product-features"]
+    SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
     CATEGORIES_LINKS = [
         'https://www.vtacexports.com/default/digital-accessories.html',
@@ -37,19 +38,19 @@ class ScraperVtacUk:
     ]
 
     @staticmethod
-    def scrape_item(driver, subcategories_ids, url):
+    def scrape_item(driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
         except:
             print(f'ERROR extrayendo los datos de {url}. Reintentando...')
             time.sleep(5)
-            ScraperVtacUk.scrape_item(driver, subcategories_ids, url)
+            ScraperVtacUk.scrape_item(driver, url, subcategories)
             return
 
         subcategories_li_elements = []
 
-        for subcat_id in subcategories_ids:
+        for subcat_id in subcategories:
             try:
                 subcategories_li_elements += driver.find_elements(By.XPATH, f'//div[@id = "{subcat_id}"]//ul/li')
             except NoSuchElementException:
@@ -266,7 +267,7 @@ if ScraperVtacUk.IF_EXTRACT_ITEM_INFO:
         ScraperVtacUk,
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
-        ScraperVtacUk.BEGIN_FROM
+        ScraperVtacUk.BEGIN_SCRAPE_FROM
     )
     print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
@@ -275,7 +276,8 @@ if ScraperVtacUk.IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacUk,
-        f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}'
+        f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
+        'UK'
     )
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 

@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from util import Util
 
+
 # VTAC ITALIA SCRAPER
 
 class ScraperVtacItalia:
@@ -23,7 +24,7 @@ class ScraperVtacItalia:
     DRIVER = webdriver.Firefox()
 
     JSON_DUMP_FREQUENCY = 50
-    BEGIN_FROM = 0
+    BEGIN_SCRAPE_FROM = 0
 
     SUBCATEGORIES = ["Specifiche tecniche", "Packaging"]
 
@@ -32,15 +33,16 @@ class ScraperVtacItalia:
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     ]
+
     @staticmethod
-    def scrape_item(driver, subcategories, url):
+    def scrape_item(driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
         except:
             print(f'ERROR extrayendo los datos de {url}. Reintentando...')
             time.sleep(5)
-            ScraperVtacItalia.scrape_item(driver, subcategories, url)
+            ScraperVtacItalia.scrape_item(driver, url, subcategories)
             return
 
         subcategories_elements = []
@@ -126,7 +128,7 @@ class ScraperVtacItalia:
 
             item['descripcion'] = desc_innerHTML
         except NoSuchElementException:
-            print('Producto no tiene descripción')
+            pass
 
         # Para cada subcategoria, extraemos sus campos
         for subcat in subcategories_elements:
@@ -141,8 +143,8 @@ class ScraperVtacItalia:
                 item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
             # Uso de los campos de ODOO para el volumen y el peso si están disponibles
-            if 'Volumen' in item:
-                item['volume'] = float(item['Volumen'].replace(',', '.').replace('m³', ''))
+            if 'Volume' in item:
+                item['volume'] = float(item['Volume'].replace(',', '.').replace('m³', ''))
                 del item['Volume']
             if 'Peso' in item:
                 item['weight'] = float(item['Peso'].replace(',', '.').replace('Kg', ''))
@@ -280,7 +282,8 @@ class ScraperVtacItalia:
 # LINK EXTRACTION
 if ScraperVtacItalia.IF_EXTRACT_ITEM_LINKS:
     print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
-    extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER, ScraperVtacItalia.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
+    extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER,
+                                                          ScraperVtacItalia.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
     Util.dump_to_json(list(extracted_links),
                       f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')  # DUMPING LINKS TO JSON
     print(f'FINISHED LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
@@ -293,7 +296,7 @@ if ScraperVtacItalia.IF_EXTRACT_ITEM_INFO:
         ScraperVtacItalia,
         f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
         f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
-        ScraperVtacItalia.BEGIN_FROM
+        ScraperVtacItalia.BEGIN_SCRAPE_FROM
     )
     print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
@@ -302,7 +305,8 @@ if ScraperVtacItalia.IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacItalia,
-        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}'
+        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
+        'ITA'
     )
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
