@@ -119,7 +119,7 @@ def scrape_item(driver, url):
         item['volume'] = float(item['Volumen del artículo'].replace(',', '.'))
         del item['Volumen del artículo']
     if 'Peso del artículo' in item.keys():
-        item['weight'] = float(item['Peso del artículo'].replace(',', '.'))
+        item['weight'] = float(item['Peso del artículo'].replace(',', '.').replace('kg', ''))
         del item['Peso del artículo']
 
     return item
