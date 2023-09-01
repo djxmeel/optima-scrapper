@@ -233,23 +233,34 @@ class Util:
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
     @staticmethod
-    def begin_items_PDF_download(scraper, links_path, country, begin_from=0):  # TODO DUPLICATE CHECK
-        # Read the JSON file
+    def begin_items_PDF_download(scraper, links_path, downloads_path, country, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
+
+        pdf_existing_dirs_sku = [path.split('\\')[-1] for path in Util.get_nested_directories(downloads_path)]
 
         counter = begin_from
         try:
             for link in loaded_links[begin_from:]:
+                counter += 1
                 sku = Util.get_sku_from_link(scraper.DRIVER, link, country)
+
+                # Check if sku directory exists and has the same number of files as the number of files
+                if pdf_existing_dirs_sku.__contains__(sku):
+                    count_downloaded = len(Util.get_all_files_in_directory(f'{downloads_path}/{sku}'))
+                    count_existing = scraper.count_pdfs_of_sku(sku)
+
+                    if count_existing == count_downloaded:
+                        print(f'SKIPPING SKU {sku} AS IT\'S FILES HAVE ALREADY BEEN DOWNLOADED')
+                        time.sleep(1)
+                        continue
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
                 print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
-                counter += 1
         except KeyError:
             print("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
-            Util.begin_items_PDF_download(scraper, links_path, counter)
+            Util.begin_items_PDF_download(scraper, links_path, downloads_path, counter)
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, extraction_dir, start_from=0):
