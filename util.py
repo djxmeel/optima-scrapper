@@ -30,6 +30,8 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
 
+    ODOO_DEFAULT_FIELDS = ['list_price', 'volume', 'weight', 'name']
+
     @staticmethod
     def setup_logger(target_file):
         # Create or get a logger
@@ -156,6 +158,11 @@ class Util:
 
     @staticmethod
     def format_field_odoo(field):
+        # No need to format default fields
+        if Util.ODOO_DEFAULT_FIELDS.__contains__(field):
+            return field
+
+        # Format custom fields
         field = field.lower().replace(" ", "_") \
             .replace("(", "") \
             .replace(")", "") \
