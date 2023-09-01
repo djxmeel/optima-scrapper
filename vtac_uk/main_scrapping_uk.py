@@ -14,13 +14,13 @@ from util import Util
 logger = Util.setup_logger('UK_LOG.txt')
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO = False
+IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
 IF_DL_ITEM_PDF = True
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS = False
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 DRIVER = webdriver.Firefox()
 
@@ -284,7 +284,8 @@ def begin_items_info_extraction(start_from):
 
                 products_data.clear()
 
-    except NoSuchElementException:
+    except:
+        time.sleep(5)
         products_data.clear()
         begin_items_info_extraction(counter - counter % JSON_DUMP_FREQUENCY)
 
