@@ -189,6 +189,36 @@ class ScraperVtacUk:
         return extracted
 
     @staticmethod
+    def count_pdfs_of_link(link):
+        time.sleep(Util.PDF_DOWNLOAD_DELAY)
+
+        if ScraperVtacUk.DRIVER.current_url != link:
+            ScraperVtacUk.DRIVER.get(link)
+
+        pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
+
+        pdf_elements = []
+
+        try:
+            # Specs tab certificates
+            pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+        except NoSuchElementException:
+            pass
+
+        try:
+            # Downloads tab
+            ScraperVtacUk.DRIVER.find_element(By.XPATH, pdf_download_tab_xpath).click()
+        except NoSuchElementException:
+            pass
+
+        try:
+            pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
+        except NoSuchElementException:
+            pass
+
+        return len(pdf_elements)
+
+    @staticmethod
     def download_pdfs_of_sku(driver, sku):
         """
         Downloads PDF from a given URL.
@@ -207,35 +237,44 @@ class ScraperVtacUk:
 
         try:
             # Specs tab certificates
-            pdf_elements = driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+            pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+        except NoSuchElementException:
+            pass
 
+        try:
             # Downloads tab
             driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
-            pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
-
-            print(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
-
-            for pdf_element in pdf_elements:
-                url = pdf_element.get_attribute('href')
-                response = requests.get(url)
-
-                nested_dir = f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
-                os.makedirs(nested_dir, exist_ok=True)
-
-                # Get the original file name if possible
-                content_disposition = response.headers.get('content-disposition')
-                if content_disposition:
-                    filename = content_disposition.split('filename=')[-1].strip('"')
-                else:
-                    # Fallback to extracting the filename from URL if no content-disposition header
-                    filename = os.path.basename(url)
-
-                filename = filename.replace('%20', '_')
-
-                with open(f'{nested_dir}/{filename}', 'wb') as file:
-                    file.write(response.content)
-
         except NoSuchElementException:
+            pass
+
+        try:
+            pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
+        except NoSuchElementException:
+            pass
+
+        print(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
+
+        for pdf_element in pdf_elements:
+            url = pdf_element.get_attribute('href')
+            response = requests.get(url)
+
+            nested_dir = f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            os.makedirs(nested_dir, exist_ok=True)
+
+            # Get the original file name if possible
+            content_disposition = response.headers.get('content-disposition')
+            if content_disposition:
+                filename = content_disposition.split('filename=')[-1].strip('"')
+            else:
+                # Fallback to extracting the filename from URL if no content-disposition header
+                filename = os.path.basename(url)
+
+            filename = filename.replace('%20', '_')
+
+            with open(f'{nested_dir}/{filename}', 'wb') as file:
+                file.write(response.content)
+
+        if len(pdf_elements) == 0:
             print(f'No PDFs found for SKU -> {sku}')
 
         return len(pdf_elements)
@@ -277,6 +316,7 @@ if ScraperVtacUk.IF_DL_ITEM_PDF:
     Util.begin_items_PDF_download(
         ScraperVtacUk,
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
+        f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
         'UK'
     )
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')

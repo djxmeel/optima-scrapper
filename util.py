@@ -248,11 +248,10 @@ class Util:
                 # Check if sku directory exists and has the same number of files as the number of files
                 if pdf_existing_dirs_sku.__contains__(sku):
                     count_downloaded = len(Util.get_all_files_in_directory(f'{downloads_path}/{sku}'))
-                    count_existing = scraper.count_pdfs_of_sku(sku)
+                    count_existing = scraper.count_pdfs_of_link(link)
 
                     if count_existing == count_downloaded:
                         print(f'SKIPPING SKU {sku} AS IT\'S FILES HAVE ALREADY BEEN DOWNLOADED')
-                        time.sleep(1)
                         continue
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)

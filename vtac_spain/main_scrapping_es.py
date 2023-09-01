@@ -155,6 +155,24 @@ class ScraperVtacSpain:
         return extracted
 
     @staticmethod
+    def count_pdfs_of_link(link):
+        time.sleep(Util.PDF_DOWNLOAD_DELAY)
+
+        if ScraperVtacSpain.DRIVER.current_url != link:
+            ScraperVtacSpain.DRIVER.get(link)
+
+        attachments_xpath = '//div[@class="downloads"]//a'
+        pdf_elements = []
+
+        try:
+            # Get the <a> elements
+            pdf_elements = ScraperVtacSpain.DRIVER.find_elements(By.XPATH, attachments_xpath)
+        except NoSuchElementException:
+            pass
+
+        return len(pdf_elements)
+
+    @staticmethod
     def download_pdfs_of_sku(driver, sku):
         """
         Downloads PDF from a given URL.
@@ -238,6 +256,7 @@ if ScraperVtacSpain.IF_DL_ITEM_PDF:
     Util.begin_items_PDF_download(
         ScraperVtacSpain,
         f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ES}',
+        f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
         'ES'
     )
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
