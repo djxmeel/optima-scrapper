@@ -12,18 +12,20 @@ class ScraperVtacSpain:
     logger = Util.setup_logger(Util.ES_LOG_FILE_PATH)
 
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = True
+    IF_EXTRACT_ITEM_INFO = False
     # PDFs productos
     IF_DL_ITEM_PDF = True
     # Enlaces productos en la página de origen
     IF_EXTRACT_ITEM_LINKS = False
     # Todos los campos de los productos a implementar en ODOO
-    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
+    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
     DRIVER = webdriver.Firefox()
 
     JSON_DUMP_FREQUENCY = 100
-    BEGIN_SCRAPE_FROM = 1200
+    BEGIN_SCRAPE_FROM = 0
+
+    SUBCATEGORIES = []
 
     CATEGORIES_LINKS = [
         'https://v-tac.es/sistemas-solares.html',
@@ -33,7 +35,7 @@ class ScraperVtacSpain:
     ]
 
     @staticmethod
-    def scrape_item(driver, url):
+    def scrape_item(driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -165,12 +167,12 @@ class ScraperVtacSpain:
         """
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
-        DLs_XPATH = '//div[@class="downloads"]//a'
+        attachments_xpath = '//div[@class="downloads"]//a'
         pdf_elements = []
 
         try:
             # Get the <a> elements
-            pdf_elements = driver.find_elements(By.XPATH, DLs_XPATH)
+            pdf_elements = driver.find_elements(By.XPATH, attachments_xpath)
 
             print(f'Found {len(pdf_elements)} attachments in SKU {sku}')
 
@@ -235,7 +237,8 @@ if ScraperVtacSpain.IF_DL_ITEM_PDF:
     print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacSpain,
-        f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ES}'
+        f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ES}',
+        'ES'
     )
     print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
 
