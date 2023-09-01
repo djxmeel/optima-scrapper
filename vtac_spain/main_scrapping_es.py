@@ -22,7 +22,7 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 DRIVER = webdriver.Firefox()
 
-JSON_DUMP_FREQUENCY = 2
+JSON_DUMP_FREQUENCY = 100
 
 CATEGORIES_LINKS = [
     'https://v-tac.es/sistemas-solares.html',
@@ -50,7 +50,7 @@ def scrape_item(driver, url):
     PRODUCT_DESC_XPATH = "//div[@class='product-description']"
 
     # Diccionario que almacena todos los datos de un artículo
-    item = {'x_url': driver.current_url, 'list_price': 0, 'imgs': [], 'x_mas_info': '', 'videos': []}
+    item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'Más info': '', 'videos': []}
 
     print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -66,12 +66,11 @@ def scrape_item(driver, url):
             item[key.text] = ''
             continue
 
-        # TODO Format fields NOT in scrape_item() function, instead format when creating the ODOO fields dictionaries
         item[key.text] = value.text
 
-    # Extracción del SKU
+    # Extracción y formateo del SKU
     if 'Código de orden' in item.keys():
-        item['x_SKU'] = f'VS{item["Código de orden"]}'
+        item['SKU'] = f'VS{item["Código de orden"]}'
         del item['Código de orden']
 
     # Renombrado de campos determinados
@@ -108,7 +107,7 @@ def scrape_item(driver, url):
     # Extracción de la descripción del producto
     try:
         product_desc = driver.find_element(By.XPATH, PRODUCT_DESC_XPATH).get_attribute('innerHTML')
-        item['x_mas_info'] = product_desc
+        item['Más info'] = product_desc
     except NoSuchElementException:
         pass
 
@@ -117,11 +116,11 @@ def scrape_item(driver, url):
 
     # Uso de los campos de ODOO para el volumen y el peso si están disponibles
     if 'Volumen del artículo' in item.keys():
-        item['volume'] = float(item['x_volumen_del_articulo'].replace(',', '.'))
-        del item['x_volumen_del_articulo']
-    if 'x_peso_del_articulo' in item.keys():
-        item['weight'] = float(item['x_peso_del_articulo'].replace(',', '.'))
-        del item['x_peso_del_articulo']
+        item['volume'] = float(item['Volumen del artículo'].replace(',', '.'))
+        del item['Volumen del artículo']
+    if 'Peso del artículo' in item.keys():
+        item['weight'] = float(item['Peso del artículo'].replace(',', '.'))
+        del item['Peso del artículo']
 
     return item
 
