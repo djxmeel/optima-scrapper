@@ -23,6 +23,7 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 DRIVER = webdriver.Firefox()
 
 JSON_DUMP_FREQUENCY = 100
+BEGIN_SCRAPE_FROM = 1200
 
 CATEGORIES_LINKS = [
     'https://v-tac.es/sistemas-solares.html',
@@ -118,7 +119,7 @@ def scrape_item(driver, url):
         item['volume'] = float(item['Volumen del artículo'].replace(',', '.'))
         del item['Volumen del artículo']
     if 'Peso del artículo' in item.keys():
-        item['weight'] = float(item['Peso del artículo'].replace(',', '.').replace('kg', ''))
+        item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0])
         del item['Peso del artículo']
 
     return item
@@ -269,7 +270,7 @@ if IF_EXTRACT_ITEM_LINKS:
 # PRODUCTS INFO EXTRACTION
 if IF_EXTRACT_ITEM_INFO:
     print(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_PRODUCTS_INFO_DIR}')
-    begin_items_info_extraction(0)  # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
+    begin_items_info_extraction(BEGIN_SCRAPE_FROM)  # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
