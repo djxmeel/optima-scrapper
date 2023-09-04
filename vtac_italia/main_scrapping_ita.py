@@ -37,8 +37,8 @@ class ScraperVtacItalia:
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     ]
 
-    @staticmethod
-    def scrape_item(driver, url, subcategories=None):
+    @classmethod
+    def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -191,8 +191,8 @@ class ScraperVtacItalia:
 
         return item
 
-    @staticmethod
-    def extract_all_links(driver, categories):
+    @classmethod
+    def extract_all_links(cls, driver, categories):
         extracted = set()
         for cat in categories:
             try:
@@ -233,8 +233,8 @@ class ScraperVtacItalia:
 
         return extracted
 
-    @staticmethod
-    def count_pdfs_of_link(link):
+    @classmethod
+    def count_pdfs_of_link(cls, link):
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         if ScraperVtacItalia.DRIVER.current_url != link:
@@ -250,8 +250,8 @@ class ScraperVtacItalia:
 
         return len(pdf_elements)
 
-    @staticmethod
-    def download_pdfs_of_sku(driver, sku):
+    @classmethod
+    def download_pdfs_of_sku(cls, driver, sku):
         """
         Downloads PDF from a given URL.
 
@@ -283,8 +283,8 @@ class ScraperVtacItalia:
 
         return len(pdf_elements)
 
-    @staticmethod
-    def dump_product_info_lite(products_data, counter):
+    @classmethod
+    def dump_product_info_lite(cls, products_data, counter):
         for product in products_data:
             del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
 
