@@ -5,11 +5,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from util import Util
+from datetime import datetime
 
 
 # VTAC ES SCRAPER
 class ScraperVtacSpain:
-    logger = Util.setup_logger(Util.ES_LOG_FILE_PATH)
+    # Creación del logger
+    logger = Util.setup_logger(Util.ES_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")))
+    print(f'LOGGER CREATED: {Util.ES_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))}')
 
     # Datos productos
     IF_EXTRACT_ITEM_INFO = False
@@ -186,36 +189,31 @@ class ScraperVtacSpain:
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         attachments_xpath = '//div[@class="downloads"]//a'
-        pdf_elements = []
 
-        try:
-            # Get the <a> elements
-            pdf_elements = driver.find_elements(By.XPATH, attachments_xpath)
+        # Get the <a> elements
+        pdf_elements = driver.find_elements(By.XPATH, attachments_xpath)
 
-            print(f'Found {len(pdf_elements)} attachments in SKU {sku}')
+        print(f'Found {len(pdf_elements)} attachments in SKU {sku}')
 
-            for pdf_element in pdf_elements:
-                url = pdf_element.get_attribute('href')
-                response = requests.get(url)
+        for pdf_element in pdf_elements:
+            url = pdf_element.get_attribute('href')
+            response = requests.get(url)
 
-                nested_dir = f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
-                os.makedirs(nested_dir, exist_ok=True)
+            nested_dir = f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            os.makedirs(nested_dir, exist_ok=True)
 
-                # Get the original file name if possible
-                content_disposition = response.headers.get('content-disposition')
-                if content_disposition:
-                    filename = content_disposition.split('filename=')[-1].strip('"')
-                else:
-                    # Fallback to extracting the filename from URL if no content-disposition header
-                    filename = os.path.basename(url)
+            # Get the original file name if possible
+            content_disposition = response.headers.get('content-disposition')
+            if content_disposition:
+                filename = content_disposition.split('filename=')[-1].strip('"')
+            else:
+                # Fallback to extracting the filename from URL if no content-disposition header
+                filename = os.path.basename(url)
 
-                filename = filename.replace('%20', '_')
+            filename = filename.replace('%20', '_')
 
-                with open(f'{nested_dir}/{filename}', 'wb') as file:
-                    file.write(response.content)
-
-        except NoSuchElementException:
-            print(f'No PDFs found for SKU -> {sku}')
+            with open(f'{nested_dir}/{filename}', 'wb') as file:
+                file.write(response.content)
 
         return len(pdf_elements)
 
