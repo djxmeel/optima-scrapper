@@ -11,7 +11,7 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import logging
 
-os.environ['path'] += r';C:\Program Files\UniConvertor-2.0rc5\dlls'
+os.environ['path'] += r';dlls/'
 import cairosvg
 
 
