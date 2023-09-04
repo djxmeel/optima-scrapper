@@ -1,4 +1,6 @@
 import time
+from datetime import datetime
+
 import requests
 import os
 from selenium import webdriver
@@ -10,10 +12,11 @@ from util import Util
 # VTAC ITALIA SCRAPER
 
 class ScraperVtacItalia:
-    logger = Util.setup_logger(Util.ITA_LOG_FILE_PATH)
+    logger = Util.setup_logger(Util.ITA_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")))
+    print(f'LOGGER CREATED: {Util.ITA_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))}')
 
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = False
+    IF_EXTRACT_ITEM_INFO = True
     # PDFs productos
     IF_DL_ITEM_PDF = True
     # Enlaces productos en la página de origen
@@ -262,27 +265,21 @@ class ScraperVtacItalia:
 
         pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'
 
-        pdf_elements = []
+        pdf_elements = driver.find_elements(By.XPATH, pdf_download_xpath)
+        print(f'Found {len(pdf_elements)} elements in SKU {sku}')
 
-        try:
-            pdf_elements = driver.find_elements(By.XPATH, pdf_download_xpath)
-            print(f'Found {len(pdf_elements)} elements in SKU {sku}')
+        for pdf_element in pdf_elements:
+            response = requests.get(pdf_element.get_attribute('href'))
+            name = pdf_element.get_attribute('data-tippy-content')
 
-            for pdf_element in pdf_elements:
-                response = requests.get(pdf_element.get_attribute('href'))
-                name = pdf_element.get_attribute('data-tippy-content')
+            if '/' in name:
+                name = name.replace('/', '-')
 
-                if '/' in name:
-                    name = name.replace('/', '-')
+            nested_dir = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            os.makedirs(nested_dir, exist_ok=True)
 
-                nested_dir = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
-                os.makedirs(nested_dir, exist_ok=True)
-
-                with open(f'{nested_dir}/{name}.pdf', 'wb') as file:
-                    file.write(response.content)
-
-        except NoSuchElementException:
-            print(f'No PDFs found for SKU -> {sku}')
+            with open(f'{nested_dir}/{name}.pdf', 'wb') as file:
+                file.write(response.content)
 
         return len(pdf_elements)
 
