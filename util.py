@@ -129,7 +129,7 @@ class Util:
             return driver.find_element(By.XPATH, "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
         except NoSuchElementException:
             print("ERROR getting SKU. Retrying...")
-            time.sleep(5)
+            time.sleep(30)
             driver.get(driver.current_url)
             return Util.get_sku_from_link_uk(driver)
 
@@ -256,7 +256,7 @@ class Util:
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
                 print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
-        except KeyError:
+        except:
             print("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
             Util.begin_items_PDF_download(scraper, links_path, downloads_path, counter)
