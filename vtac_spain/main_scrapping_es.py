@@ -37,8 +37,8 @@ class ScraperVtacSpain:
         'https://v-tac.es/el%C3%A9ctrico.html',
     ]
 
-    @staticmethod
-    def scrape_item(driver, url, subcategories=None):
+    @classmethod
+    def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -129,8 +129,8 @@ class ScraperVtacSpain:
 
         return item
 
-    @staticmethod
-    def extract_all_links(driver, categories):
+    @classmethod
+    def extract_all_links(cls, driver, categories):
         extracted = set()
         for cat in categories:
             try:
@@ -157,8 +157,8 @@ class ScraperVtacSpain:
 
         return extracted
 
-    @staticmethod
-    def count_pdfs_of_link(link):
+    @classmethod
+    def count_pdfs_of_link(cls, link):
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         if ScraperVtacSpain.DRIVER.current_url != link:
@@ -175,8 +175,8 @@ class ScraperVtacSpain:
 
         return len(pdf_elements)
 
-    @staticmethod
-    def download_pdfs_of_sku(driver, sku):
+    @classmethod
+    def download_pdfs_of_sku(cls, driver, sku):
         """
         Downloads PDF from a given URL.
 
@@ -217,8 +217,8 @@ class ScraperVtacSpain:
 
         return len(pdf_elements)
 
-    @staticmethod
-    def dump_product_info_lite(products_data, counter):
+    @classmethod
+    def dump_product_info_lite(cls, products_data, counter):
         for product in products_data:
             del product['imgs'], product['videos']
 
