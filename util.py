@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import re
 import time
 
 import pandas as pd
@@ -9,6 +10,9 @@ from googletrans import Translator
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import logging
+
+os.environ['path'] += r';C:\Program Files\UniConvertor-2.0rc5\dlls'
+import cairosvg
 
 
 class Util:
@@ -33,9 +37,9 @@ class Util:
 
     ODOO_DEFAULT_FIELDS = ['list_price', 'volume', 'weight', 'name']
 
-    ES_LOG_FILE_PATH = 'logs/es.log'
-    ITA_LOG_FILE_PATH = 'logs/ita.log'
-    UK_LOG_FILE_PATH = 'logs/uk.log'
+    ES_LOG_FILE_PATH = 'logs/es/es_{}.log'
+    ITA_LOG_FILE_PATH = 'logs/ita/ita_{}.log'
+    UK_LOG_FILE_PATH = 'logs/uk/uk_{}.log'
 
     @staticmethod
     def setup_logger(target_file):
@@ -83,15 +87,21 @@ class Util:
         str: The translated text in Spanish.
         """
         try:
+            # If text is empty, do nothing
+            if len(text) < 1:
+                return text
+
             translator = Translator()
             detected_language = translator.detect(text).lang
+
+            # print(f'{detected_language} : {text}')
 
             if detected_language == _from:
                 translation = translator.translate(text, src=detected_language, dest='es')
                 return translation.text
-        except KeyError:
+        except:
             print('ERROR TRANSLATING TEXT. Retrying...')
-            time.sleep(1)
+            time.sleep(3)
             return Util.translate_from_to_spanish(_from, text)
 
         return text
@@ -126,7 +136,9 @@ class Util:
     @staticmethod
     def get_sku_from_link_uk(driver):
         try:
-            return driver.find_element(By.XPATH, "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+            return driver.find_element(By.XPATH,
+                                       "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
+                " ")[1]
         except NoSuchElementException:
             print("ERROR getting SKU. Retrying...")
             time.sleep(5)
@@ -295,5 +307,41 @@ class Util:
             print('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, extraction_dir, counter - counter % scraper.JSON_DUMP_FREQUENCY)
+            Util.begin_items_info_extraction(scraper, links_path, extraction_dir,
+                                             counter - counter % scraper.JSON_DUMP_FREQUENCY)
 
+    # Replace <use> tags with the referenced element for cairosvg to work
+    @staticmethod
+    def resolve_svg_use_tags(match, svg_html):
+        use_tag = match.group(0)
+        href_attr = re.search(r'xlink:href="(#\w+)"', use_tag)
+        if href_attr:
+            referenced_id = href_attr.group(1)
+            referenced_element = re.search(fr'<(\w+) id="{referenced_id[1:]}"(.*?)<\/\1>', svg_html, re.DOTALL)
+            if referenced_element:
+                return referenced_element.group(0)
+        return use_tag
+
+    @staticmethod
+    def remove_defs_tags(svg_html):
+        # Use regular expression to find and remove <defs> tags and their contents
+        cleaned_svg = re.sub(r'<defs>.*?</defs>', '', svg_html, flags=re.DOTALL)
+        return cleaned_svg
+
+    @staticmethod
+    def svg_to_base64(svg_html):
+        try:
+            # Replace <use> tags in the SVG content
+            svg_resolved_html = Util.remove_defs_tags(re.sub(r'<use .*?<\/use>', lambda match: Util.resolve_svg_use_tags(match, svg_html), svg_html, flags=re.DOTALL))
+
+            print(svg_resolved_html)
+
+            # Convert the SVG to a PNG image using cairosvg
+            png_data = cairosvg.svg2png(bytestring=svg_resolved_html.encode())
+
+            # return the image as a base64 string
+            return base64.b64encode(png_data).decode('utf-8')
+        except:
+            print('ERROR CONVERTING SVG TO BASE64. Retrying...')
+            time.sleep(10)
+            return Util.svg_to_base64(svg_html)
