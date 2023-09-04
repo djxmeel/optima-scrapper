@@ -53,12 +53,17 @@ class Util:
         fh = logging.FileHandler(target_file)
         fh.setLevel(logging.DEBUG)
 
+        # Create a console handler and set its logging level
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+
         # Create a formatter and set the formatter for the handler
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         fh.setFormatter(formatter)
 
-        # Add the handler to logger
+        # Add the handlers to logger
         logger.addHandler(fh)
+        logger.addHandler(console_handler)
 
         return logger
 
@@ -147,7 +152,7 @@ class Util:
 
     @staticmethod
     def get_sku_from_link_es(driver):
-        return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
+        return driver.find_element(By.XPATH, "//div[@static='sku-inner']").text.split(' ')[1]
 
     @staticmethod
     def load_json_data(file_path):
