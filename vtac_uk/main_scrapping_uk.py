@@ -1,3 +1,4 @@
+from datetime import datetime
 import math
 import time
 import requests
@@ -10,11 +11,12 @@ from util import Util
 
 # VTAC UK SCRAPER
 class ScraperVtacUk:
-    logger = Util.setup_logger(Util.UK_LOG_FILE_PATH)
+    # Creación del logger
+    logger = Util.setup_logger(Util.UK_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")))
+    print(f'LOGGER CREATED: {Util.UK_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))}')
 
-    # TODO test pdf and info extraction
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = False
+    IF_EXTRACT_ITEM_INFO = True
     # PDFs productos
     IF_DL_ITEM_PDF = True
     # Enlaces productos en la página de origen
@@ -143,7 +145,7 @@ class ScraperVtacUk:
                                          '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
 
             for icon in icons:
-                item['icons'].append(icon.screenshot_as_base64)
+                item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML')))
 
             print(f'ENCODED ICONS')
         except NoSuchElementException:
@@ -273,9 +275,6 @@ class ScraperVtacUk:
 
             with open(f'{nested_dir}/{filename}', 'wb') as file:
                 file.write(response.content)
-
-        if len(pdf_elements) == 0:
-            print(f'No PDFs found for SKU -> {sku}')
 
         return len(pdf_elements)
 
