@@ -28,7 +28,7 @@ class ScraperVtacUk:
     DRIVER = webdriver.Firefox()
 
     JSON_DUMP_FREQUENCY = 10
-    BEGIN_SCRAPE_FROM = 1500
+    BEGIN_SCRAPE_FROM = 1520
 
     SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
@@ -53,6 +53,14 @@ class ScraperVtacUk:
             return
 
         subcategories_li_elements = []
+
+        # Agree to cookies
+        try:
+            cookie_btn = driver.find_element(By.XPATH, "//button[@data-trigger-settings='agree']")
+            if cookie_btn.is_displayed():
+                cookie_btn.click()
+        except NoSuchElementException:
+            pass
 
         for subcat_id in subcategories:
             try:
