@@ -99,8 +99,6 @@ class DataPicker:
             if merged_product is not None:
                 cls.merged_data.append(merged_product)
 
-        # TODO ICON PRIORITY LOGIC : 1.ITA 2.UK
-
         return cls.merged_data
 
     @classmethod
