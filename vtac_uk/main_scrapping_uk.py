@@ -14,7 +14,7 @@ class ScraperVtacUk:
     # Creación del logger
     logger_path = Util.UK_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
     logger = Util.setup_logger(logger_path)
-    logger.info(f'LOGGER CREATED: {logger_path}')
+    print(f'LOGGER CREATED: {logger_path}')
 
     # Datos productos
     IF_EXTRACT_ITEM_INFO = True

@@ -11,8 +11,9 @@ from datetime import datetime
 # VTAC ES SCRAPER
 class ScraperVtacSpain:
     # Creación del logger
-    logger = Util.setup_logger(Util.ES_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")))
-    print(f'LOGGER CREATED: {Util.ES_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))}')
+    logger_path = Util.ES_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    logger = Util.setup_logger(logger_path)
+    print(f'LOGGER CREATED: {logger_path}')
 
     # Datos productos
     IF_EXTRACT_ITEM_INFO = False
@@ -43,7 +44,7 @@ class ScraperVtacSpain:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
         except:
-            print(f'ERROR extrayendo los datos de {url}. Reintentando...')
+            cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
             time.sleep(5)
             ScraperVtacSpain.scrape_item(driver, url)
             return
@@ -57,7 +58,7 @@ class ScraperVtacSpain:
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'descripcion': '', 'videos': []}
 
-        print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
+        cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, KEYS_VALUES_XPATH)
@@ -67,7 +68,7 @@ class ScraperVtacSpain:
             try:
                 value = key_value.find_element(By.TAG_NAME, "div")
             except NoSuchElementException:
-                print(f'Field {key.text} has no value.')
+                cls.logger.warning(f'Field {key.text} has no value.')
                 item[key.text] = ''
                 continue
 
@@ -127,6 +128,8 @@ class ScraperVtacSpain:
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
 
+        cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
+
         return item
 
     @classmethod
@@ -136,7 +139,7 @@ class ScraperVtacSpain:
             try:
                 driver.get(cat)
             except:
-                print("ERROR navegando a la página. Reintentando...")
+                cls.logger.error("ERROR navegando a la página. Reintentando...")
                 ScraperVtacSpain.extract_all_links(driver, categories)
                 return
 
@@ -153,7 +156,7 @@ class ScraperVtacSpain:
                 for link in links:
                     extracted.add(link.get_attribute('href'))
 
-                print(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
+                cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
         return extracted
 
@@ -193,7 +196,7 @@ class ScraperVtacSpain:
         # Get the <a> elements
         pdf_elements = driver.find_elements(By.XPATH, attachments_xpath)
 
-        print(f'Found {len(pdf_elements)} attachments in SKU {sku}')
+        cls.logger.info(f'Found {len(pdf_elements)} attachments in SKU {sku}')
 
         for pdf_element in pdf_elements:
             url = pdf_element.get_attribute('href')
@@ -224,21 +227,21 @@ class ScraperVtacSpain:
 
         Util.dump_to_json(products_data,
                           f"{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        print('DUMPED LITE PRODUCT INFO ')
+        cls.logger.info('DUMPED LITE PRODUCT INFO ')
 
 
 # LINK EXTRACTION
 if ScraperVtacSpain.IF_EXTRACT_ITEM_LINKS:
-    print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE_ES}')
+    ScraperVtacSpain.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE_ES}')
     extracted_links = ScraperVtacSpain.extract_all_links(ScraperVtacSpain.DRIVER,
                                                          ScraperVtacSpain.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
     Util.dump_to_json(list(extracted_links),
                       f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ES}')  # DUMPING LINKS TO JSON
-    print(f'FINISHED LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE_ES}')
+    ScraperVtacSpain.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE_ES}')
 
 # PRODUCTS INFO EXTRACTION
 if ScraperVtacSpain.IF_EXTRACT_ITEM_INFO:
-    print(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacSpain.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
     # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacSpain,
@@ -246,23 +249,23 @@ if ScraperVtacSpain.IF_EXTRACT_ITEM_INFO:
         f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
         ScraperVtacSpain.BEGIN_SCRAPE_FROM,
     )
-    print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacSpain.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
 if ScraperVtacSpain.IF_DL_ITEM_PDF:
-    print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacSpain.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacSpain,
         f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ES}',
         f'{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
         'ES'
     )
-    print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacSpain.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if ScraperVtacSpain.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
-    print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
+    ScraperVtacSpain.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
     Util.extract_distinct_fields_to_excel(Util.VTAC_ES_DIR)
-    print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
+    ScraperVtacSpain.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 ScraperVtacSpain.DRIVER.close()
