@@ -3,45 +3,41 @@ import json
 from util import Util
 
 
+# TODO test this class
 class DataPicker:
-    DATA_DIR_PATH_ES = 'vtac_spain/VTAC_PRODUCT_INFO'
-    DATA_DIR_PATH_UK = 'vtac_uk/VTAC_PRODUCT_INFO'
-    DATA_DIR_PATH_ITA = 'vtac_italia/VTAC_PRODUCT_INFO'
+    DATA_DIR_PATHS = {
+        'es': 'vtac_spain/VTAC_PRODUCT_INFO',
+        'uk': 'vtac_uk/VTAC_PRODUCT_INFO',
+        'ita': 'vtac_italia/VTAC_PRODUCT_INFO'
+    }
 
-    merged_data, data_es, data_uk, data_ita = [], [], [], []
+    merged_data = []
+
+    data = {
+        'es': [],
+        'uk': [],
+        'ita': []
+    }
+
+    @classmethod
+    def load_data_for_country(cls, country):
+        file_list = Util.get_all_files_in_directory(cls.DATA_DIR_PATHS[country])
+        for file_path in file_list:
+            with open(file_path, "r") as file:
+                cls.data[country].append(json.load(file))
 
     @classmethod
     def load_all(cls):
-        file_list_ita = Util.get_all_files_in_directory(cls.DATA_DIR_PATH_ITA)
-        file_list_es = Util.get_all_files_in_directory(cls.DATA_DIR_PATH_ES)
-        file_list_uk = Util.get_all_files_in_directory(cls.DATA_DIR_PATH_UK)
-
-        for file_path in file_list_ita:
-            with open(file_path, "r") as file:
-                cls.data_ita.append(json.load(file))
-
-        for file_path in file_list_es:
-            with open(file_path, "r") as file:
-                cls.data_es.append(json.load(file))
-
-        for file_path in file_list_uk:
-            with open(file_path, "r") as file:
-                cls.data_uk.append(json.load(file))
+        for country in cls.DATA_DIR_PATHS.keys():
+            cls.load_data_for_country(country)
 
     @classmethod
     def get_data(cls, country):
-        if country == 'es':
-            return cls.data_es
-        elif country == 'uk':
-            return cls.data_uk
-        elif country == 'ita':
-            return cls.data_ita
-        else:
-            return None
+        return cls.data.get(country, None)
 
     @classmethod
-    def product_exists(cls, sku, country_data):
-        for product in country_data:
+    def product_exists(cls, sku, country):
+        for product in cls.data[country]:
             if product["SKU"] == sku:
                 return True, product
         return False, None
@@ -49,13 +45,13 @@ class DataPicker:
     @classmethod
     def get_merged_data(cls):
         cls.load_all()
-        all_data = cls.data_es + cls.data_uk + cls.data_ita
+        all_data = cls.data['es'] + cls.data['uk'] + cls.data['ita']
         unique_product_skus = set(product["SKU"] for product in all_data)
 
         for sku in unique_product_skus:
-            exists_in_es, product_from_es = cls.product_exists(sku, cls.data_es)
-            exists_in_uk, product_from_uk = cls.product_exists(sku, cls.data_uk)
-            exists_in_ita, product_from_ita = cls.product_exists(sku, cls.data_ita)
+            exists_in_es, product_from_es = cls.product_exists(sku, cls.data['es'])
+            exists_in_uk, product_from_uk = cls.product_exists(sku, cls.data['uk'])
+            exists_in_ita, product_from_ita = cls.product_exists(sku, cls.data['ita'])
             merged_product = None
 
             # If exists in spain, add it to the merged data
@@ -103,7 +99,7 @@ class DataPicker:
 
     @classmethod
     def extract_merged_data(cls):
-        if len(cls.merged_data) < 1:
+        if not cls.merged_data:
             cls.get_merged_data()
 
         for index in range(0, len(cls.merged_data), 50):
