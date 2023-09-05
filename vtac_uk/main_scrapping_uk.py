@@ -12,8 +12,9 @@ from util import Util
 # VTAC UK SCRAPER
 class ScraperVtacUk:
     # Creación del logger
-    logger = Util.setup_logger(Util.UK_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")))
-    print(f'LOGGER CREATED: {Util.UK_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))}')
+    logger_path = Util.UK_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    logger = Util.setup_logger(logger_path)
+    print(f'LOGGER CREATED: {logger_path}')
 
     # Datos productos
     IF_EXTRACT_ITEM_INFO = True
@@ -39,13 +40,14 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/electrical.html'
     ]
 
-    @staticmethod
-    def scrape_item(driver, url, subcategories=None):
+    @classmethod
+    def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
         except:
-            print(f'ERROR extrayendo los datos de {url}. Reintentando...')
+            cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
+
             time.sleep(5)
             ScraperVtacUk.scrape_item(driver, url, subcategories)
             return
@@ -61,7 +63,7 @@ class ScraperVtacUk:
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
 
-        print(f'BEGINNING EXTRACTION OF: {driver.current_url}')
+        cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
         # Para cada subcategoria, extraemos sus campos
         for subcat_li in subcategories_li_elements:
@@ -102,7 +104,7 @@ class ScraperVtacUk:
         try:
             item['SKU'] = f'VS{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
-            print('SKU NO ENCONTRADO')
+            cls.logger.warning('SKU NO ENCONTRADO')
 
         # Extracción del precio
         try:
@@ -111,7 +113,7 @@ class ScraperVtacUk:
 
             item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '.'))
         except NoSuchElementException:
-            print('PRECIO NO ENCONTRADO')
+            cls.logger.warning('PRECIO NO ENCONTRADO')
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('en',
@@ -134,10 +136,8 @@ class ScraperVtacUk:
                     # If div element does not have attr data-type, it contains an img
                     src = image_div_element.find_element(By.TAG_NAME, 'img').get_attribute('src')
                     item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
-
-            print(f'ENCODED IMAGES')
         except NoSuchElementException:
-            print('PRODUCT HAS NO IMGS')
+            cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Extracción de iconos
         try:
@@ -145,25 +145,23 @@ class ScraperVtacUk:
                                          '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
 
             for icon in icons:
-                item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML')))
-
-            print(f'ENCODED ICONS')
+                item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
         except NoSuchElementException:
-            print('PRODUCT HAS NO ICONS')
+            cls.logger.warning('PRODUCT HAS NO ICONS')
 
-        print(item['name'])
+        cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
         return item
 
-    @staticmethod
-    def extract_all_links(driver, categories):
+    @classmethod
+    def extract_all_links(cls, driver, categories):
         extracted = set()
 
         for cat in categories:
             try:
                 driver.get(cat)
             except:
-                print("ERROR navegando a la página. Reintentando...")
+                cls.logger.error("ERROR navegando a la página. Reintentando...")
                 ScraperVtacUk.extract_all_links(driver, categories)
                 return
 
@@ -187,11 +185,11 @@ class ScraperVtacUk:
                 for link in links:
                     extracted.add(link.get_attribute('href'))
 
-                print(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
+                cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
         return extracted
 
-    @staticmethod
-    def count_pdfs_of_link(link):
+    @classmethod
+    def count_pdfs_of_link(cls, link):
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         if ScraperVtacUk.DRIVER.current_url != link:
@@ -220,8 +218,8 @@ class ScraperVtacUk:
 
         return len(pdf_elements)
 
-    @staticmethod
-    def download_pdfs_of_sku(driver, sku):
+    @classmethod
+    def download_pdfs_of_sku(cls, driver, sku):
         """
         Downloads PDF from a given URL.
 
@@ -254,7 +252,7 @@ class ScraperVtacUk:
         except NoSuchElementException:
             pass
 
-        print(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
+        cls.logger.info(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
 
         for pdf_element in pdf_elements:
             url = pdf_element.get_attribute('href')
@@ -278,52 +276,54 @@ class ScraperVtacUk:
 
         return len(pdf_elements)
 
-    @staticmethod
-    def dump_product_info_lite(products_data, counter):
+    @classmethod
+    def dump_product_info_lite(cls, products_data, counter):
         for product in products_data:
             del product['imgs'], product['icons'], product['videos']
 
         Util.dump_to_json(products_data,
                           f"{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        print('DUMPED LITE PRODUCT INFO ')
+        cls.logger.info('DUMPED LITE PRODUCT INFO ')
 
 
 # LINK EXTRACTION
 if ScraperVtacUk.IF_EXTRACT_ITEM_LINKS:
-    print(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}')
+    ScraperVtacUk.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}')
     extracted_links = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER,
                                                       ScraperVtacUk.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
     Util.dump_to_json(list(extracted_links),
                       f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}')  # DUMPING LINKS TO JSON
-    print(f'FINISHED LINK EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}')
+    ScraperVtacUk.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}')
 
 # PRODUCTS INFO EXTRACTION
 if ScraperVtacUk.IF_EXTRACT_ITEM_INFO:
-    print(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacUk.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
     # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacUk,
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
+        ScraperVtacUk.logger,
         ScraperVtacUk.BEGIN_SCRAPE_FROM
     )
-    print(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacUk.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
 if ScraperVtacUk.IF_DL_ITEM_PDF:
-    print(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacUk.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacUk,
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
-        'UK'
+        'UK',
+        ScraperVtacUk.logger
     )
-    print(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacUk.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if ScraperVtacUk.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
-    print(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
+    ScraperVtacUk.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
     Util.extract_distinct_fields_to_excel(Util.VTAC_UK_DIR)
-    print(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
+    ScraperVtacUk.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 ScraperVtacUk.DRIVER.close()
