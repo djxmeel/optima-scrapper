@@ -16,7 +16,7 @@ class ScraperVtacSpain:
     print(f'LOGGER CREATED: {logger_path}')
 
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = False
+    IF_EXTRACT_ITEM_INFO = True
     # PDFs productos
     IF_DL_ITEM_PDF = True
     # Enlaces productos en la página de origen
@@ -80,6 +80,9 @@ class ScraperVtacSpain:
             del item['Código de orden']
 
         # Renombrado de campos determinados
+        if 'Ángulo de haz°' in item.keys():
+            item['Ángulo de apertura'] = item['Ángulo de haz°']
+            del item['Ángulo de haz°']
         if 'Ángulo de haz' in item.keys():
             item['Ángulo de apertura'] = item['Ángulo de haz']
             del item['Ángulo de haz']
