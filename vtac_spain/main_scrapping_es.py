@@ -97,11 +97,11 @@ class ScraperVtacSpain:
             del item['Hora de inicio al 100% encendido']
 
         # Extracción de la etiqueta energética
-        try:
-            energy_tag_src = driver.find_element(By.XPATH, ENERGY_TAG_XPATH).get_attribute('src')
-            item['imgs'].append(Util.src_to_base64(energy_tag_src))
-        except NoSuchElementException:
-            pass
+        # try:
+        #     energy_tag_src = driver.find_element(By.XPATH, ENERGY_TAG_XPATH).get_attribute('src')
+        #     item['imgs'].append(Util.src_to_base64(energy_tag_src))
+        # except NoSuchElementException:
+        #     pass
 
         # Extracción de las dimensiones gráficas
         try:

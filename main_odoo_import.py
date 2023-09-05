@@ -20,7 +20,7 @@ odoo_db = 'optest'
 odoo_login = 'djamelnadour15@gmail.com'
 odoo_pass = 'black20-00'
 
-PRODUCT_INFO_ODOO_COMPAT_DIR = 'vtac_italia/VTAC_PRODUCT_INFO_LITE/'
+PRODUCT_INFO_LITE_DIR = 'vtac_italia/VTAC_PRODUCT_INFO_LITE/'
 PRODUCT_INFO_DIR = 'vtac_italia/VTAC_PRODUCT_INFO/'
 PRODUCT_PDF_DIR = 'vtac_italia/VTAC_PRODUCT_PDF/'
 
@@ -74,7 +74,7 @@ def translate_italian_to_spanish(text):
 
 
 def import_products():
-    file_list = get_all_files_in_directory(PRODUCT_INFO_ODOO_COMPAT_DIR)
+    file_list = get_all_files_in_directory(PRODUCT_INFO_LITE_DIR)
 
     for file_path in file_list:
         with open(file_path, "r") as file:
