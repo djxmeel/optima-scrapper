@@ -11,9 +11,6 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import logging
 
-from vtac_uk.main_scrapping_uk import ScraperVtacUk
-from vtac_spain.main_scrapping_es import ScraperVtacSpain
-
 os.environ['path'] += r';dlls/'
 import cairosvg
 
@@ -146,6 +143,7 @@ class Util:
                                        "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
                 " ")[1]
         except NoSuchElementException:
+            from vtac_uk.main_scrapping_uk import ScraperVtacUk
             ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             driver.get(driver.current_url)
@@ -156,6 +154,7 @@ class Util:
         try:
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
+            from vtac_spain.main_scrapping_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             driver.get(driver.current_url)
