@@ -28,7 +28,7 @@ class ScraperVtacUk:
     DRIVER = webdriver.Firefox()
 
     JSON_DUMP_FREQUENCY = 10
-    BEGIN_SCRAPE_FROM = 0
+    BEGIN_SCRAPE_FROM = 1500
 
     SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
@@ -48,7 +48,7 @@ class ScraperVtacUk:
         except:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
 
-            time.sleep(5)
+            time.sleep(30)
             ScraperVtacUk.scrape_item(driver, url, subcategories)
             return
 
@@ -110,8 +110,8 @@ class ScraperVtacUk:
         try:
             item['list_price'] = driver.find_element(By.XPATH,
                                                      f'/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[3]/div/div/div[2]/div[1]/span').text
-
-            item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '.'))
+            if len('list_price') > 1:
+                item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '.'))
         except NoSuchElementException:
             cls.logger.warning('PRECIO NO ENCONTRADO')
 
