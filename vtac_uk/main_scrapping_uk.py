@@ -110,7 +110,7 @@ class ScraperVtacUk:
         try:
             item['list_price'] = driver.find_element(By.XPATH,
                                                      f'/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[3]/div/div/div[2]/div[1]/span').text
-            if len('list_price') > 1:
+            if len(item['list_price']) > 1:
                 item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '.'))
         except NoSuchElementException:
             cls.logger.warning('PRECIO NO ENCONTRADO')
