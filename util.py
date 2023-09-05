@@ -13,7 +13,6 @@ import logging
 
 from vtac_uk.main_scrapping_uk import ScraperVtacUk
 from vtac_spain.main_scrapping_es import ScraperVtacSpain
-from vtac_italia.main_scrapping_ita import ScraperVtacItalia
 
 os.environ['path'] += r';dlls/'
 import cairosvg
