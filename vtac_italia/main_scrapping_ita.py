@@ -307,6 +307,7 @@ if ScraperVtacItalia.IF_EXTRACT_ITEM_INFO:
         ScraperVtacItalia,
         f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
         f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
+        ScraperVtacItalia.logger,
         ScraperVtacItalia.BEGIN_SCRAPE_FROM
     )
     ScraperVtacItalia.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
@@ -318,7 +319,8 @@ if ScraperVtacItalia.IF_DL_ITEM_PDF:
         ScraperVtacItalia,
         f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
         f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
-        'ITA'
+        'ITA',
+        ScraperVtacItalia.logger
     )
     ScraperVtacItalia.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
