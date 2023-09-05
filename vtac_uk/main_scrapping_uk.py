@@ -145,7 +145,7 @@ class ScraperVtacUk:
                                          '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
 
             for icon in icons:
-                item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML')))
+                item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO ICONS')
 
@@ -303,6 +303,7 @@ if ScraperVtacUk.IF_EXTRACT_ITEM_INFO:
         ScraperVtacUk,
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
+        ScraperVtacUk.logger,
         ScraperVtacUk.BEGIN_SCRAPE_FROM
     )
     ScraperVtacUk.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
@@ -314,7 +315,8 @@ if ScraperVtacUk.IF_DL_ITEM_PDF:
         ScraperVtacUk,
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_UK}',
         f'{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
-        'UK'
+        'UK',
+        ScraperVtacUk.logger
     )
     ScraperVtacUk.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
 

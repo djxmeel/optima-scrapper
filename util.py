@@ -11,6 +11,10 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import logging
 
+from vtac_uk.main_scrapping_uk import ScraperVtacUk
+from vtac_spain.main_scrapping_es import ScraperVtacSpain
+from vtac_italia.main_scrapping_ita import ScraperVtacItalia
+
 os.environ['path'] += r';dlls/'
 import cairosvg
 
@@ -99,8 +103,6 @@ class Util:
             translator = Translator()
             detected_language = translator.detect(text).lang
 
-            # print(f'{detected_language} : {text}')
-
             if detected_language == _from:
                 translation = translator.translate(text, src=detected_language, dest='es')
                 return translation.text
@@ -145,15 +147,20 @@ class Util:
                                        "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
                 " ")[1]
         except NoSuchElementException:
-            print("ERROR getting SKU. Retrying...")
+            ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             driver.get(driver.current_url)
             return Util.get_sku_from_link_uk(driver)
 
     @staticmethod
     def get_sku_from_link_es(driver):
-        return driver.find_element(By.XPATH, "//div[@static='sku-inner']").text.split(' ')[1]
-
+        try:
+            return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
+        except NoSuchElementException:
+            ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
+            time.sleep(5)
+            driver.get(driver.current_url)
+            return Util.get_sku_from_link_es(driver)
     @staticmethod
     def load_json_data(file_path):
         """
@@ -250,7 +257,7 @@ class Util:
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
     @staticmethod
-    def begin_items_PDF_download(scraper, links_path, downloads_path, country, begin_from=0):
+    def begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
 
@@ -268,18 +275,18 @@ class Util:
                     count_existing = scraper.count_pdfs_of_link(link)
 
                     if count_existing == count_downloaded:
-                        print(f'SKIPPING SKU {sku} AS IT\'S FILES HAVE ALREADY BEEN DOWNLOADED')
+                        logger.info(f'SKIPPING SKU {sku} AS IT\'S FILES HAVE ALREADY BEEN DOWNLOADED')
                         continue
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
-                print(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
-        except KeyError:
-            print("Error en la descarga de PDFs. Reintentando...")
+                logger.warn(f'DOWNLOADED {found} PDFS FROM : {link}  {counter + 1}/{len(loaded_links)}')
+        except:
+            logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
-            Util.begin_items_PDF_download(scraper, links_path, downloads_path, counter)
+            Util.begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, counter)
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, extraction_dir, start_from=0):
+    def begin_items_info_extraction(scraper, links_path, extraction_dir, logger, start_from=0):
         """
         Begins item info extraction.
 
@@ -297,7 +304,7 @@ class Util:
                 products_data.append(
                     scraper.scrape_item(scraper.DRIVER, link, scraper.SUBCATEGORIES))
                 counter += 1
-                print(f'{counter}/{len(links)}\n')
+                logger.info(f'{counter}/{len(links)}\n')
 
                 # Save each X to a JSON
                 if counter % scraper.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
@@ -308,11 +315,11 @@ class Util:
                     scraper.dump_product_info_lite(products_data, counter)
 
                     products_data.clear()
-        except KeyError:
-            print('ERROR con extracción de información de productos. Reintentando...')
+        except:
+            logger.error('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, extraction_dir,
+            Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
                                              counter - counter % scraper.JSON_DUMP_FREQUENCY)
 
     # Replace <use> tags with the referenced element for cairosvg to work
@@ -334,12 +341,10 @@ class Util:
         return cleaned_svg
 
     @staticmethod
-    def svg_to_base64(svg_html):
+    def svg_to_base64(svg_html, logger):
         try:
             # Replace <use> tags in the SVG content
             svg_resolved_html = Util.remove_defs_tags(re.sub(r'<use .*?<\/use>', lambda match: Util.resolve_svg_use_tags(match, svg_html), svg_html, flags=re.DOTALL))
-
-            print(svg_resolved_html)
 
             # Convert the SVG to a PNG image using cairosvg
             png_data = cairosvg.svg2png(bytestring=svg_resolved_html.encode())
@@ -347,6 +352,6 @@ class Util:
             # return the image as a base64 string
             return base64.b64encode(png_data).decode('utf-8')
         except:
-            print('ERROR CONVERTING SVG TO BASE64. Retrying...')
+            logger.error('ERROR CONVERTING SVG TO BASE64. Retrying...')
             time.sleep(10)
-            return Util.svg_to_base64(svg_html)
+            return Util.svg_to_base64(svg_html, logger)
