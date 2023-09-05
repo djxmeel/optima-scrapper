@@ -208,7 +208,10 @@ class Util:
             .replace("ú", "u") \
             .replace("/", "_") \
             .replace(".", "_") \
-            .replace("ñ", "n")
+            .replace("ñ", "n") \
+            .replace("%", "") \
+            .replace(',', "") \
+            .replace('°', "")
         return f'x_{field}'[:61]
 
     @staticmethod
@@ -224,7 +227,7 @@ class Util:
         for product in json_data:
             for attr in product.keys():
                 # Filter out non-custom fields
-                if attr.startswith('x_'):
+                if attr not in Util.ODOO_DEFAULT_FIELDS:
                     fields.add(attr)
 
         excel_dicts = []
