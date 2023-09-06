@@ -86,11 +86,11 @@ class DataPicker:
             elif exists_in_ita:
                 merged_product = product_from_ita
 
-            # Icons from 1.ITA 2.UK
-            if exists_in_ita and len(product_from_ita['icons']) > 1:
-                merged_product['icons'] = product_from_ita['icons']
-            elif exists_in_uk and len(product_from_uk['icons']) > 1:
+            # Icons from 1.UK 2.ITA
+            if exists_in_uk and len(product_from_uk['icons']) > 1:
                 merged_product['icons'] = product_from_uk['icons']
+            elif exists_in_ita and len(product_from_ita['icons']) > 1:
+                merged_product['icons'] = product_from_ita['icons']
 
             if merged_product is not None:
                 cls.merged_data.append(merged_product)
