@@ -28,7 +28,7 @@ class ScraperVtacUk:
     DRIVER = webdriver.Firefox()
 
     JSON_DUMP_FREQUENCY = 10
-    BEGIN_SCRAPE_FROM = 1520
+    BEGIN_SCRAPE_FROM = 0
 
     SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
