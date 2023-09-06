@@ -111,7 +111,10 @@ class ScraperVtacSpain:
         # Extracción de las dimensiones gráficas
         try:
             graph_dimensions_src = driver.find_element(By.XPATH, GRAPH_DIMENSIONS_XPATH).get_attribute('src')
-            item['imgs'].append(Util.src_to_base64(graph_dimensions_src))
+            item['imgs'].append({
+                'src': graph_dimensions_src,
+                'img64': Util.src_to_base64(graph_dimensions_src)
+            })
         except NoSuchElementException:
             pass
 
