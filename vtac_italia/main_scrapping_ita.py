@@ -280,6 +280,7 @@ class ScraperVtacItalia:
 
         return len(pdf_elements)
 
+    # TODO move to Util
     @classmethod
     def dump_product_info_lite(cls, products_data, counter):
         for product in products_data:
@@ -287,7 +288,7 @@ class ScraperVtacItalia:
 
         Util.dump_to_json(products_data,
                           f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        cls.logger.info('DUMPED LITE PRODUCT INFO ')
+        cls.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
 
 # LINK EXTRACTION

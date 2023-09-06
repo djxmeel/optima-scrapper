@@ -291,7 +291,7 @@ class ScraperVtacUk:
 
         Util.dump_to_json(products_data,
                           f"{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        cls.logger.info('DUMPED LITE PRODUCT INFO ')
+        cls.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
 
 # LINK EXTRACTION
