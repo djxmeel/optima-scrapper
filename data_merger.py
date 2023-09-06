@@ -1,10 +1,16 @@
 import json
+from datetime import datetime
 
 from util import Util
 
 
 # TODO test this class
-class DataPicker:
+class DataMerger:
+    # Creación del logger
+    logger_path = Util.MERGER_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    logger = Util.setup_logger(logger_path)
+    print(f'LOGGER CREATED: {logger_path}')
+
     DATA_DIR_PATHS = {
         'es': 'vtac_spain/VTAC_PRODUCT_INFO',
         'uk': 'vtac_uk/VTAC_PRODUCT_INFO',

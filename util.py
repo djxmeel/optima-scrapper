@@ -41,6 +41,7 @@ class Util:
     ES_LOG_FILE_PATH = 'logs/es/es_{}.log'
     ITA_LOG_FILE_PATH = 'logs/ita/ita_{}.log'
     UK_LOG_FILE_PATH = 'logs/uk/uk_{}.log'
+    MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
 
     @staticmethod
     def setup_logger(target_file):
