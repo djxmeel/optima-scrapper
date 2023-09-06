@@ -30,7 +30,7 @@ class DataMerger:
         file_list = Util.get_all_files_in_directory(cls.DATA_DIR_PATHS[country])
         for file_path in file_list:
             with open(file_path, "r") as file:
-                cls.data[country].append(json.load(file))
+                cls.data[country] += json.load(file)
 
     @classmethod
     def load_all(cls):
@@ -52,12 +52,12 @@ class DataMerger:
     def get_merged_data(cls):
         cls.load_all()
         all_data = cls.data['es'] + cls.data['uk'] + cls.data['ita']
-        unique_product_skus = set(product["SKU"] for product in all_data)
+        unique_product_skus = set(product['SKU'] for product in all_data)
 
         for sku in unique_product_skus:
-            exists_in_es, product_from_es = cls.product_exists(sku, cls.data['es'])
-            exists_in_uk, product_from_uk = cls.product_exists(sku, cls.data['uk'])
-            exists_in_ita, product_from_ita = cls.product_exists(sku, cls.data['ita'])
+            exists_in_es, product_from_es = cls.product_exists(sku, 'es')
+            exists_in_uk, product_from_uk = cls.product_exists(sku, 'uk')
+            exists_in_ita, product_from_ita = cls.product_exists(sku, 'ita')
             merged_product = None
 
             # If exists in spain, add it to the merged data
@@ -105,9 +105,11 @@ class DataMerger:
 
     @classmethod
     def extract_merged_data(cls):
-        if not cls.merged_data:
+        if len(cls.merged_data) < 1:
             cls.get_merged_data()
 
         for index in range(0, len(cls.merged_data), 50):
-            Util.dump_to_json(cls.merged_data[index:index + 50], f"VTAC_MERGED_INFO_{index}.json")
-        return cls.merged_data
+            Util.dump_to_json(cls.merged_data[index:index + 50], f"merged_data/VTAC_MERGED_INFO_{index + 50}.json")
+
+
+DataMerger.extract_merged_data()
