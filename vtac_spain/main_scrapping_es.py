@@ -78,6 +78,8 @@ class ScraperVtacSpain:
         if 'Código de orden' in item.keys():
             item['SKU'] = f'VS{item["Código de orden"]}'
             del item['Código de orden']
+        else:
+            item['SKU'] = f'VS{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
         # Renombrado de campos determinados
         if 'Ángulo de haz°' in item.keys():

@@ -158,8 +158,8 @@ class Util:
             from vtac_spain.main_scrapping_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
-            driver.get(driver.current_url)
-            return Util.get_sku_from_link_es(driver)
+            return Util.get_sku_from_link(driver, driver.current_url, 'ES')
+
     @staticmethod
     def load_json_data(file_path):
         """
