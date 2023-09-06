@@ -17,9 +17,9 @@ class ScraperVtacItalia:
     print(f'LOGGER CREATED: {logger_path}')
 
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = True
+    IF_EXTRACT_ITEM_INFO = False
     # PDFs productos
-    IF_DL_ITEM_PDF = True
+    IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
     IF_EXTRACT_ITEM_LINKS = False
     # Todos los campos de los productos a implementar en ODOO
