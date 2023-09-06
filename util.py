@@ -8,6 +8,7 @@ import pandas as pd
 import requests
 from googletrans import Translator
 from selenium.common import NoSuchElementException
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 import logging
 
@@ -118,18 +119,18 @@ class Util:
     def get_sku_from_link(driver, link, country):
         try:
             driver.get(link)
-        except:
+        except TimeoutException:
             time.sleep(5)
             return Util.get_sku_from_link(driver, link, country)
 
-        if country == 'ITA':
+        if country.upper() == 'ITA':
             return Util.get_sku_from_link_ita(driver)
-        elif country == 'UK':
+        elif country.upper() == 'UK':
             return Util.get_sku_from_link_uk(driver)
-        elif country == 'ES':
+        elif country.upper() == 'ES':
             return Util.get_sku_from_link_es(driver)
         else:
-            raise Exception('Invalid country')
+            raise Exception(f'Invalid country : {country}')
 
     @staticmethod
     def get_sku_from_link_ita(driver):
@@ -146,8 +147,7 @@ class Util:
             from vtac_uk.main_scrapping_uk import ScraperVtacUk
             ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
-            driver.get(driver.current_url)
-            return Util.get_sku_from_link_uk(driver)
+            return Util.get_sku_from_link(driver, driver.current_url, 'UK')
 
     @staticmethod
     def get_sku_from_link_es(driver):
