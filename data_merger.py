@@ -86,6 +86,7 @@ class DataMerger:
                 # If exists in ita, add the images from ita to the merged data
                 if exists_in_ita:
                     if len(product_from_uk["imgs"]) > 1:
+                    if len(product_from_ita["imgs"]) > 1:
                         product_from_uk["imgs"] = product_from_ita["imgs"]
                 merged_product = product_from_uk
             # If not exists in spain or uk, add ita data to the merged data
