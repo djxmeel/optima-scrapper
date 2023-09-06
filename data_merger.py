@@ -11,10 +11,18 @@ class DataMerger:
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
-    DATA_DIR_PATHS = {
+    COUNTRY_DATA_DIR_PATHS = {
         'es': 'vtac_spain/VTAC_PRODUCT_INFO',
         'uk': 'vtac_uk/VTAC_PRODUCT_INFO',
         'ita': 'vtac_italia/VTAC_PRODUCT_INFO'
+    }
+
+    # Field priorities, 'default' is for fields that are not in this list
+    FIELD_PRIORITIES = {
+        'default': ['es', 'uk', 'ita'],
+        'icons': ['uk', 'ita', 'es'],
+        'imgs': ['uk', 'ita', 'es'],
+        'descripcion': ['es', 'uk', 'ita'],
     }
 
     merged_data = []
@@ -27,14 +35,14 @@ class DataMerger:
 
     @classmethod
     def load_data_for_country(cls, country):
-        file_list = Util.get_all_files_in_directory(cls.DATA_DIR_PATHS[country])
+        file_list = Util.get_all_files_in_directory(cls.COUNTRY_DATA_DIR_PATHS[country])
         for file_path in file_list:
             with open(file_path, "r") as file:
                 cls.data[country] += json.load(file)
 
     @classmethod
     def load_all(cls):
-        for country in cls.DATA_DIR_PATHS.keys():
+        for country in cls.COUNTRY_DATA_DIR_PATHS.keys():
             cls.load_data_for_country(country)
 
     @classmethod
@@ -42,11 +50,11 @@ class DataMerger:
         return cls.data.get(country, None)
 
     @classmethod
-    def product_exists(cls, sku, country):
+    def get_product_from_country_sku(cls, sku, country):
         for product in cls.data[country]:
             if product["SKU"] == sku:
-                return True, product
-        return False, None
+                return product
+        return None
 
     @classmethod
     def get_merged_data(cls):
@@ -55,51 +63,26 @@ class DataMerger:
         unique_product_skus = set(product['SKU'] for product in all_data)
 
         for sku in unique_product_skus:
-            exists_in_es, product_from_es = cls.product_exists(sku, 'es')
-            exists_in_uk, product_from_uk = cls.product_exists(sku, 'uk')
-            exists_in_ita, product_from_ita = cls.product_exists(sku, 'ita')
-            merged_product = None
+            product = {'es': cls.get_product_from_country_sku(sku, 'es'),
+                       'uk': cls.get_product_from_country_sku(sku, 'uk'),
+                       'ita': cls.get_product_from_country_sku(sku, 'ita')}
+            merged_product = {}
 
-            # If exists in spain, add it to the merged data
-            if exists_in_es:
-                # If exists in ita, add the images from ita to the merged data
-                if exists_in_ita:
-                    if len(product_from_ita["imgs"]) > 1:
-                        product_from_es["imgs"] += product_from_ita["imgs"]
-                    if len(product_from_es["descripcion"]) < 1:
-                        if exists_in_uk and len(product_from_uk["descripcion"]) > 1:
-                            product_from_es["descripcion"] = product_from_uk["descripcion"]
-                        elif len(product_from_ita["descripcion"]) > 1:
-                            product_from_es["descripcion"] = product_from_ita["descripcion"]
-                # If not exists in ita, add the images from uk to the merged data
-                elif exists_in_uk:
-                    if len(product_from_uk["imgs"]) > 1:
-                        product_from_es["imgs"] += product_from_uk["imgs"]
-                    if len(product_from_es["descripcion"]) < 1:
-                        if len(product_from_uk["descripcion"]) > 1:
-                            product_from_es["descripcion"] = product_from_uk["descripcion"]
-                        else:
-                            product_from_es["descripcion"] = product_from_ita["descripcion"]
-                merged_product = product_from_es
-            # If not exists in spain, add uk data to the merged data
-            elif exists_in_uk:
-                # If exists in ita, add the images from ita to the merged data
-                if exists_in_ita:
-                    if len(product_from_ita["imgs"]) > 1:
-                        product_from_uk["imgs"] = product_from_ita["imgs"]
-                merged_product = product_from_uk
-            # If not exists in spain or uk, add ita data to the merged data
-            elif exists_in_ita:
-                merged_product = product_from_ita
+            for country in cls.FIELD_PRIORITIES['default']:
+                # Stop at first found in priority order
+                if product[country] is not None:
+                    merged_product = product[country]
+                    break
 
-            # Icons from 1.UK 2.ITA
-            if exists_in_uk and len(product_from_uk['icons']) > 1:
-                merged_product['icons'] = product_from_uk['icons']
-            elif exists_in_ita and len(product_from_ita['icons']) > 1:
-                merged_product['icons'] = product_from_ita['icons']
+            for field in cls.FIELD_PRIORITIES.keys():
+                if field == 'default':
+                    continue
+                for country in cls.FIELD_PRIORITIES[field]:
+                    if product[country] is not None and field in product[country] and len(product[country][field]) > 0:
+                        merged_product[field] = product[country][field]
+                        break
 
-            if merged_product is not None:
-                cls.merged_data.append(merged_product)
+            cls.merged_data.append(merged_product)
 
         return cls.merged_data
 
