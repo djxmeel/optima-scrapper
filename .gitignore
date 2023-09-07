@@ -1,5 +1,4 @@
 /logs
-/.idea
 /vtac_spain/VTAC_PRODUCT_INFO
 /vtac_spain/VTAC_PRODUCT_INFO_LITE
 /vtac_spain/VTAC_PRODUCT_PDF
@@ -9,3 +8,10 @@
 /vtac_uk/VTAC_PRODUCT_INFO
 /vtac_uk/VTAC_PRODUCT_INFO_LITE
 /vtac_uk/VTAC_PRODUCT_PDF
+.idea/shelf/
+.idea/misc.xml
+.idea/modules.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/vcs.xml
+.idea/vtac-scrapping.iml
