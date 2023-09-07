@@ -6,6 +6,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from util import Util
 
 
@@ -45,7 +46,7 @@ class ScraperVtacUk:
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
-        except:
+        except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
 
             time.sleep(30)
@@ -168,7 +169,7 @@ class ScraperVtacUk:
         for cat in categories:
             try:
                 driver.get(cat)
-            except:
+            except TimeoutException:
                 cls.logger.error("ERROR navegando a la página. Reintentando...")
                 ScraperVtacUk.extract_all_links(driver, categories)
                 return

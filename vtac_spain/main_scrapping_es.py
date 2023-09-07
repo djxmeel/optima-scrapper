@@ -4,6 +4,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from util import Util
 from datetime import datetime
 
@@ -43,17 +44,17 @@ class ScraperVtacSpain:
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
-        except:
+        except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
             time.sleep(5)
             ScraperVtacSpain.scrape_item(driver, url)
             return
 
-        NAME_XPATH = "//h3[@itemprop='name']"
-        KEYS_VALUES_XPATH = "//div[@class='product-field product-field-type-S']"
-        ENERGY_TAG_XPATH = "//img[@alt = 'Energy Class']"
-        GRAPH_DIMENSIONS_XPATH = "//img[@alt = 'Dimensions']"
-        PRODUCT_DESC_XPATH = "//div[@class='product-description']"
+        name_xpath = "//h3[@itemprop='name']"
+        keys_values_xpath = "//div[@class='product-field product-field-type-S']"
+        energy_tag_xpath = "//img[@alt = 'Energy Class']"
+        graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
+        product_desc_xpath = "//div[@class='product-description']"
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
@@ -61,7 +62,7 @@ class ScraperVtacSpain:
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
         # Extracción de los campos
-        keys_values = driver.find_elements(By.XPATH, KEYS_VALUES_XPATH)
+        keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
 
         for key_value in keys_values:
             key = key_value.find_element(By.TAG_NAME, "strong")
@@ -103,14 +104,14 @@ class ScraperVtacSpain:
 
         # Extracción de la etiqueta energética
         # try:
-        #     energy_tag_src = driver.find_element(By.XPATH, ENERGY_TAG_XPATH).get_attribute('src')
+        #     energy_tag_src = driver.find_element(By.XPATH, energy_tag_xpath).get_attribute('src')
         #     item['imgs'].append(Util.src_to_base64(energy_tag_src))
         # except NoSuchElementException:
         #     pass
 
         # Extracción de las dimensiones gráficas
         try:
-            graph_dimensions_src = driver.find_element(By.XPATH, GRAPH_DIMENSIONS_XPATH).get_attribute('src')
+            graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
             item['imgs'].append({
                 'src': graph_dimensions_src,
                 'img64': Util.src_to_base64(graph_dimensions_src)
@@ -120,13 +121,13 @@ class ScraperVtacSpain:
 
         # Extracción de la descripción del producto
         try:
-            product_desc = driver.find_element(By.XPATH, PRODUCT_DESC_XPATH).get_attribute('innerHTML')
+            product_desc = driver.find_element(By.XPATH, product_desc_xpath).get_attribute('innerHTML')
             item['descripcion'] = product_desc
         except NoSuchElementException:
             pass
 
         # Extracción del título
-        item['name'] = driver.find_element(By.XPATH, NAME_XPATH).text
+        item['name'] = driver.find_element(By.XPATH, name_xpath).text
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
@@ -146,7 +147,7 @@ class ScraperVtacSpain:
         for cat in categories:
             try:
                 driver.get(cat)
-            except:
+            except TimeoutException:
                 cls.logger.error("ERROR navegando a la página. Reintentando...")
                 ScraperVtacSpain.extract_all_links(driver, categories)
                 return
