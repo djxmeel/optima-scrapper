@@ -1,0 +1,27 @@
+/logs
+/vtac_spain/VTAC_PRODUCT_INFO
+/vtac_spain/VTAC_PRODUCT_INFO_LITE
+/vtac_spain/VTAC_PRODUCT_PDF
+/vtac_italia/VTAC_PRODUCT_INFO
+/vtac_italia/VTAC_PRODUCT_INFO_LITE
+/vtac_italia/VTAC_PRODUCT_PDF
+/vtac_uk/VTAC_PRODUCT_INFO
+/vtac_uk/VTAC_PRODUCT_INFO_LITE
+/vtac_uk/VTAC_PRODUCT_PDF
+.idea/shelf/
+.idea/misc.xml
+.idea/modules.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/vcs.xml
+.idea/vtac-scrapping.iml
+
+# Default ignored files
+/shelf/
+/workspace.xml
+/misc.xml
+/modules.xml
+/inspectionProfiles/profiles_settings.xml
+/inspectionProfiles/Project_Default.xml
+/vcs.xml
+/vtac-scrapping.iml
