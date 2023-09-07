@@ -219,7 +219,8 @@ class Util:
             .replace("ñ", "n") \
             .replace("%", "") \
             .replace(',', "") \
-            .replace('°', "")
+            .replace('°', "") \
+            .replace('__', '_')
         return f'x_{field}'[:61]
 
     @staticmethod
