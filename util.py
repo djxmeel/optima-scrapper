@@ -21,16 +21,26 @@ class Util:
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
     VTAC_PRODUCT_INFO_LITE = 'VTAC_PRODUCT_INFO_LITE'
 
-    VTAC_ES_DIR = 'vtac_spain'
-    VTAC_ITA_DIR = 'vtac_italia'
-    VTAC_UK_DIR = 'vtac_uk'
+    VTAC_COUNTRY_DIR = {
+        'es': 'vtac_spain',
+        'uk': 'vtac_uk',
+        'ita': 'vtac_italia'
+    }
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
-    VTAC_PRODUCTS_LINKS_FILE_ITA = 'VTAC_PRODUCTS_LINKS_ITA.json'
-    VTAC_PRODUCTS_LINKS_FILE_ES = 'VTAC_PRODUCTS_LINKS_ES.json'
-    VTAC_PRODUCTS_LINKS_FILE_UK = 'VTAC_PRODUCTS_LINKS_UK.json'
+    VTAC_PRODUCTS_LINKS_FILE = {
+        'es': 'VTAC_PRODUCTS_LINKS_ES.json',
+        'uk': 'VTAC_PRODUCTS_LINKS_UK.json',
+        'ita': 'VTAC_PRODUCTS_LINKS_ITA.json'
+    }
+
+    LOG_FILE_PATH = {
+        'es': 'logs/es/es_{}.log',
+        'uk': 'logs/uk/uk_{}.log',
+        'ita': 'logs/ita/ita_{}.log',
+    }
 
     VTAC_PRODUCTS_FIELDS_FILE = 'VTAC_PRODUCTS_FIELDS.json'
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
@@ -38,9 +48,6 @@ class Util:
 
     ODOO_DEFAULT_FIELDS = ['list_price', 'volume', 'weight', 'name']
 
-    ES_LOG_FILE_PATH = 'logs/es/es_{}.log'
-    ITA_LOG_FILE_PATH = 'logs/ita/ita_{}.log'
-    UK_LOG_FILE_PATH = 'logs/uk/uk_{}.log'
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
 
     @staticmethod
@@ -212,7 +219,8 @@ class Util:
             .replace("ñ", "n") \
             .replace("%", "") \
             .replace(',', "") \
-            .replace('°', "")
+            .replace('°', "") \
+            .replace('__', '_')
         return f'x_{field}'[:61]
 
     @staticmethod
@@ -314,7 +322,7 @@ class Util:
                     Util.dump_to_json(products_data, filename)
 
                     # Dump lighter version of json
-                    scraper.dump_product_info_lite(products_data, counter)
+                    Util.dump_product_info_lite(products_data, counter, scraper)
 
                     products_data.clear()
         except:
@@ -323,6 +331,15 @@ class Util:
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
                                              counter - counter % scraper.JSON_DUMP_FREQUENCY)
+
+    @staticmethod
+    def dump_product_info_lite(products_data, counter, scraper):
+        for product in products_data:
+            for field in scraper.FIELDS_TO_DELETE_LITE:
+                del product[field]
+
+        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
+        scraper.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
     # Replace <use> tags with the referenced element for cairosvg to work
     @staticmethod

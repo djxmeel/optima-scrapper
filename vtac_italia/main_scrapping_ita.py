@@ -6,13 +6,16 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 from util import Util
 
 
 # VTAC ITALIA SCRAPER
 class ScraperVtacItalia:
+    COUNTRY = 'ita'
+
     # Creación del logger
-    logger_path = Util.ITA_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
@@ -30,20 +33,22 @@ class ScraperVtacItalia:
     JSON_DUMP_FREQUENCY = 50
     BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES = ["Specifiche tecniche", "Packaging"]
+    SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
 
-    CATEGORIES_LINKS = [
+    CATEGORIES_LINKS = (
         'https://led-italia.it/prodotti/M4E-fotovoltaico',
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
-    ]
+    )
+
+    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
-        except:
+        except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
             time.sleep(5)
             ScraperVtacItalia.scrape_item(driver, url, subcategories)
@@ -75,7 +80,7 @@ class ScraperVtacItalia:
                 kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
                 kit_info = {'link': anchor.get_attribute('href'),
-                            'sku': kit_span.find_element(By.TAG_NAME, 'span').text,
+                            'sku': f"VS{kit_span.find_element(By.TAG_NAME, 'span').text}",
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
@@ -93,7 +98,7 @@ class ScraperVtacItalia:
                 acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
                 acces_info = {'link': acces_anchor.get_attribute('href'),
-                              'sku': acces_anchor.find_element(By.TAG_NAME, 'b').text,
+                              'sku': f"VS{acces_anchor.find_element(By.TAG_NAME, 'b').text}",
                               'cantidad': acces_cantidad.text.split('x')[0]
                               }
 
@@ -195,7 +200,7 @@ class ScraperVtacItalia:
         for cat in categories:
             try:
                 driver.get(cat)
-            except:
+            except TimeoutException:
                 cls.logger.error("ERROR navegando a la página. Reintentando...")
                 ScraperVtacItalia.extract_all_links(driver, categories)
                 return
@@ -272,7 +277,7 @@ class ScraperVtacItalia:
             if '/' in name:
                 name = name.replace('/', '-')
 
-            nested_dir = f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             with open(f'{nested_dir}/{name}.pdf', 'wb') as file:
@@ -280,55 +285,45 @@ class ScraperVtacItalia:
 
         return len(pdf_elements)
 
-    # TODO move to Util
-    @classmethod
-    def dump_product_info_lite(cls, products_data, counter):
-        for product in products_data:
-            del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
-
-        Util.dump_to_json(products_data,
-                          f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        cls.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
-
 
 # LINK EXTRACTION
 if ScraperVtacItalia.IF_EXTRACT_ITEM_LINKS:
-    ScraperVtacItalia.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
+    ScraperVtacItalia.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
     extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER,
                                                           ScraperVtacItalia.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
     Util.dump_to_json(list(extracted_links),
-                      f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')  # DUMPING LINKS TO JSON
-    ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}')
+                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')  # DUMPING LINKS TO JSON
+    ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 
 # PRODUCTS INFO EXTRACTION
 if ScraperVtacItalia.IF_EXTRACT_ITEM_INFO:
-    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}')
     # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacItalia,
-        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
-        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}',
         ScraperVtacItalia.logger,
         ScraperVtacItalia.BEGIN_SCRAPE_FROM
     )
-    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
 if ScraperVtacItalia.IF_DL_ITEM_PDF:
-    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacItalia,
-        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCTS_LINKS_FILE_ITA}',
-        f'{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}',
         'ITA',
         ScraperVtacItalia.logger
     )
-    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if ScraperVtacItalia.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacItalia.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(Util.VTAC_ITA_DIR)
+    Util.extract_distinct_fields_to_excel(Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY])
     ScraperVtacItalia.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 ScraperVtacItalia.DRIVER.close()

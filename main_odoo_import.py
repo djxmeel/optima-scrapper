@@ -132,7 +132,7 @@ def import_accessories_kits():
 
                 for acc in accessories_sku:
                     new_record_data = {
-                        'x_sku': f"VS{acc['sku']}",  # Any other fields you want to set
+                        'x_sku': acc['sku'],  # Any other fields you want to set
                         'x_producto': main_product_id,  # The ID of the product you want to reference
                         'x_cantidad': acc['cantidad']
                     }
@@ -143,7 +143,7 @@ def import_accessories_kits():
 
 def import_pdfs():
     product_model = odoo.env['product.template']
-    pdf_model = odoo.env['x_x_product_pdfs_model']
+    pdf_model = odoo.env['x_product_files_model']
 
     directory_list = get_nested_directories(PRODUCT_PDF_DIR)
     counter = 0
@@ -179,8 +179,8 @@ def import_pdfs():
                     print(pdf_name)
                     pdf_data = {
                         'x_name': pdf_name,
-                        'x_product_pdf': encoded_pdf_data,
-                        'x_product_pdf_ref': product_ids[0],
+                        'x_producto_file': encoded_pdf_data,
+                        'x_producto': product_ids[0],
                     }
 
                     pdf_id = pdf_model.create(pdf_data)
