@@ -5,7 +5,6 @@ from datetime import datetime
 from util import Util
 
 
-# TODO test this class
 class DataMerger:
     # Creación del logger
     logger_path = Util.MERGER_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
@@ -23,10 +22,10 @@ class DataMerger:
 
     # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
-        'default': ['es', 'uk', 'ita'],
-        'icons': ['uk', 'ita', 'es'],
-        'imgs': ['ita', 'uk', 'es'],
-        'descripcion': ['es', 'uk', 'ita'],
+        'default': ('es', 'uk', 'ita'),
+        'icons': ('uk', 'ita', 'es'),
+        'imgs': ('ita', 'uk', 'es'),
+        'descripcion': ('es', 'uk', 'ita')
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)
@@ -63,7 +62,6 @@ class DataMerger:
     def get_product_from_country_sku(cls, sku, country):
         for product in cls.data[country]:
             if product["SKU"] == sku:
-                print(f'Found product {sku} in {country}')
                 return product
         return None
 
@@ -77,6 +75,12 @@ class DataMerger:
             product = {'es': cls.get_product_from_country_sku(sku, 'es'),
                        'uk': cls.get_product_from_country_sku(sku, 'uk'),
                        'ita': cls.get_product_from_country_sku(sku, 'ita')}
+
+            # Add empty spaces to SKU to make it 8 characters long for better readability
+            sku += ' ' * (8 - len(sku))
+
+            cls.logger.info(f'\n{sku} : ES: {int(product.get("es") is not None)} | UK: {int(product.get("uk") is not None)} | ITA: {int(product.get("ita") is not None)}')
+
             merged_product = {}
 
             # First, deepcopy product from the first country in 'default' priority order
@@ -84,6 +88,7 @@ class DataMerger:
                 # Stop at first found in priority order
                 if product[country] is not None:
                     merged_product = copy.deepcopy(product[country])
+                    cls.logger.info(f'{sku}: DEFAULT -> {country}')
                     break
 
             # Then, merge fields from other countries in priority order
@@ -94,9 +99,10 @@ class DataMerger:
                     if product.get(country) and product[country].get(field) and len(product[country][field]) > 0:
                         if type(product[country][field]) is list:
                             merged_product[field] = copy.deepcopy(product[country][field])
+                            cls.logger.info(f'{sku}: MERGE {country} -> {field}')
                             break
                         merged_product[field] = product[country][field]
-                        cls.logger.info(f'Field {field} from {country} was merged into {merged_product["SKU"]}')
+                        cls.logger.info(f'{sku}: MERGE {country} -> {field}')
                         break
 
             for field_country in cls.COUNTRY_FIELDS_ALWAYS_KEEP:
@@ -105,7 +111,7 @@ class DataMerger:
                         field_to_keep = product[field_country['country']][field_country['field']]
                         if len(field_to_keep) > 0 and merged_product[field_country['field']] is not field_to_keep:
                             merged_product[field_country['field']] += field_to_keep
-                            cls.logger.info(f'Field {field_country["field"]} from {field_country["country"]} was kept into {merged_product["SKU"]}')
+                            cls.logger.info(f'{sku}: KEEP {field_country["country"]} -> {field_country["field"]}')
                 except KeyError:
                     pass
 
@@ -119,7 +125,12 @@ class DataMerger:
             cls.get_merged_data()
 
         for index in range(0, len(cls.merged_data), cls.JSON_DUMP_FREQUENCY):
-            Util.dump_to_json(cls.merged_data[index:index + cls.JSON_DUMP_FREQUENCY], cls.JSON_DUMP_PATH_TEMPLATE.format(index + cls.JSON_DUMP_FREQUENCY))
+            counter = index + cls.JSON_DUMP_FREQUENCY
+
+            if index + cls.JSON_DUMP_FREQUENCY > len(cls.merged_data):
+                counter = len(cls.merged_data)
+
+            Util.dump_to_json(cls.merged_data[index:counter], cls.JSON_DUMP_PATH_TEMPLATE.format(counter))
 
 
 DataMerger.extract_merged_data()
