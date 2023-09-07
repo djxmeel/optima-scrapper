@@ -31,6 +31,8 @@ class ScraperVtacUk:
     JSON_DUMP_FREQUENCY = 10
     BEGIN_SCRAPE_FROM = 0
 
+    COUNTRY = 'UK'
+
     SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
     CATEGORIES_LINKS = [
@@ -40,6 +42,8 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/smart-products.html',
         'https://www.vtacexports.com/default/electrical.html'
     ]
+
+    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'videos')
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -284,15 +288,6 @@ class ScraperVtacUk:
                 file.write(response.content)
 
         return len(pdf_elements)
-
-    @classmethod
-    def dump_product_info_lite(cls, products_data, counter):
-        for product in products_data:
-            del product['imgs'], product['icons'], product['videos']
-
-        Util.dump_to_json(products_data,
-                          f"{Util.VTAC_UK_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        cls.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
 
 # LINK EXTRACTION

@@ -31,13 +31,17 @@ class ScraperVtacItalia:
     JSON_DUMP_FREQUENCY = 50
     BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES = ["Specifiche tecniche", "Packaging"]
+    COUNTRY = 'ITA'
 
-    CATEGORIES_LINKS = [
+    SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
+
+    CATEGORIES_LINKS = (
         'https://led-italia.it/prodotti/M4E-fotovoltaico',
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
-    ]
+    )
+
+    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -76,7 +80,7 @@ class ScraperVtacItalia:
                 kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
                 kit_info = {'link': anchor.get_attribute('href'),
-                            'sku': kit_span.find_element(By.TAG_NAME, 'span').text,
+                            'sku': f"VS{kit_span.find_element(By.TAG_NAME, 'span').text}",
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
@@ -94,7 +98,7 @@ class ScraperVtacItalia:
                 acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
                 acces_info = {'link': acces_anchor.get_attribute('href'),
-                              'sku': acces_anchor.find_element(By.TAG_NAME, 'b').text,
+                              'sku': f"VS{acces_anchor.find_element(By.TAG_NAME, 'b').text}",
                               'cantidad': acces_cantidad.text.split('x')[0]
                               }
 
@@ -280,16 +284,6 @@ class ScraperVtacItalia:
                 file.write(response.content)
 
         return len(pdf_elements)
-
-    # TODO move to Util
-    @classmethod
-    def dump_product_info_lite(cls, products_data, counter):
-        for product in products_data:
-            del product['imgs'], product['icons'], product['kit'], product['accesorios'], product['videos']
-
-        Util.dump_to_json(products_data,
-                          f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        cls.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
 
 # LINK EXTRACTION
