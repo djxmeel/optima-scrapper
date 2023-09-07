@@ -12,6 +12,9 @@ class DataMerger:
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
+    JSON_DUMP_FREQUENCY = 50
+    JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_MERGED_INFO_{}.json'
+
     COUNTRY_DATA_DIR_PATHS = {
         'es': 'vtac_spain/VTAC_PRODUCT_INFO',
         'uk': 'vtac_uk/VTAC_PRODUCT_INFO',
@@ -29,7 +32,7 @@ class DataMerger:
     # Fields that are always kept from a country (field must be stored as a list in json)
     # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
     COUNTRY_FIELDS_ALWAYS_KEEP = [
-        {'field': 'imgs', 'country': 'es'}
+        {'country': 'es', 'field': 'imgs'}
     ]
 
     merged_data = []
@@ -76,18 +79,24 @@ class DataMerger:
                        'ita': cls.get_product_from_country_sku(sku, 'ita')}
             merged_product = {}
 
+            # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:
                 # Stop at first found in priority order
                 if product[country] is not None:
                     merged_product = copy.deepcopy(product[country])
                     break
 
+            # Then, merge fields from other countries in priority order
             for field in cls.FIELD_PRIORITIES.keys():
                 if field == 'default':
                     continue
                 for country in cls.FIELD_PRIORITIES[field]:
-                    if product[country] is not None and field in product[country] and len(product[country][field]) > 0:
+                    if product.get(country) and product[country].get(field) and len(product[country][field]) > 0:
+                        if type(product[country][field]) is list:
+                            merged_product[field] = copy.deepcopy(product[country][field])
+                            break
                         merged_product[field] = product[country][field]
+                        cls.logger.info(f'Field {field} from {country} was merged into {merged_product["SKU"]}')
                         break
 
             for field_country in cls.COUNTRY_FIELDS_ALWAYS_KEEP:
@@ -96,6 +105,7 @@ class DataMerger:
                         field_to_keep = product[field_country['country']][field_country['field']]
                         if len(field_to_keep) > 0 and merged_product[field_country['field']] is not field_to_keep:
                             merged_product[field_country['field']] += field_to_keep
+                            cls.logger.info(f'Field {field_country["field"]} from {field_country["country"]} was kept into {merged_product["SKU"]}')
                 except KeyError:
                     pass
 
@@ -108,8 +118,8 @@ class DataMerger:
         if len(cls.merged_data) < 1:
             cls.get_merged_data()
 
-        for index in range(0, len(cls.merged_data), 50):
-            Util.dump_to_json(cls.merged_data[index:index + 50], f"merged_data/VTAC_MERGED_INFO_{index + 50}.json")
+        for index in range(0, len(cls.merged_data), cls.JSON_DUMP_FREQUENCY):
+            Util.dump_to_json(cls.merged_data[index:index + cls.JSON_DUMP_FREQUENCY], cls.JSON_DUMP_PATH_TEMPLATE.format(index + cls.JSON_DUMP_FREQUENCY))
 
 
 DataMerger.extract_merged_data()
