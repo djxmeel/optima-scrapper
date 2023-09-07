@@ -314,7 +314,7 @@ class Util:
                     Util.dump_to_json(products_data, filename)
 
                     # Dump lighter version of json
-                    scraper.dump_product_info_lite(products_data, counter)
+                    Util.dump_product_info_lite(products_data, counter, scraper)
 
                     products_data.clear()
         except:
@@ -323,6 +323,15 @@ class Util:
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
                                              counter - counter % scraper.JSON_DUMP_FREQUENCY)
+
+    @staticmethod
+    def dump_product_info_lite(products_data, counter, scraper):
+        for product in products_data:
+            for field in scraper.FIELDS_TO_DELETE_LITE:
+                del product[field]
+
+        Util.dump_to_json(products_data,f"{Util.VTAC_ITA_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
+        scraper.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
     # Replace <use> tags with the referenced element for cairosvg to work
     @staticmethod

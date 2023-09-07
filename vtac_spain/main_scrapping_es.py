@@ -30,14 +30,18 @@ class ScraperVtacSpain:
     JSON_DUMP_FREQUENCY = 100
     BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES = []
+    COUNTRY = 'ES'
 
-    CATEGORIES_LINKS = [
+    SUBCATEGORIES = ()
+
+    CATEGORIES_LINKS = (
         'https://v-tac.es/sistemas-solares.html',
         'https://v-tac.es/iluminaci%C3%B3n.html',
         'https://v-tac.es/smart-digital.html',
         'https://v-tac.es/el%C3%A9ctrico.html',
-    ]
+    )
+
+    FIELDS_TO_DELETE_LITE = ('imgs', 'videos')
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -82,6 +86,7 @@ class ScraperVtacSpain:
         else:
             item['SKU'] = f'VS{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
+        # TODO LOOP to remove hardcoded fields
         # Renombrado de campos determinados
         if 'Ángulo de haz°' in item.keys():
             item['Ángulo de apertura'] = item['Ángulo de haz°']
@@ -228,15 +233,6 @@ class ScraperVtacSpain:
                 file.write(response.content)
 
         return len(pdf_elements)
-
-    @classmethod
-    def dump_product_info_lite(cls, products_data, counter):
-        for product in products_data:
-            del product['imgs'], product['videos']
-
-        Util.dump_to_json(products_data,
-                          f"{Util.VTAC_ES_DIR}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        cls.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
 
 # LINK EXTRACTION
