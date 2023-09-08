@@ -26,7 +26,7 @@ class ScraperVtacUk:
     # Enlaces productos en la página de origen
     IF_EXTRACT_ITEM_LINKS = False
     # Todos los campos de los productos a implementar en ODOO
-    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
     DRIVER = webdriver.Firefox()
 
@@ -327,7 +327,7 @@ if ScraperVtacUk.IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if ScraperVtacUk.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacUk.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY])
+    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}')
     ScraperVtacUk.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 ScraperVtacUk.DRIVER.close()

@@ -19,7 +19,7 @@ import cairosvg
 class Util:
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
-    VTAC_PRODUCT_INFO_LITE = 'VTAC_PRODUCT_INFO_LITE'
+    VTAC_PRODUCT_INFO_LITE_DIR = 'VTAC_PRODUCT_INFO_LITE'
 
     VTAC_COUNTRY_DIR = {
         'es': 'vtac_spain',
@@ -46,7 +46,7 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
 
-    ODOO_DEFAULT_FIELDS = ['list_price', 'volume', 'weight', 'name']
+    NOT_TO_EXTRACT_FIELDS = ['list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons']
 
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
 
@@ -201,42 +201,46 @@ class Util:
     @staticmethod
     def format_field_odoo(field):
         # No need to format default fields
-        if Util.ODOO_DEFAULT_FIELDS.__contains__(field):
+        if Util.NOT_TO_EXTRACT_FIELDS.__contains__(field):
             return field
-
-        # Format custom fields
-        field = field.lower().replace(" ", "_") \
-            .replace("(", "") \
-            .replace(")", "") \
-            .replace("-", "_") \
-            .replace("é", "e") \
-            .replace("á", "a") \
-            .replace("í", "i") \
-            .replace("ó", "o") \
-            .replace("ú", "u") \
-            .replace("/", "_") \
-            .replace(".", "_") \
-            .replace("ñ", "n") \
-            .replace("%", "") \
-            .replace(',', "") \
-            .replace('°', "") \
-            .replace('__', '_')
-        return f'x_{field}'[:61]
+        replacements = [
+            (" ", "_"),
+            ("(", ""),
+            (")", ""),
+            ("-", "_"),
+            ("é", "e"),
+            ("á", "a"),
+            ("í", "i"),
+            ("ó", "o"),
+            ("ú", "u"),
+            ("/", "_"),
+            (".", "_"),
+            ("ñ", "n"),
+            ("%", ""),
+            (",", ""),
+            ("°", ""),
+            ("'", "e_"),
+            ("__", "_")
+        ]
+        formatted_field = field.lower()
+        for search, replace in replacements:
+            formatted_field = formatted_field.replace(search, replace)
+        return f'x_{formatted_field}'[:61]
 
     @staticmethod
     def extract_distinct_fields_to_excel(directory_path):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCT_INFO_LITE}')
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
         json_data = []
         fields = set()
 
         for file_path in file_list:
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding='ISO-8859-1') as file:
                 json_data.extend(json.load(file))
 
         for product in json_data:
             for attr in product.keys():
                 # Filter out non-custom fields
-                if attr not in Util.ODOO_DEFAULT_FIELDS:
+                if attr not in Util.NOT_TO_EXTRACT_FIELDS:
                     fields.add(attr)
 
         excel_dicts = []
@@ -338,7 +342,7 @@ class Util:
             for field in scraper.FIELDS_TO_DELETE_LITE:
                 del product[field]
 
-        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
+        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
         scraper.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
     # Replace <use> tags with the referenced element for cairosvg to work
