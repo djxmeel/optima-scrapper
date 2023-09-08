@@ -11,8 +11,12 @@ class DataMerger:
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
-    JSON_DUMP_FREQUENCY = 50
-    JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_MERGED_INFO_{}.json'
+    IF_MERGE = False
+    IF_EXTRACT_FIELDS = False
+
+    JSON_DUMP_FREQUENCY = 10
+    JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
+    MERGED_DATA_DIR_PATH = 'merged_data/VTAC_PRODUCT_INFO'
 
     COUNTRY_DATA_DIR_PATHS = {
         'es': 'vtac_spain/VTAC_PRODUCT_INFO',
@@ -26,6 +30,21 @@ class DataMerger:
         'icons': ('uk', 'ita', 'es'),
         'imgs': ('ita', 'uk', 'es'),
         'descripcion': ('es', 'uk', 'ita')
+    }
+
+    # Fields to rename for common naming between countries
+    FIELD_TO_MERGE = {
+        "Código EAN" : "EAN",
+        "Ciclos de encendido / apagado" : "Ciclos de encendido/apagado",
+        "Código de la Familia" : "Código de familia",
+        "Eficacia luminosa (lm/W)" : "Eficacia luminosa",
+        "Factor de potencia (FP)" : "Factor de potencia",
+        "FP" : "Factor de potencia",
+        "Flujo luminoso (lm)" : "Flujo luminoso",
+        "Flujo luminoso/m" : "Flujo luminoso",
+        "Garanzia" : "Garantía",
+        "Dimensión" : "Dimensiones",
+        "Dimensioni (AxLxP)" : "Dimensiones"
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)
@@ -49,6 +68,11 @@ class DataMerger:
             with open(file_path, "r", encoding='utf-8') as file:
                 cls.data[country] += json.load(file)
 
+        # Filtering None
+        # Merging fields when necessary
+        cls.data[country] = [cls.merge_product_fields(p) for p in cls.data[country] if p is not None]
+
+
     @classmethod
     def load_all(cls):
         for country in cls.COUNTRY_DATA_DIR_PATHS.keys():
@@ -56,7 +80,11 @@ class DataMerger:
 
     @classmethod
     def get_data(cls, country):
-        return cls.data.get(country, None)
+        if len(cls.data.get(country)) > 0:
+            return cls.data.get(country, None)
+        else:
+            cls.load_data_for_country(country)
+            return cls.data.get(country, None)
 
     @classmethod
     def get_product_from_country_sku(cls, sku, country):
@@ -66,10 +94,32 @@ class DataMerger:
         return None
 
     @classmethod
-    def get_merged_data(cls):
+    def merge_product_fields(cls, product):
+        for key, value in cls.FIELD_TO_MERGE.items():
+            if product.get(key):
+                product[value] = product[key]
+                print(f'{product["SKU"]} FOUND {key} AND CHANGED IT TO {value}')
+                del product[key]
+        return product
+
+    @classmethod
+    def load_merged_data(cls):
+        file_list = Util.get_all_files_in_directory(cls.MERGED_DATA_DIR_PATH)
+        for file_path in file_list:
+            with open(file_path, "r", encoding='ISO-8859-1') as file:
+                cls.merged_data += json.load(file)
+
+        return cls.merged_data
+
+    @classmethod
+    def get_unique_skus(cls):
+        return set(product['SKU'] for product in cls.load_merged_data())
+
+    @classmethod
+    def merge_data(cls):
         cls.load_all()
-        all_data = cls.data['es'] + cls.data['uk'] + cls.data['ita']
-        unique_product_skus = set(product['SKU'] for product in all_data)
+
+        unique_product_skus = cls.get_unique_skus()
 
         for sku in unique_product_skus:
             product = {'es': cls.get_product_from_country_sku(sku, 'es'),
@@ -117,12 +167,10 @@ class DataMerger:
 
             cls.merged_data.append(merged_product)
 
-        return cls.merged_data
-
     @classmethod
     def extract_merged_data(cls):
         if len(cls.merged_data) < 1:
-            cls.get_merged_data()
+            cls.merge_data()
 
         for index in range(0, len(cls.merged_data), cls.JSON_DUMP_FREQUENCY):
             counter = index + cls.JSON_DUMP_FREQUENCY
@@ -132,5 +180,11 @@ class DataMerger:
 
             Util.dump_to_json(cls.merged_data[index:counter], cls.JSON_DUMP_PATH_TEMPLATE.format(counter))
 
-
-DataMerger.extract_merged_data()
+if DataMerger.IF_MERGE:
+    DataMerger.logger.info('BEGINNING DATA MERGING')
+    DataMerger.extract_merged_data()
+    DataMerger.logger.info('FINISHED DATA MERGING')
+if DataMerger.IF_EXTRACT_FIELDS:
+    DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
+    Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
+    DataMerger.logger.info('FINISHED FIELD EXTRACTION')

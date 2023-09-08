@@ -19,7 +19,7 @@ class ScraperVtacSpain:
     print(f'LOGGER CREATED: {logger_path}')
 
     # Datos productos
-    IF_EXTRACT_ITEM_INFO = False
+    IF_EXTRACT_ITEM_INFO = True
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
@@ -132,7 +132,7 @@ class ScraperVtacSpain:
             pass
 
         # Extracción del título
-        item['name'] = driver.find_element(By.XPATH, name_xpath).text
+        item['name'] = f'[{item["SKU"]}] {driver.find_element(By.XPATH, name_xpath).text}'
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
@@ -272,7 +272,7 @@ if ScraperVtacSpain.IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if ScraperVtacSpain.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacSpain.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY])
+    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}')
     ScraperVtacSpain.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 ScraperVtacSpain.DRIVER.close()
