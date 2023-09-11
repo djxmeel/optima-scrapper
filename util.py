@@ -3,6 +3,7 @@ import json
 import os
 import re
 import time
+from datetime import datetime
 
 import pandas as pd
 import requests
@@ -17,6 +18,8 @@ import cairosvg
 
 
 class Util:
+    DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
+
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
     VTAC_PRODUCT_INFO_LITE_DIR = 'VTAC_PRODUCT_INFO_LITE'
@@ -31,9 +34,15 @@ class Util:
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
     VTAC_PRODUCTS_LINKS_FILE = {
-        'es': 'VTAC_PRODUCTS_LINKS_ES.json',
-        'uk': 'VTAC_PRODUCTS_LINKS_UK.json',
-        'ita': 'VTAC_PRODUCTS_LINKS_ITA.json'
+        'es': 'LINKS/VTAC_PRODUCTS_LINKS_ES.json',
+        'uk': 'LINKS/VTAC_PRODUCTS_LINKS_UK.json',
+        'ita': 'LINKS/VTAC_PRODUCTS_LINKS_ITA.json'
+    }
+
+    NEW_VTAC_PRODUCTS_LINKS_FILE = {
+        'es': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_ES.json',
+        'uk': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_UK.json',
+        'ita': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_ITA.json'
     }
 
     LOG_FILE_PATH = {

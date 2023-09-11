@@ -1,4 +1,3 @@
-from datetime import datetime
 import math
 import time
 import requests
@@ -15,7 +14,7 @@ class ScraperVtacUk:
     COUNTRY = 'uk'
 
     # Creación del logger
-    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
@@ -24,7 +23,7 @@ class ScraperVtacUk:
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
-    IF_EXTRACT_ITEM_LINKS = False
+    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
     # Todos los campos de los productos a implementar en ODOO
     IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
@@ -113,10 +112,6 @@ class ScraperVtacUk:
                 # <li> que no contiene <span> -> Feature
                 item['descripcion'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
 
-            if 'Peso bruto (kg)' in item:
-                item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
-                del item['Peso bruto (kg)']
-
         # Extracción del SKU
         try:
             item['SKU'] = f'VS{Util.get_sku_from_link_uk(driver)}'
@@ -172,12 +167,17 @@ class ScraperVtacUk:
                 item[new_field] = item[field]
                 del item[field]
 
+        # Reemplazo de campos para ODOO
+        if 'Peso bruto (kg)' in item:
+            item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
+            del item['Peso bruto (kg)']
+
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
         return item
 
     @classmethod
-    def extract_all_links(cls, driver, categories):
+    def extract_all_links(cls, driver, categories, update=False):
         extracted = set()
 
         for cat in categories:
@@ -303,10 +303,20 @@ class ScraperVtacUk:
 # LINK EXTRACTION
 if ScraperVtacUk.IF_EXTRACT_ITEM_LINKS:
     ScraperVtacUk.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
-    extracted_links = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER,
-                                                      ScraperVtacUk.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
-    Util.dump_to_json(list(extracted_links),
-                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')  # DUMPING LINKS TO JSON
+
+    if not ScraperVtacUk.IF_UPDATE:
+        # EXTRACT LINKS TO A set()
+        extracted_links = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER, ScraperVtacUk.CATEGORIES_LINKS)
+
+        Util.dump_to_json(list(extracted_links),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
+    else:
+        extracted_links, links_new = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER, ScraperVtacUk.CATEGORIES_LINKS, update=True)
+
+        Util.dump_to_json(list(extracted_links),
+                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
+        Util.dump_to_json(list(links_new),
+                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
+
     ScraperVtacUk.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
 # PRODUCTS INFO EXTRACTION
