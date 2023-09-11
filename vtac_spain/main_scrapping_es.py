@@ -23,7 +23,7 @@ class ScraperVtacSpain:
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
-    IF_EXTRACT_ITEM_LINKS = False
+    IF_EXTRACT_ITEM_LINKS = True
     # Todos los campos de los productos a implementar en ODOO
     IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
@@ -42,6 +42,15 @@ class ScraperVtacSpain:
     )
 
     FIELDS_TO_DELETE_LITE = ('imgs', 'videos')
+
+    FIELDS_TO_RENAME = {
+        'Ángulo de haz°' : 'Ángulo de apertura',
+        'Ángulo de haz' : 'Ángulo de apertura',
+        'EAN Código' : 'EAN',
+        'Código de producto' :'Código de familia',
+        'Las condiciones de trabajo' : 'Temperaturas de trabajo',
+        'Hora de inicio al 100% encendido' : 'Tiempo de inicio al 100% encendido'
+    }
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -86,27 +95,6 @@ class ScraperVtacSpain:
         else:
             item['SKU'] = f'VS{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        # TODO LOOP to remove hardcoded fields
-        # Renombrado de campos determinados
-        if 'Ángulo de haz°' in item.keys():
-            item['Ángulo de apertura'] = item['Ángulo de haz°']
-            del item['Ángulo de haz°']
-        if 'Ángulo de haz' in item.keys():
-            item['Ángulo de apertura'] = item['Ángulo de haz']
-            del item['Ángulo de haz']
-        if 'EAN Código' in item.keys():
-            item['EAN'] = item['EAN Código']
-            del item['EAN Código']
-        if 'Código de producto' in item.keys():
-            item['Código de familia'] = item['Código de producto']
-            del item['Código de producto']
-        if 'Las condiciones de trabajo' in item.keys():
-            item['Temperaturas de trabajo'] = item['Las condiciones de trabajo']
-            del item['Las condiciones de trabajo']
-        if 'Hora de inicio al 100% encendido' in item.keys():
-            item['Tiempo de inicio al 100% encendido'] = item['Hora de inicio al 100% encendido']
-            del item['Hora de inicio al 100% encendido']
-
         # Extracción de la etiqueta energética
         # try:
         #     energy_tag_src = driver.find_element(By.XPATH, energy_tag_xpath).get_attribute('src')
@@ -141,6 +129,12 @@ class ScraperVtacSpain:
         if 'Peso del artículo' in item.keys():
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
+
+        # Renombrado de campos determinados
+        for field, new_field in cls.FIELDS_TO_RENAME.items():
+            if field in item:
+                item[new_field] = item[field]
+                del item[field]
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
