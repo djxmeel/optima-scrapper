@@ -11,12 +11,13 @@ class DataMerger:
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
-    IF_MERGE = False
-    IF_EXTRACT_FIELDS = False
+    IF_MERGE = True
+    IF_EXTRACT_FIELDS = True
 
     JSON_DUMP_FREQUENCY = 10
     JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
-    MERGED_DATA_DIR_PATH = 'merged_data/VTAC_PRODUCT_INFO'
+    MERGED_PRODUCT_INFO_DIR_PATH = 'merged_data/VTAC_PRODUCT_INFO'
+    MERGED_DATA_DIR_PATH = 'merged_data'
 
     COUNTRY_DATA_DIR_PATHS = {
         'es': 'vtac_spain/VTAC_PRODUCT_INFO',
@@ -98,8 +99,8 @@ class DataMerger:
         for key, value in cls.FIELD_TO_MERGE.items():
             if product.get(key):
                 product[value] = product[key]
-                print(f'{product["SKU"]} FOUND {key} AND CHANGED IT TO {value}')
                 del product[key]
+        cls.logger.info(F"{product['SKU']} : MERGED FIELDS")
         return product
 
     @classmethod
@@ -107,7 +108,7 @@ class DataMerger:
         if not always_load and len(cls.merged_data) > 0:
             return cls.merged_data
 
-        file_list = Util.get_all_files_in_directory(cls.MERGED_DATA_DIR_PATH)
+        file_list = Util.get_all_files_in_directory(cls.MERGED_PRODUCT_INFO_DIR_PATH)
         for file_path in file_list:
             with open(file_path, "r", encoding='ISO-8859-1') as file:
                 cls.merged_data += json.load(file)
@@ -116,7 +117,7 @@ class DataMerger:
 
     @classmethod
     def get_unique_skus(cls):
-        return set(product['SKU'] for product in cls.load_merged_data())
+        return set(product['SKU'] for product in cls.data['es'] + cls.data['uk'] + cls.data['ita'])
 
     @classmethod
     def merge_data(cls):
