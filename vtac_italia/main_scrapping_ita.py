@@ -1,3 +1,4 @@
+import json
 import time
 import requests
 import os
@@ -22,9 +23,9 @@ class ScraperVtacItalia:
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
-    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
     # Todos los campos de los productos a implementar en ODOO
-    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
+    IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
     DRIVER = webdriver.Firefox()
 
@@ -241,7 +242,17 @@ class ScraperVtacItalia:
                     cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
                     current_page += 1
 
-        return extracted
+        if update:
+            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+
+            if os.path.exists(links_path):
+                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
+                    old_links = set(json.load(file))
+                    new_links = extracted - old_links
+                    cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
+                    return extracted, new_links
+
+        return extracted, None
 
     @classmethod
     def count_pdfs_of_link(cls, link):
@@ -310,8 +321,8 @@ if ScraperVtacItalia.IF_EXTRACT_ITEM_LINKS:
 
         Util.dump_to_json(list(extracted_links),
                           f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
-        Util.dump_to_json(list(links_new),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+        if links_new:
+            Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 
     ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 
