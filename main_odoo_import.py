@@ -1,7 +1,6 @@
 import odoorpc
 import json
 import os
-from googletrans import Translator
 import base64
 
 from util import Util
@@ -50,32 +49,6 @@ def get_nested_directories(path):
         for name in dirs:
             directories.append(os.path.join(root, name))
     return directories
-
-
-def translate_italian_to_spanish(text):
-    """
-    Translates Italian text to Spanish using Google Translate.
-
-    Parameters:
-    text (str): The text in Italian.
-
-    Returns:
-    str: The translated text in Spanish.
-    """
-    try:
-        translator = Translator()
-
-        detected_language = translator.detect(text).lang
-
-        if detected_language == 'it':
-            translation = translator.translate(text, src=detected_language, dest='es')
-            return translation.text
-    except TimeoutError:
-        print('TIMED OUT')
-        translate_italian_to_spanish(text)
-        Util.translate_from_to_spanish('ita')
-
-    return text
 
 
 def import_products():
@@ -203,7 +176,7 @@ def import_pdfs():
                     pdf_binary_data = file.read()
                     encoded_pdf_data = base64.b64encode(pdf_binary_data).decode()
                 # TODO use translate method in Util
-                pdf_name = translate_italian_to_spanish(pdf_path.split('\\')[-1])
+                pdf_name = Util.translate_from_to_spanish('detect' ,pdf_path.split('\\')[-1])
                 pdf_name = f'{sku}_{pdf_name}'
 
                 existing_pdfs = pdf_model.search([('x_name', '=', pdf_name)])
