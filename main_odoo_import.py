@@ -111,7 +111,6 @@ def import_products():
 
 
 def import_accessories_kits():
-
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
 
     # Get the product template object
@@ -157,34 +156,35 @@ def import_accessories_kits():
 
             print(f"#{index + 1} ADDED {len(accessories_sku)} ACCESSORIES TO PRODUCT WITH SKU {product['SKU']}")
 
-# TODO PDF 1.ES 2.UK MISSING : A check for sku existence to decide from what dir where to get the PDF from
+# TODO TEST PDF 1.ES 2.UK MISSING : A check for sku existence to decide from what dir where to get the PDF from
 def import_pdfs():
     product_model = odoo.env['product.template']
     pdf_model = odoo.env['x_product_files_model']
 
     unique_skus = DataMerger.get_unique_skus()
-    counter = 0
-    records = pdf_model.search([])
 
     directory_list_es = get_nested_directories(PRODUCT_PDF_DIRS['es'])
-    sku_list_es = [dir.split('/')[2] for dir in directory_list_es]
+    sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
 
     directory_list_uk = get_nested_directories(PRODUCT_PDF_DIRS['uk'])
-    sku_list_uk = [dir.split('/')[2] for dir in directory_list_uk]
+    sku_list_uk = [dirr.split('/')[2] for dirr in directory_list_uk]
 
     directory_list_ita = get_nested_directories(PRODUCT_PDF_DIRS['ita'])
-    sku_list_ita = [dir.split('/')[2] for dir in directory_list_ita]
+    sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
 
-    # TODO CHANGE a check of existing pdfs
+    # TODO TEST the check of existing pdfs then remove
     # Delete all pdf model records
+    records = pdf_model.search([])
     pdf_model.unlink(records)
+
+    counter = 0
 
     for sku in unique_skus:
         product_ids = product_model.search([('x_sku', '=', sku)])
 
         if len(product_ids) > 0:
             counter += 1
-            print(f'{sku} FOUND IN ODOO ({counter}/4715)')
+            print(f'{sku} FOUND IN ODOO ({counter})')
 
             pdf_paths = []
 
@@ -207,7 +207,6 @@ def import_pdfs():
                 existing_pdfs = pdf_model.search([('x_name', '=', pdf_name)])
 
                 if not existing_pdfs:
-                    print(pdf_name)
                     pdf_data = {
                         'x_name': pdf_name,
                         'x_producto_file': encoded_pdf_data,
@@ -215,6 +214,9 @@ def import_pdfs():
                     }
 
                     pdf_id = pdf_model.create(pdf_data)
+                    print(f'PDF {pdf_name} DOES NOT EXIST IN ODOO, CREATED WITH ID {pdf_id}')
+                else:
+                    print(f'PDF {pdf_name} ALREADY EXISTS IN ODOO')
 
 
 def import_imgs():
@@ -306,9 +308,6 @@ def import_icons():
 
         else:
             print(f'{product["SKU"]} HAS NO ICONS!')
-
-# TODO remove
-DataMerger.extract_merged_data()
 
 if IF_IMPORT_PRODUCTS:
     print(f'BEGINNING PRODUCTS IMPORT')

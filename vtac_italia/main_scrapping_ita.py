@@ -1,6 +1,4 @@
 import time
-from datetime import datetime
-
 import requests
 import os
 from selenium import webdriver
@@ -15,7 +13,7 @@ class ScraperVtacItalia:
     COUNTRY = 'ita'
 
     # Creación del logger
-    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
@@ -24,7 +22,7 @@ class ScraperVtacItalia:
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
-    IF_EXTRACT_ITEM_LINKS = False
+    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
     # Todos los campos de los productos a implementar en ODOO
     IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
@@ -205,7 +203,7 @@ class ScraperVtacItalia:
         return item
 
     @classmethod
-    def extract_all_links(cls, driver, categories):
+    def extract_all_links(cls, driver, categories, update=False):
         extracted = set()
         for cat in categories:
             try:
@@ -299,10 +297,22 @@ class ScraperVtacItalia:
 # LINK EXTRACTION
 if ScraperVtacItalia.IF_EXTRACT_ITEM_LINKS:
     ScraperVtacItalia.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
-    extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER,
-                                                          ScraperVtacItalia.CATEGORIES_LINKS)  # EXTRACTION LINKS TO A set()
-    Util.dump_to_json(list(extracted_links),
-                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')  # DUMPING LINKS TO JSON
+
+    if not ScraperVtacItalia.IF_UPDATE:
+        # EXTRACT LINKS TO A set()
+        extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER, ScraperVtacItalia.CATEGORIES_LINKS)
+
+        Util.dump_to_json(list(extracted_links),
+                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+    else:
+        extracted_links, links_new = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER,
+                                                                     ScraperVtacItalia.CATEGORIES_LINKS, update=True)
+
+        Util.dump_to_json(list(extracted_links),
+                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+        Util.dump_to_json(list(links_new),
+                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+
     ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 
 # PRODUCTS INFO EXTRACTION
