@@ -45,6 +45,10 @@ class ScraperVtacUk:
 
     FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'videos')
 
+    FIELDS_TO_RENAME = {
+
+    }
+
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
@@ -161,6 +165,12 @@ class ScraperVtacUk:
                 item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO ICONS')
+
+        # Renombrado de campos determinados
+        for field, new_field in cls.FIELDS_TO_RENAME.items():
+            if field in item:
+                item[new_field] = item[field]
+                del item[field]
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
