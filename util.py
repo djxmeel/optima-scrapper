@@ -117,7 +117,7 @@ class Util:
             translator = Translator()
             detected_language = translator.detect(text).lang
 
-            if detected_language == _from:
+            if detected_language == _from or _from == 'detect':
                 translation = translator.translate(text, src=detected_language, dest='es')
                 return translation.text
         except:
