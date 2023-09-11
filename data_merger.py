@@ -11,8 +11,8 @@ class DataMerger:
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
-    IF_MERGE = True
-    IF_EXTRACT_FIELDS = True
+    IF_MERGE = False
+    IF_EXTRACT_FIELDS = False
 
     JSON_DUMP_FREQUENCY = 10
     JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
@@ -35,17 +35,17 @@ class DataMerger:
 
     # Fields to rename for common naming between countries
     FIELD_TO_MERGE = {
-        "Código EAN" : "EAN",
-        "Ciclos de encendido / apagado" : "Ciclos de encendido/apagado",
-        "Código de la Familia" : "Código de familia",
-        "Eficacia luminosa (lm/W)" : "Eficacia luminosa",
-        "Factor de potencia (FP)" : "Factor de potencia",
-        "FP" : "Factor de potencia",
-        "Flujo luminoso (lm)" : "Flujo luminoso",
-        "Flujo luminoso/m" : "Flujo luminoso",
-        "Garanzia" : "Garantía",
-        "Dimensión" : "Dimensiones",
-        "Dimensioni (AxLxP)" : "Dimensiones"
+        "Código EAN": "EAN",
+        "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
+        "Código de la Familia": "Código de familia",
+        "Eficacia luminosa (lm/W)": "Eficacia luminosa",
+        "Factor de potencia (FP)": "Factor de potencia",
+        "FP": "Factor de potencia",
+        "Flujo luminoso (lm)": "Flujo luminoso",
+        "Flujo luminoso/m": "Flujo luminoso",
+        "Garanzia": "Garantía",
+        "Dimensión": "Dimensiones",
+        "Dimensioni (AxLxP)": "Dimensiones"
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)
@@ -72,7 +72,6 @@ class DataMerger:
         # Filtering None
         # Merging fields when necessary
         cls.data[country] = [cls.merge_product_fields(p) for p in cls.data[country] if p is not None]
-
 
     @classmethod
     def load_all(cls):
@@ -117,6 +116,12 @@ class DataMerger:
 
     @classmethod
     def get_unique_skus(cls):
+        if len(cls.data['es']) < 1:
+            cls.load_data_for_country('es')
+        if len(cls.data['uk']) < 1:
+            cls.load_data_for_country('uk')
+        if len(cls.data['ita']) < 1:
+            cls.load_data_for_country('ita')
         return set(product['SKU'] for product in cls.data['es'] + cls.data['uk'] + cls.data['ita'])
 
     @classmethod
@@ -183,6 +188,7 @@ class DataMerger:
                 counter = len(cls.merged_data)
 
             Util.dump_to_json(cls.merged_data[index:counter], cls.JSON_DUMP_PATH_TEMPLATE.format(counter))
+
 
 if DataMerger.IF_MERGE:
     DataMerger.logger.info('BEGINNING DATA MERGING')
