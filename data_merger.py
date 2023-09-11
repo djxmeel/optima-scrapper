@@ -103,7 +103,10 @@ class DataMerger:
         return product
 
     @classmethod
-    def load_merged_data(cls):
+    def load_merged_data(cls, always_load=False):
+        if not always_load and len(cls.merged_data) > 0:
+            return cls.merged_data
+
         file_list = Util.get_all_files_in_directory(cls.MERGED_DATA_DIR_PATH)
         for file_path in file_list:
             with open(file_path, "r", encoding='ISO-8859-1') as file:
