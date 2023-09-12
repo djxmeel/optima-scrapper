@@ -6,8 +6,8 @@ import base64
 from util import Util
 from data_merger import DataMerger
 
-IF_IMPORT_PRODUCTS = True
-IF_IMPORT_ACC = True
+IF_IMPORT_PRODUCTS = False
+IF_IMPORT_ACC = False
 IF_IMPORT_PDFS = True
 IF_IMPORT_IMGS = True
 IF_IMPORT_ICONS = True
@@ -136,7 +136,7 @@ def import_pdfs():
     pdf_model = odoo.env['x_product_files_model']
 
     # TODO change
-    unique_skus = DataMerger.get_unique_skus()
+    unique_skus = DataMerger.get_unique_skus_from_merged()
 
     directory_list_es = get_nested_directories(PRODUCT_PDF_DIRS['es'])
     sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
@@ -159,18 +159,17 @@ def import_pdfs():
 
         if len(product_ids) > 0:
             counter += 1
-            print(f'{sku} FOUND IN ODOO ({counter})')
-
             pdf_paths = []
 
             # Remove VS prefix :2
             if sku[2:] in sku_list_es:
                 pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
             elif sku[2:] in sku_list_uk:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_uk.index(sku[2:])])
+                pdf_paths = Util.get_all_files_in_directory(directory_list_uk[sku_list_uk.index(sku[2:])])
             elif sku[2:] in sku_list_ita:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_ita.index(sku[2:])])
+                pdf_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
 
+                print(f"UPLOADING {len(pdf_paths)} FILES FOR PRODUCT {sku}")
             for pdf_path in pdf_paths:
                 with open(pdf_path, 'rb') as file:
                     pdf_binary_data = file.read()
@@ -189,9 +188,6 @@ def import_pdfs():
                     }
 
                     pdf_id = pdf_model.create(pdf_data)
-                    print(f'PDF {pdf_name} DOES NOT EXIST IN ODOO, CREATED WITH ID {pdf_id}')
-                else:
-                    print(f'PDF {pdf_name} ALREADY EXISTS IN ODOO')
 
 
 def import_imgs():
