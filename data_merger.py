@@ -122,7 +122,7 @@ class DataMerger:
     def merge_data(cls):
         cls.load_all()
 
-        unique_product_skus = cls.get_unique_skus()
+        unique_product_skus = cls.get_unique_skus_from_merged()
 
         for sku in unique_product_skus:
             product = {'es': cls.get_product_from_country_sku(sku, 'es'),
