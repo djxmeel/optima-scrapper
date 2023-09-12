@@ -1,14 +1,18 @@
+from urllib.error import HTTPError
+
 import odoorpc
 import json
 import os
 import base64
+
+from odoorpc.error import RPCError
 
 from util import Util
 from data_merger import DataMerger
 
 IF_IMPORT_PRODUCTS = False
 IF_IMPORT_ACC = False
-IF_IMPORT_PDFS = True
+IF_IMPORT_PDFS = False
 IF_IMPORT_IMGS = True
 IF_IMPORT_ICONS = True
 
@@ -138,6 +142,11 @@ def import_accessories_kits():
 
 # TODO TEST PDF 1.ES 2.UK MISSING : A check for sku existence to decide from what dir where to get the PDF from
 def import_pdfs():
+    # TODO TEST the check of existing pdfs then remove
+    # Delete all pdf model records
+    # records = pdf_model.search([])
+    # pdf_model.unlink(records)
+
     product_model = odoo.env['product.template']
     pdf_model = odoo.env['x_product_files_model']
 
@@ -150,13 +159,7 @@ def import_pdfs():
     directory_list_ita = get_nested_directories(PRODUCT_PDF_DIRS['ita'])
     sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
 
-    # TODO TEST the check of existing pdfs then remove
-    # Delete all pdf model records
-    # records = pdf_model.search([])
-    # pdf_model.unlink(records)
-
     counter = 0
-
     unique_skus = DataMerger.get_unique_skus_from_merged()
 
     for sku in unique_skus:
@@ -164,8 +167,6 @@ def import_pdfs():
 
         if len(product_ids) > 0:
             counter += 1
-            print(f'{sku} FOUND IN ODOO ({counter})')
-
             pdf_paths = []
 
             # Remove 'VS' prefix [2:]
@@ -176,7 +177,8 @@ def import_pdfs():
             elif sku[2:] in sku_list_ita:
                 pdf_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
 
-                print(f"UPLOADING {len(pdf_paths)} FILES FOR PRODUCT {sku}")
+            if len(pdf_paths) > 0:
+                print(f"{counter}. {sku}: UPLOADING {len(pdf_paths)} FILES")
             for pdf_path in pdf_paths:
                 with open(pdf_path, 'rb') as file:
                     pdf_binary_data = file.read()
@@ -196,7 +198,11 @@ def import_pdfs():
                     'x_producto_file': encoded_pdf_data,
                     'x_producto': product_ids[0]
                 }
-                pdf_id = pdf_model.create(pdf_data)
+                try:
+                    pdf_id = pdf_model.create(pdf_data)
+                    print(f'{sku}:  PDF WITH NAME {pdf_name} UPLOADED ODOO')
+                except HTTPError:
+                    print(f"ERROR UPLOADING {pdf_name} FOR PRODUCT {sku}")
 
 
 def import_imgs():
@@ -208,13 +214,12 @@ def import_imgs():
 
         for product_data in json_data:
             if 'imgs' in product_data:
-                print(f'{product_data["SKU"]} imgs: {len(product_data["imgs"])}')
+                print(f'{product_data["SKU"]}: FOUND {len(product_data["imgs"])} IMAGES')
 
                 # Search for the product template with the given sku
                 product_ids = odoo.env['product.template'].search([('x_sku', '=', product_data['SKU'])])
 
                 if product_ids:
-                    print('PRODUCT FOUND IN ODOO')
                     # write/overwrite the image to the product
                     if len(product_data['imgs']) > 0:
                         odoo.env['product.template'].write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
@@ -229,17 +234,22 @@ def import_imgs():
                         # Iterate over the products
                         for extra_img in product_data['imgs'][1:]:
                             if not images.__contains__(extra_img['img64']):
+                                name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
+
                                 new_image = {
-                                    'name': f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}',
+                                    'name': name,
                                     # Replace with your image name
                                     'image_1920': extra_img['img64'],
                                     'product_tmpl_id': product_ids[0]
                                 }
-
-                                # Create the new product.image record
-                                odoo.env['product.image'].create(new_image)
+                                try:
+                                    # Create the new product.image record
+                                    odoo.env['product.image'].create(new_image)
+                                    print(f'{product_data["SKU"]}: UPLOADED IMAGE with name : {name}')
+                                except RPCError:
+                                    pass
                             else:
-                                print('Image already exists')
+                                print(f'{product_data["SKU"]}: Image with already exists')
                 else:
                     print('PRODUCT NOT FOUND IN ODOO')
 
@@ -274,13 +284,19 @@ def import_icons():
                 # Iterate over the products
                 for icon in product['icons']:
                     if not images.__contains__(icon):
+                        name = f'{product_ids[0]}_{product["icons"].index(icon)}'
                         new_image = {
-                            'name': f'{product_ids[0]}_{product["icons"].index(icon)}',  # Replace with your image name
+                            'name': name,  # Replace with your image name
                             'image_1920': icon,
                             'product_tmpl_id': product_ids[0]
                         }
-                        # Create the new product.image record
-                        odoo.env['product.image'].create(new_image)
+
+                        try:
+                            # Create the new product.image record
+                            odoo.env['product.image'].create(new_image)
+                            print(f'{product["SKU"]}: UPLOADED IMAGE with name : {name}')
+                        except RPCError:
+                            pass
                     else:
                         print('Icon already exists')
             else:
