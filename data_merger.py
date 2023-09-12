@@ -187,7 +187,9 @@ class DataMerger:
 
             Util.dump_to_json(cls.merged_data[index:counter], cls.JSON_DUMP_PATH_TEMPLATE.format(counter))
 
-
+# TODO transfer all class method calls to a main.py 
+# TODO use functional prog. for methods that are usually called before otherz 
+# TODO enhance logger
 if DataMerger.IF_MERGE:
     DataMerger.logger.info('BEGINNING DATA MERGING')
     DataMerger.extract_merged_data()
