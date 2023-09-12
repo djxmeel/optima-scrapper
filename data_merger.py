@@ -115,14 +115,8 @@ class DataMerger:
         return cls.merged_data
 
     @classmethod
-    def get_unique_skus(cls):
-        if len(cls.data['es']) < 1:
-            cls.load_data_for_country('es')
-        if len(cls.data['uk']) < 1:
-            cls.load_data_for_country('uk')
-        if len(cls.data['ita']) < 1:
-            cls.load_data_for_country('ita')
-        return set(product['SKU'] for product in cls.data['es'] + cls.data['uk'] + cls.data['ita'])
+    def get_unique_skus_from_merged(cls):
+        return set(product['SKU'] for product in cls.load_merged_data())
 
     @classmethod
     def merge_data(cls):
