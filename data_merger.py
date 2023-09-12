@@ -72,6 +72,7 @@ class DataMerger:
         # Filtering None
         # Merging fields when necessary
         cls.data[country] = [cls.merge_product_fields(p) for p in cls.data[country] if p is not None]
+        cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
     @classmethod
     def load_all(cls):
@@ -99,7 +100,6 @@ class DataMerger:
             if product.get(key):
                 product[value] = product[key]
                 del product[key]
-        cls.logger.info(F"{product['SKU']} : MERGED FIELDS")
         return product
 
     @classmethod
@@ -119,10 +119,14 @@ class DataMerger:
         return set(product['SKU'] for product in cls.load_merged_data())
 
     @classmethod
+    def get_unique_skus_from_countries(cls):
+        return set(product['SKU'] for product in cls.data['es'] + cls.data['uk'] + cls.data['ita'])
+
+    @classmethod
     def merge_data(cls):
         cls.load_all()
 
-        unique_product_skus = cls.get_unique_skus_from_merged()
+        unique_product_skus = cls.get_unique_skus_from_countries()
 
         for sku in unique_product_skus:
             product = {'es': cls.get_product_from_country_sku(sku, 'es'),
