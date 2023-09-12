@@ -1,3 +1,4 @@
+import json
 import time
 import requests
 import os
@@ -22,7 +23,7 @@ class ScraperVtacSpain:
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
-    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
     # Todos los campos de los productos a implementar en ODOO
     IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
@@ -165,7 +166,16 @@ class ScraperVtacSpain:
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
-        return extracted
+        if update:
+            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+
+            if os.path.exists(links_path):
+                with open(links_path, 'r') as file:
+                    old_links = set(json.load(file))
+                    new_links = extracted - old_links
+                    return extracted, new_links
+
+        return extracted, None
 
     @classmethod
     def count_pdfs_of_link(cls, link):
@@ -244,8 +254,8 @@ if ScraperVtacSpain.IF_EXTRACT_ITEM_LINKS:
 
         Util.dump_to_json(list(extracted_links),
                           f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
-        Util.dump_to_json(list(links_new),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+        if links_new:
+            Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
     
     ScraperVtacSpain.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
 

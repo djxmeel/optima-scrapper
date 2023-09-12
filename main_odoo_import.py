@@ -91,9 +91,9 @@ def import_accessories_kits():
     product_model = odoo.env['product.template']
     acc_model = odoo.env['x_accesorios_producto_model']
 
-    # TODO CHANGE to a check of existing records
+    # TODO TEST check of existing records
     # Delete all accessory model records
-    acc_model.unlink(acc_model.search([]))
+    # acc_model.unlink(acc_model.search([]))
 
     for file_path in file_list:
         with open(file_path, "r") as file:
@@ -121,22 +121,25 @@ def import_accessories_kits():
                 print(f'SKU : {product["SKU"]} Accesorios : {len(accessories_sku)}')
 
                 for acc in accessories_sku:
-                    new_record_data = {
-                        'x_sku': acc['sku'],  # Any other fields you want to set
-                        'x_producto': main_product_id,  # The ID of the product you want to reference
-                        'x_cantidad': acc['cantidad']
-                    }
-                    new_record_id = acc_model.create(new_record_data)
+                    existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
 
-            print(f"#{index + 1} ADDED {len(accessories_sku)} ACCESSORIES TO PRODUCT WITH SKU {product['SKU']}")
+                    if len(existing_acc_ids) > 0:
+                        print(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
+                        updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
+                    else:
+                        new_record_data = {
+                            'x_sku': acc['sku'],
+                            'x_producto': main_product_id,
+                            'x_cantidad': acc['cantidad']
+                        }
+
+                        new_record_id = acc_model.create(new_record_data)
+                        print(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
 
 # TODO TEST PDF 1.ES 2.UK MISSING : A check for sku existence to decide from what dir where to get the PDF from
 def import_pdfs():
     product_model = odoo.env['product.template']
     pdf_model = odoo.env['x_product_files_model']
-
-    # TODO change
-    unique_skus = DataMerger.get_unique_skus_from_merged()
 
     directory_list_es = get_nested_directories(PRODUCT_PDF_DIRS['es'])
     sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
@@ -149,19 +152,23 @@ def import_pdfs():
 
     # TODO TEST the check of existing pdfs then remove
     # Delete all pdf model records
-    records = pdf_model.search([])
-    pdf_model.unlink(records)
+    # records = pdf_model.search([])
+    # pdf_model.unlink(records)
 
     counter = 0
+
+    unique_skus = DataMerger.get_unique_skus()
 
     for sku in unique_skus:
         product_ids = product_model.search([('x_sku', '=', sku)])
 
         if len(product_ids) > 0:
             counter += 1
+            print(f'{sku} FOUND IN ODOO ({counter})')
+
             pdf_paths = []
 
-            # Remove VS prefix :2
+            # Remove 'VS' prefix [2:]
             if sku[2:] in sku_list_es:
                 pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
             elif sku[2:] in sku_list_uk:
@@ -174,7 +181,7 @@ def import_pdfs():
                 with open(pdf_path, 'rb') as file:
                     pdf_binary_data = file.read()
                     encoded_pdf_data = base64.b64encode(pdf_binary_data).decode()
-                # TODO use translate method in Util
+
                 pdf_name = Util.translate_from_to_spanish('detect' ,pdf_path.split('\\')[-1])
                 pdf_name = f'{sku}_{pdf_name}'
 
