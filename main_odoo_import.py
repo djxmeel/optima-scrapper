@@ -157,7 +157,7 @@ def import_pdfs():
 
     counter = 0
 
-    unique_skus = DataMerger.get_unique_skus()
+    unique_skus = DataMerger.get_unique_skus_from_merged()
 
     for sku in unique_skus:
         product_ids = product_model.search([('x_sku', '=', sku)])
