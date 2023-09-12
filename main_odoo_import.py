@@ -6,8 +6,8 @@ import base64
 from util import Util
 from data_merger import DataMerger
 
-IF_IMPORT_PRODUCTS = True
-IF_IMPORT_ACC = True
+IF_IMPORT_PRODUCTS = False
+IF_IMPORT_ACC = False
 IF_IMPORT_PDFS = True
 IF_IMPORT_IMGS = True
 IF_IMPORT_ICONS = True
@@ -172,10 +172,11 @@ def import_pdfs():
             if sku[2:] in sku_list_es:
                 pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
             elif sku[2:] in sku_list_uk:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_uk.index(sku[2:])])
+                pdf_paths = Util.get_all_files_in_directory(directory_list_uk[sku_list_uk.index(sku[2:])])
             elif sku[2:] in sku_list_ita:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_ita.index(sku[2:])])
+                pdf_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
 
+                print(f"UPLOADING {len(pdf_paths)} FILES FOR PRODUCT {sku}")
             for pdf_path in pdf_paths:
                 with open(pdf_path, 'rb') as file:
                     pdf_binary_data = file.read()
@@ -186,17 +187,16 @@ def import_pdfs():
 
                 existing_pdfs = pdf_model.search([('x_name', '=', pdf_name)])
 
-                if not existing_pdfs:
-                    pdf_data = {
-                        'x_name': pdf_name,
-                        'x_producto_file': encoded_pdf_data,
-                        'x_producto': product_ids[0]
-                    }
+                if len(existing_pdfs) > 0:
+                    print(f'{sku} PDF WITH NAME {pdf_name} ALREADY EXISTS IN ODOO')
+                    continue
 
-                    pdf_id = pdf_model.create(pdf_data)
-                    print(f'PDF {pdf_name} DOES NOT EXIST IN ODOO, CREATED WITH ID {pdf_id}')
-                else:
-                    print(f'PDF {pdf_name} ALREADY EXISTS IN ODOO')
+                pdf_data = {
+                    'x_name': pdf_name,
+                    'x_producto_file': encoded_pdf_data,
+                    'x_producto': product_ids[0]
+                }
+                pdf_id = pdf_model.create(pdf_data)
 
 
 def import_imgs():
