@@ -142,7 +142,6 @@ def import_accessories_kits():
 
 # TODO TEST PDF 1.ES 2.UK MISSING : A check for sku existence to decide from what dir where to get the PDF from
 def import_pdfs():
-    # TODO TEST the check of existing pdfs then remove
     # Delete all pdf model records
     # records = pdf_model.search([])
     # pdf_model.unlink(records)
