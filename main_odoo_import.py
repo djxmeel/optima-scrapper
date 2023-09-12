@@ -187,14 +187,16 @@ def import_pdfs():
 
                 existing_pdfs = pdf_model.search([('x_name', '=', pdf_name)])
 
-                if not existing_pdfs:
-                    pdf_data = {
-                        'x_name': pdf_name,
-                        'x_producto_file': encoded_pdf_data,
-                        'x_producto': product_ids[0]
-                    }
+                if len(existing_pdfs) > 0:
+                    print(f'{sku} PDF WITH NAME {pdf_name} ALREADY EXISTS IN ODOO')
+                    continue
 
-                    pdf_id = pdf_model.create(pdf_data)
+                pdf_data = {
+                    'x_name': pdf_name,
+                    'x_producto_file': encoded_pdf_data,
+                    'x_producto': product_ids[0]
+                }
+                pdf_id = pdf_model.create(pdf_data)
 
 
 def import_imgs():
