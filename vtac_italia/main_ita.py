@@ -1,5 +1,5 @@
 from selenium.common import WebDriverException
-from vtac_italia.main_scrapping_ita import ScraperVtacItalia
+from vtac_italia.scraper_ita import ScraperVtacItalia
 from util import Util
 
 
