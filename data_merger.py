@@ -11,9 +11,6 @@ class DataMerger:
     logger = Util.setup_logger(logger_path)
     print(f'LOGGER CREATED: {logger_path}')
 
-    IF_MERGE = False
-    IF_EXTRACT_FIELDS = False
-
     JSON_DUMP_FREQUENCY = 10
     JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
     MERGED_PRODUCT_INFO_DIR_PATH = 'merged_data/VTAC_PRODUCT_INFO'
@@ -187,12 +184,5 @@ class DataMerger:
 
             Util.dump_to_json(cls.merged_data[index:counter], cls.JSON_DUMP_PATH_TEMPLATE.format(counter))
 
-
-if DataMerger.IF_MERGE:
-    DataMerger.logger.info('BEGINNING DATA MERGING')
-    DataMerger.extract_merged_data()
-    DataMerger.logger.info('FINISHED DATA MERGING')
-if DataMerger.IF_EXTRACT_FIELDS:
-    DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
-    Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
-    DataMerger.logger.info('FINISHED FIELD EXTRACTION')
+# TODO use functional prog. for methods that are usually called before otherz
+# TODO enhance logger

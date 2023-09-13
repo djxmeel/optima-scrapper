@@ -55,7 +55,7 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
 
-    NOT_TO_EXTRACT_FIELDS = ['list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons']
+    NOT_TO_EXTRACT_FIELDS = ('list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons')
 
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
 
@@ -161,7 +161,7 @@ class Util:
                                        "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
                 " ")[1]
         except NoSuchElementException:
-            from vtac_uk.main_scrapping_uk import ScraperVtacUk
+            from vtac_uk.scraper_uk import ScraperVtacUk
             ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'UK')
@@ -171,7 +171,7 @@ class Util:
         try:
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
-            from vtac_spain.main_scrapping_es import ScraperVtacSpain
+            from vtac_spain.scrapper_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
