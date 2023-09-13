@@ -55,7 +55,7 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
 
-    NOT_TO_EXTRACT_FIELDS = ['list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons']
+    NOT_TO_EXTRACT_FIELDS = ('list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons')
 
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
 
