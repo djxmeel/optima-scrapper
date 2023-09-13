@@ -4,11 +4,22 @@ from util import Util
 
 
 # VTAC UK SCRAPER
+
+# Datos productos
+IF_EXTRACT_ITEM_INFO = False
+# PDFs productos
+IF_DL_ITEM_PDF = False
+# Enlaces productos en la página de origen
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
+# Todos los campos de los productos a implementar en ODOO
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+
 # LINK EXTRACTION
-if ScraperVtacUk.IF_EXTRACT_ITEM_LINKS:
+if IF_EXTRACT_ITEM_LINKS:
+    ScraperVtacUk.instantiate_driver()
     ScraperVtacUk.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
-    if not ScraperVtacUk.IF_UPDATE:
+    if not IF_UPDATE:
         # EXTRACT LINKS TO A set()
         extracted_links = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER, ScraperVtacUk.CATEGORIES_LINKS)
 
@@ -24,7 +35,8 @@ if ScraperVtacUk.IF_EXTRACT_ITEM_LINKS:
     ScraperVtacUk.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
 # PRODUCTS INFO EXTRACTION
-if ScraperVtacUk.IF_EXTRACT_ITEM_INFO:
+if IF_EXTRACT_ITEM_INFO:
+    ScraperVtacUk.instantiate_driver()
     ScraperVtacUk.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}')
     # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
     Util.begin_items_info_extraction(
@@ -37,7 +49,8 @@ if ScraperVtacUk.IF_EXTRACT_ITEM_INFO:
     ScraperVtacUk.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}')
 
 # PDF DL
-if ScraperVtacUk.IF_DL_ITEM_PDF:
+if IF_DL_ITEM_PDF:
+    ScraperVtacUk.instantiate_driver()
     ScraperVtacUk.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}')
     Util.begin_items_PDF_download(
         ScraperVtacUk,
@@ -49,7 +62,7 @@ if ScraperVtacUk.IF_DL_ITEM_PDF:
     ScraperVtacUk.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
-if ScraperVtacUk.IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
+if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacUk.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
     Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}')
     ScraperVtacUk.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')

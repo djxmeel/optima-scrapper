@@ -10,12 +10,6 @@ from odoorpc.error import RPCError
 from util import Util
 from data_merger import DataMerger
 
-IF_IMPORT_PRODUCTS = False
-IF_IMPORT_ACC = False
-IF_IMPORT_PDFS = False
-IF_IMPORT_IMGS = True
-IF_IMPORT_ICONS = True
-
 odoo_host = 'trialdb.odoo.com'
 odoo_protocol = 'jsonrpc+ssl'
 odoo_port = '443'
@@ -54,6 +48,8 @@ def get_nested_directories(path):
             directories.append(os.path.join(root, name))
     return directories
 
+def import_attributes():
+    pass
 
 def import_products():
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
