@@ -23,7 +23,7 @@ class ScraperVtacSpain:
     # PDFs productos
     IF_DL_ITEM_PDF = False
     # Enlaces productos en la página de origen
-    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
+    IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
     # Todos los campos de los productos a implementar en ODOO
     IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
