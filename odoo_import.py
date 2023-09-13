@@ -248,7 +248,10 @@ def import_imgs():
                 if product_ids:
                     # write/overwrite the image to the product
                     if len(product_data['imgs']) > 0:
-                        odoo.env['product.template'].write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
+                        try:
+                            odoo.env['product.template'].write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
+                        except RPCError:
+                            pass
 
                         image_ids = odoo.env['product.image'].search([('product_tmpl_id', '=', product_ids[0])])
 
