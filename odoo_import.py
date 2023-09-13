@@ -95,7 +95,6 @@ def import_accessories_kits():
     product_model = odoo.env['product.template']
     acc_model = odoo.env['x_accesorios_producto_model']
 
-    # TODO TEST check of existing records
     # Delete all accessory model records
     # acc_model.unlink(acc_model.search([]))
 
@@ -303,32 +302,3 @@ def import_icons():
 
         else:
             print(f'{product["SKU"]} HAS NO ICONS!')
-
-if IF_IMPORT_PRODUCTS:
-    print(f'BEGINNING PRODUCTS IMPORT')
-    import_products()
-    print(f'FINISHED PRODUCTS IMPORT')
-
-
-if IF_IMPORT_ACC:
-    print(f'BEGINNING ACCESSORIES/KITS IMPORT')
-    import_accessories_kits()
-    print(f'FINISHED ACCESSORIES/KITS IMPORT')
-
-
-if IF_IMPORT_PDFS:
-    print(f'BEGINNING PDFS IMPORT')
-    import_pdfs()
-    print(f'FINISHED PDFS IMPORT')
-
-
-if IF_IMPORT_IMGS:
-    print(f'BEGINNING IMGS IMPORT')
-    import_imgs()
-    print(f'FINISHED IMGS IMPORT')
-
-
-if IF_IMPORT_ICONS:
-    print(f'BEGINNING ICONS IMPORT')
-    import_icons()
-    print(f'FINISHED ICONS IMPORT')
