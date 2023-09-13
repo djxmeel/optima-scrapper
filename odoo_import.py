@@ -24,6 +24,9 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/VTAC_PRODUCT_PDF/',
                     'uk': 'vtac_uk/VTAC_PRODUCT_PDF/',
                     'ita': 'vtac_italia/VTAC_PRODUCT_PDF/'}
 
+ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name')
+SEPARATE_IMPORT_FIELDS = ('list_price', 'kit', 'accesorios', 'videos', 'icons', 'imgs')
+
 
 odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
 
@@ -50,7 +53,7 @@ def get_nested_directories(path):
 def create_attribute(name, value):
     attribute_vals = {
         'name': name,
-        'create_variant': 'never',  # Variants are created "always", "never", or "dynamic"
+        'create_variant': 'no_variant',  # Variants are created "always", "no_variant", or "dynamic"
     }
 
     try:
@@ -69,18 +72,17 @@ def create_attribute(name, value):
 def assign_attribute_values(product_id, product, attributes):
     for attribute in attributes:
         attribute_id = odoo.env['product.attribute'].search([('name', '=', attribute)])[0]
-        attribute_value_id = odoo.env['product.attribute.value'].search([('name', '=', product[attribute])])[0]
+        attribute_value_ids = odoo.env['product.attribute.value'].search([('name', '=', product[attribute])])
 
         line_vals = {
             'product_tmpl_id': product_id,
             'attribute_id': attribute_id,
-            'value_ids': [(6, 0, attribute_value_id)],
+            'value_ids': [(6, 0, attribute_value_ids)]
         }
         odoo.env['product.template.attribute.line'].create(line_vals)
 
 def import_products():
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
-
     for file_path in file_list:
         with open(file_path, "r") as file:
             products = json.load(file)
@@ -96,8 +98,9 @@ def import_products():
             sku = product["SKU"]
 
             for key in temp_keys:
-                if key not in Util.NOT_TO_EXTRACT_FIELDS:
-                    create_attribute(key, product[key])
+                if key not in ODOO_SUPPORTED_FIELDS:
+                    if key not in SEPARATE_IMPORT_FIELDS:
+                        create_attribute(key, product[key])
                     del product[key]
 
             if not product_ids:
