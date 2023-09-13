@@ -1,3 +1,4 @@
+import copy
 from urllib.error import HTTPError
 
 import odoorpc
@@ -23,8 +24,6 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/VTAC_PRODUCT_PDF/',
                     'uk': 'vtac_uk/VTAC_PRODUCT_PDF/',
                     'ita': 'vtac_italia/VTAC_PRODUCT_PDF/'}
 
-SEPARATE_IMPORT_FIELDS = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
-
 
 odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
 
@@ -48,8 +47,36 @@ def get_nested_directories(path):
             directories.append(os.path.join(root, name))
     return directories
 
-def import_attributes():
-    pass
+def create_attribute(name, value):
+    attribute_vals = {
+        'name': name,
+        'create_variant': 'never',  # Variants are created "always", "never", or "dynamic"
+    }
+
+    try:
+        attribute_id = odoo.env['product.attribute'].create(attribute_vals)
+    except:
+        attribute_id = odoo.env['product.attribute'].search([('name', '=', name)])[0]
+
+    # Create attribute values
+    attribute_value_vals = {
+        'name': value,
+        'attribute_id': attribute_id,
+    }
+
+    odoo.env['product.attribute.value'].create(attribute_value_vals)
+
+def assign_attribute_values(product_id, product, attributes):
+    for attribute in attributes:
+        attribute_id = odoo.env['product.attribute'].search([('name', '=', attribute)])[0]
+        attribute_value_id = odoo.env['product.attribute.value'].search([('name', '=', product[attribute])])[0]
+
+        line_vals = {
+            'product_tmpl_id': product_id,
+            'attribute_id': attribute_id,
+            'value_ids': [(6, 0, attribute_value_id)],
+        }
+        odoo.env['product.template.attribute.line'].create(line_vals)
 
 def import_products():
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
@@ -64,19 +91,18 @@ def import_products():
             product_ids = odoo.env['product.template'].search([('x_sku', '=', product['SKU'])])
 
             temp_keys = list(product.keys())
+            product_copy = copy.deepcopy(product)
+
             sku = product["SKU"]
 
             for key in temp_keys:
-                if key in SEPARATE_IMPORT_FIELDS:
-                    del product[key]
-                    continue
                 if key not in Util.NOT_TO_EXTRACT_FIELDS:
-                    product[Util.format_field_odoo(key)] = product[key]
+                    create_attribute(key, product[key])
                     del product[key]
 
             if not product_ids:
                 product_id = product_model.create(product)
-
+                assign_attribute_values(product_id, product_copy, temp_keys)
                 print(f'Created product {sku}')
             else:
                 print(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
@@ -142,7 +168,7 @@ def import_pdfs():
     # pdf_model.unlink(records)
 
     product_model = odoo.env['product.template']
-    pdf_model = odoo.env['x_product_files_model']
+    attachments_model = odoo.env['ir.attachment']
 
     directory_list_es = get_nested_directories(PRODUCT_PDF_DIRS['es'])
     sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
@@ -161,42 +187,45 @@ def import_pdfs():
 
         if len(product_ids) > 0:
             counter += 1
-            pdf_paths = []
+            attachment_paths = []
 
             # Remove 'VS' prefix [2:]
             if sku[2:] in sku_list_es:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
+                attachment_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
             elif sku[2:] in sku_list_uk:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_uk[sku_list_uk.index(sku[2:])])
+                attachment_paths = Util.get_all_files_in_directory(directory_list_uk[sku_list_uk.index(sku[2:])])
             elif sku[2:] in sku_list_ita:
-                pdf_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
+                attachment_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
 
-            if len(pdf_paths) > 0:
-                print(f"{counter}. {sku}: UPLOADING {len(pdf_paths)} FILES")
-            for pdf_path in pdf_paths:
-                with open(pdf_path, 'rb') as file:
+            if len(attachment_paths) > 0:
+                print(f"{counter}. {sku}: UPLOADING {len(attachment_paths)} FILES")
+            for attachment_path in attachment_paths:
+                with open(attachment_path, 'rb') as file:
                     pdf_binary_data = file.read()
-                    encoded_pdf_data = base64.b64encode(pdf_binary_data).decode()
+                    encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                pdf_name = Util.translate_from_to_spanish('detect' ,pdf_path.split('\\')[-1])
-                pdf_name = f'{sku}_{pdf_name}'
+                attachment_name = Util.translate_from_to_spanish('detect' ,attachment_path.split('\\')[-1])
+                attachment_name = f'{sku}_{attachment_name}'
 
-                existing_pdfs = pdf_model.search([('x_name', '=', pdf_name)])
+                existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
-                if len(existing_pdfs) > 0:
-                    print(f'{sku} PDF WITH NAME {pdf_name} ALREADY EXISTS IN ODOO')
+                if len(existing_attachment) > 0:
+                    print(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
                     continue
 
-                pdf_data = {
-                    'x_name': pdf_name,
-                    'x_producto_file': encoded_pdf_data,
-                    'x_producto': product_ids[0]
+                attachment_data = {
+                    'name': attachment_name,
+                    'datas': encoded_data,
+                    'res_model': 'product.template',  # Model you want to link the attachment to (optional)
+                    'res_id': product_ids[0],  # ID of the record of the above model you want to link the attachment to (optional)
+                    'type': 'binary',
                 }
+
                 try:
-                    pdf_id = pdf_model.create(pdf_data)
-                    print(f'{sku}:  PDF WITH NAME {pdf_name} UPLOADED ODOO')
+                    attachment_id = attachments_model.create(attachment_data)
+                    print(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED ODOO WITH ID {attachment_id}')
                 except HTTPError:
-                    print(f"ERROR UPLOADING {pdf_name} FOR PRODUCT {sku}")
+                    print(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
 
 
 def import_imgs():
