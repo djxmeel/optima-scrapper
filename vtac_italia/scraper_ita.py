@@ -172,6 +172,7 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO ICONS')
 
+        # Extracción de imágenes
         try:
             # Find the image elements and extract their data
             image_elements = driver.find_element(By.ID, 'images-slider-list') \
