@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime
 from urllib.error import HTTPError
 
 import odoorpc
@@ -10,6 +11,10 @@ from odoorpc.error import RPCError
 
 from util import Util
 from data_merger import DataMerger
+
+logger_path = Util.ODOO_IMPORT_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+logger = Util.setup_logger(logger_path)
+print(f'LOGGER CREATED: {logger_path}')
 
 odoo_host = 'trialdb.odoo.com'
 odoo_protocol = 'jsonrpc+ssl'
@@ -25,7 +30,8 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/VTAC_PRODUCT_PDF/',
                     'ita': 'vtac_italia/VTAC_PRODUCT_PDF/'}
 
 ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name')
-SEPARATE_IMPORT_FIELDS = ('list_price', 'kit', 'accesorios', 'videos', 'icons', 'imgs')
+SEPARATE_IMPORT_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs')
+ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'descripcion', 'url', 'Código de familia', 'Marca')
 
 
 odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
@@ -56,30 +62,44 @@ def create_attribute(name, value):
         'create_variant': 'no_variant',  # Variants are created "always", "no_variant", or "dynamic"
     }
 
-    try:
+    attribute_ids = odoo.env['product.attribute'].search([('name', '=', name)])
+
+    if len(attribute_ids) > 0:
+        attribute_id = attribute_ids[0]
+    else:
         attribute_id = odoo.env['product.attribute'].create(attribute_vals)
-    except:
-        attribute_id = odoo.env['product.attribute'].search([('name', '=', name)])[0]
+        logger.info(f'CREATED ATTRIBUTE : {name}')
+
+    # Skip empty values
+    if str(value).strip() == '':
+        return
 
     # Create attribute values
     attribute_value_vals = {
         'name': value,
-        'attribute_id': attribute_id,
+        'attribute_id': attribute_id
     }
+    try:
+        odoo.env['product.attribute.value'].create(attribute_value_vals)
+    except RPCError:
+        pass
 
-    odoo.env['product.attribute.value'].create(attribute_value_vals)
 
 def assign_attribute_values(product_id, product, attributes):
     for attribute in attributes:
         attribute_id = odoo.env['product.attribute'].search([('name', '=', attribute)])[0]
-        attribute_value_ids = odoo.env['product.attribute.value'].search([('name', '=', product[attribute])])
+        attribute_value_ids = odoo.env['product.attribute.value'].search([('name', '=', product[attribute]), ('attribute_id', '=', attribute_id)])
 
-        line_vals = {
-            'product_tmpl_id': product_id,
-            'attribute_id': attribute_id,
-            'value_ids': [(6, 0, attribute_value_ids)]
-        }
-        odoo.env['product.template.attribute.line'].create(line_vals)
+        if len(attribute_value_ids) > 0:
+            line_vals = {
+                'product_tmpl_id': product_id,
+                'attribute_id': attribute_id,
+                'value_ids': [(6, 0, attribute_value_ids)]
+            }
+            try:
+                odoo.env['product.template.attribute.line'].create(line_vals)
+            except RPCError:
+                pass
 
 def import_products():
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
@@ -90,27 +110,35 @@ def import_products():
         product_model = odoo.env['product.template']
 
         for product in products:
-            product_ids = odoo.env['product.template'].search([('x_sku', '=', product['SKU'])])
+            product_ids = odoo.env['product.template'].search([('x_sku', '=', product['sku'])])
 
+            created_attrs = []
             temp_keys = list(product.keys())
             product_copy = copy.deepcopy(product)
 
-            sku = product["SKU"]
+            sku = product["sku"]
 
             for key in temp_keys:
                 if key not in ODOO_SUPPORTED_FIELDS:
                     if key not in SEPARATE_IMPORT_FIELDS:
                         create_attribute(key, product[key])
-                    del product[key]
+                        created_attrs.append(key)
+                    if key not in ALWAYS_KEEP_FIELDS:
+                        del product[key]
+                    else:
+                        product[Util.format_field_odoo(key)] = product[key]
+                        del product[key]
 
             if not product_ids:
                 product_id = product_model.create(product)
-                assign_attribute_values(product_id, product_copy, temp_keys)
-                print(f'Created product {sku}')
+                logger.info(f'Created product {sku}')
             else:
-                print(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
+                product_id = product_ids[0]
+                logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
 
-        print(f'IMPORTED PRODUCTS OF FILE : {file.name}')
+            assign_attribute_values(product_id, product_copy, created_attrs)
+
+        logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
 
 
 def import_accessories_kits():
@@ -125,7 +153,6 @@ def import_accessories_kits():
 
     for file_path in file_list:
         with open(file_path, "r") as file:
-            print(file.name)
             json_data = json.load(file)
 
         # Iterate over the products
@@ -142,17 +169,18 @@ def import_accessories_kits():
 
             if len(accessories_sku) > 0:
                 # Search for the product template with the given name
-                main_product_id = product_model.search([('x_sku', '=', product['SKU'])])
+                main_product_id = product_model.search([('x_sku', '=', product['sku'])])
                 if len(main_product_id) > 0:
                     main_product_id = main_product_id[0]
 
-                print(f'SKU : {product["SKU"]} Accesorios : {len(accessories_sku)}')
+                if len(accessories_sku) > 0:
+                    logger.info(f'SKU : {product["SKU"]} Accesorios : {len(accessories_sku)}')
 
                 for acc in accessories_sku:
                     existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
 
                     if len(existing_acc_ids) > 0:
-                        print(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
+                        logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
                         updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
                     else:
                         new_record_data = {
@@ -162,14 +190,10 @@ def import_accessories_kits():
                         }
 
                         new_record_id = acc_model.create(new_record_data)
-                        print(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
+                        logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
 
-# TODO TEST PDF 1.ES 2.UK MISSING : A check for sku existence to decide from what dir where to get the PDF from
+
 def import_pdfs():
-    # Delete all pdf model records
-    # records = pdf_model.search([])
-    # pdf_model.unlink(records)
-
     product_model = odoo.env['product.template']
     attachments_model = odoo.env['ir.attachment']
 
@@ -201,7 +225,7 @@ def import_pdfs():
                 attachment_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
 
             if len(attachment_paths) > 0:
-                print(f"{counter}. {sku}: UPLOADING {len(attachment_paths)} FILES")
+                logger.info(f"{counter}. {sku}: UPLOADING {len(attachment_paths)} FILES")
             for attachment_path in attachment_paths:
                 with open(attachment_path, 'rb') as file:
                     pdf_binary_data = file.read()
@@ -213,7 +237,7 @@ def import_pdfs():
                 existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
                 if len(existing_attachment) > 0:
-                    print(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                    logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
                     continue
 
                 attachment_data = {
@@ -226,9 +250,9 @@ def import_pdfs():
 
                 try:
                     attachment_id = attachments_model.create(attachment_data)
-                    print(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED ODOO WITH ID {attachment_id}')
+                    logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED ODOO WITH ID {attachment_id}')
                 except HTTPError:
-                    print(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
+                    logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
 
 
 def import_imgs():
@@ -240,10 +264,10 @@ def import_imgs():
 
         for product_data in json_data:
             if 'imgs' in product_data:
-                print(f'{product_data["SKU"]}: FOUND {len(product_data["imgs"])} IMAGES')
+                logger.info(f'{product_data["SKU"]}: FOUND {len(product_data["imgs"])} IMAGES')
 
                 # Search for the product template with the given sku
-                product_ids = odoo.env['product.template'].search([('x_sku', '=', product_data['SKU'])])
+                product_ids = odoo.env['product.template'].search([('x_sku', '=', product_data['sku'])])
 
                 if product_ids:
                     # write/overwrite the image to the product
@@ -274,16 +298,16 @@ def import_imgs():
                                 try:
                                     # Create the new product.image record
                                     odoo.env['product.image'].create(new_image)
-                                    print(f'{product_data["SKU"]}: UPLOADED IMAGE with name : {name}')
+                                    logger.info(f'{product_data["SKU"]}: UPLOADED IMAGE with name : {name}')
                                 except RPCError:
                                     pass
                             else:
-                                print(f'{product_data["SKU"]}: Image with already exists')
+                                logger.info(f'{product_data["SKU"]}: Image already exists')
                 else:
-                    print('PRODUCT NOT FOUND IN ODOO')
+                    logger.warn('PRODUCT NOT FOUND IN ODOO')
 
             else:
-                print(f'{product_data["SKU"]} HAS NO IMAGES!')
+                logger.warn(f'{product_data["SKU"]} HAS NO IMAGES!')
 
 
 def import_icons():
@@ -295,14 +319,12 @@ def import_icons():
 
     for product in json_data:
         if 'icons' in product:
-            print(f'{product["SKU"]} icons: {len(product["icons"])}')
+            logger.info(f'{product["SKU"]} icons: {len(product["icons"])}')
 
             # Search for the product template with the given sku
-            product_ids = odoo.env['product.template'].search([('x_sku', '=', product['SKU'])])
+            product_ids = odoo.env['product.template'].search([('x_sku', '=', product['sku'])])
 
             if product_ids:
-                print('PRODUCT FOUND IN ODOO')
-
                 image_ids = odoo.env['product.image'].search([('product_tmpl_id', '=', product_ids[0])])
 
                 # Product existing icons
@@ -323,13 +345,13 @@ def import_icons():
                         try:
                             # Create the new product.image record
                             odoo.env['product.image'].create(new_image)
-                            print(f'{product["SKU"]}: UPLOADED IMAGE with name : {name}')
+                            logger.info(f'{product["SKU"]}: UPLOADED ICON with name : {name}')
                         except RPCError:
                             pass
                     else:
-                        print('Icon already exists')
+                        logger.info('Icon already exists')
             else:
-                print('PRODUCT NOT FOUND IN ODOO')
+                logger.warn('PRODUCT NOT FOUND IN ODOO')
 
         else:
-            print(f'{product["SKU"]} HAS NO ICONS!')
+            logger.warn(f'{product["SKU"]} HAS NO ICONS!')
