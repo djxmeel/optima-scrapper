@@ -25,26 +25,26 @@ if IF_EXTRACT_FIELDS:
 
 # ODOO IMPORT
 if IF_IMPORT_PRODUCTS:
-    print(f'BEGINNING PRODUCTS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING PRODUCTS IMPORT')
     odoo_imp.import_products()
-    print(f'FINISHED PRODUCTS IMPORT')
+    odoo_imp.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
-    print(f'BEGINNING ACCESSORIES/KITS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING ACCESSORIES/KITS IMPORT')
     odoo_imp.import_accessories_kits()
-    print(f'FINISHED ACCESSORIES/KITS IMPORT')
+    odoo_imp.logger.info(f'FINISHED ACCESSORIES/KITS IMPORT')
 
 if IF_IMPORT_PDFS:
-    print(f'BEGINNING PDFS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING PDFS IMPORT')
     odoo_imp.import_pdfs()
-    print(f'FINISHED PDFS IMPORT')
+    odoo_imp.logger.info(f'FINISHED PDFS IMPORT')
 
 if IF_IMPORT_IMGS:
-    print(f'BEGINNING IMGS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING IMGS IMPORT')
     odoo_imp.import_imgs()
-    print(f'FINISHED IMGS IMPORT')
+    odoo_imp.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:
-    print(f'BEGINNING ICONS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING ICONS IMPORT')
     odoo_imp.import_icons()
-    print(f'FINISHED ICONS IMPORT')
+    odoo_imp.logger.info(f'FINISHED ICONS IMPORT')
