@@ -184,12 +184,6 @@ class ScraperVtacItalia:
         # Formateo del titulo
         item['name'] = f'[{item["sku"]}] {item["name"]}'
 
-        # Renombrado de campos determinados
-        for field, new_field in cls.FIELDS_TO_RENAME.items():
-            if field in item:
-                item[new_field] = item[field]
-                del item[field]
-
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
         return item
