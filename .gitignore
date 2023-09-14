@@ -15,3 +15,13 @@
 .idea/inspectionProfiles/Project_Default.xml
 .idea/vcs.xml
 .idea/vtac-scrapping.iml
+
+# Default ignored files
+/shelf/
+/workspace.xml
+/misc.xml
+/modules.xml
+/inspectionProfiles/profiles_settings.xml
+/inspectionProfiles/Project_Default.xml
+/vcs.xml
+/vtac-scrapping.iml
