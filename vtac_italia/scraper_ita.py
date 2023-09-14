@@ -42,10 +42,6 @@ class ScraperVtacItalia:
 
     FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
 
-    FIELDS_TO_RENAME = {
-
-    }
-
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
@@ -188,10 +184,10 @@ class ScraperVtacItalia:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Formateo del SKU
-        item['SKU'] = f'VS{item["SKU"]}'
+        item['sku'] = f'VS{item["sku"]}'
 
         # Formateo del titulo
-        item['name'] = f'[{item["SKU"]}] {item["name"]}'
+        item['name'] = f'[{item["sku"]}] {item["name"]}'
 
         # Renombrado de campos determinados
         for field, new_field in cls.FIELDS_TO_RENAME.items():

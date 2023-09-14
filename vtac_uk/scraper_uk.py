@@ -42,12 +42,8 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/smart-products.html',
         'https://www.vtacexports.com/default/electrical.html'
     ]
-
+    # TODO Stop using LITE
     FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'videos')
-
-    FIELDS_TO_RENAME = {
-
-    }
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -115,7 +111,7 @@ class ScraperVtacUk:
 
         # Extracción del SKU
         try:
-            item['SKU'] = f'VS{Util.get_sku_from_link_uk(driver)}'
+            item['sku'] = f'VS{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
             cls.logger.warning('SKU NO ENCONTRADO')
 
@@ -134,7 +130,7 @@ class ScraperVtacUk:
                                                                           '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{item["SKU"]}] {item["name"]}'
+        item['name'] = f'[{item["sku"]}] {item["name"]}'
 
         # Extracción de imágenes
         try:
