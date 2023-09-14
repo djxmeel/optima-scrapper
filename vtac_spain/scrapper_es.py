@@ -103,6 +103,17 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             pass
 
+        # Extracción de imágenes
+        try:
+            # Find the image elements and extract their data
+            image_elements = driver.find_elements(By.XPATH, "//a[@rel='vm-additional-images']")
+
+            for index, image_element in enumerate(image_elements):
+                src = image_element.get_attribute('href')
+                item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
+        except NoSuchElementException:
+            cls.logger.warning('PRODUCT HAS NO IMGS')
+
         # Extracción de la descripción del producto
         try:
             product_desc = driver.find_element(By.XPATH, product_desc_xpath).get_attribute('innerHTML')
