@@ -158,12 +158,6 @@ class ScraperVtacUk:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO ICONS')
 
-        # Renombrado de campos determinados
-        for field, new_field in cls.FIELDS_TO_RENAME.items():
-            if field in item:
-                item[new_field] = item[field]
-                del item[field]
-
         # Reemplazo de campos para ODOO
         if 'Peso bruto (kg)' in item:
             item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
