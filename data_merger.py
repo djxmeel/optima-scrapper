@@ -8,7 +8,7 @@ from util import Util
 class DataMerger:
     # Creación del logger
     logger_path = Util.MERGER_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
-    logger = Util.setup_logger(logger_path)
+    logger = Util.setup_logger(logger_path, 'data_merger')
     print(f'LOGGER CREATED: {logger_path}')
 
     JSON_DUMP_FREQUENCY = 10

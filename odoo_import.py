@@ -13,7 +13,7 @@ from util import Util
 from data_merger import DataMerger
 
 logger_path = Util.ODOO_IMPORT_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
-logger = Util.setup_logger(logger_path)
+logger = Util.setup_logger(logger_path, 'odoo_import')
 print(f'LOGGER CREATED: {logger_path}')
 
 odoo_host = 'trialdb.odoo.com'

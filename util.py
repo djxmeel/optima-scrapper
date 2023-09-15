@@ -24,7 +24,7 @@ class Util:
 
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
-    VTAC_PRODUCT_INFO_LITE_DIR = 'VTAC_PRODUCT_INFO_LITE'
+    VTAC_PRODUCT_MEDIA_DIR = 'VTAC_PRODUCT_MEDIA'
 
     VTAC_COUNTRY_DIR = {
         'es': 'vtac_spain',
@@ -58,14 +58,15 @@ class Util:
 
     VTAC_PRODUCTS_FIELDS_FILE = 'VTAC_PRODUCTS_FIELDS.json'
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
-    ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
+    ITEMS_MEDIA_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_MEDIA_{}.json'
 
     NOT_TO_EXTRACT_FIELDS = ('list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons')
+    MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
-    def setup_logger(target_file):
+    def setup_logger(target_file, name):
         # Create or get a logger
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(name)
 
         # Set log level
         logger.setLevel(logging.DEBUG)
@@ -349,13 +350,13 @@ class Util:
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
     @staticmethod
-    def dump_product_info_lite(products_data, counter, scraper):
+    def dump_product_media(products_data, counter, scraper):
         for product in products_data:
-            for field in scraper.FIELDS_TO_DELETE_LITE:
+            for field in Util.MEDIA_FIELDS:
                 del product[field]
 
-        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        scraper.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
+        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
+        scraper.logger.info(f'DUMPED {len(products_data)} PRODUCTS MEDIA')
 
     # Replace <use> tags with the referenced element for cairosvg to work
     @staticmethod

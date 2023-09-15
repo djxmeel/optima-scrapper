@@ -15,7 +15,7 @@ class ScraperVtacItalia:
 
     # Creación del logger
     logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path)
+    logger = Util.setup_logger(logger_path, 'vtac_italia')
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
@@ -28,8 +28,6 @@ class ScraperVtacItalia:
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     )
-
-    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
 
     @classmethod
     def instantiate_driver(cls):

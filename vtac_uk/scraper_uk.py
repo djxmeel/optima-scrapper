@@ -16,7 +16,7 @@ class ScraperVtacUk:
 
     # Creación del logger
     logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path)
+    logger = Util.setup_logger(logger_path,'vtac_uk')
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
@@ -31,8 +31,6 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/smart-products.html',
         'https://www.vtacexports.com/default/electrical.html'
     ]
-    # TODO Stop using LITE
-    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'videos')
 
     @classmethod
     def instantiate_driver(cls):
