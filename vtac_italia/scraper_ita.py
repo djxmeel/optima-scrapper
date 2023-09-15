@@ -33,10 +33,6 @@ class ScraperVtacItalia:
 
     FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
 
-    FIELDS_TO_RENAME = {
-
-    }
-
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
@@ -171,6 +167,7 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO ICONS')
 
+        # Extracción de imágenes
         try:
             # Find the image elements and extract their data
             image_elements = driver.find_element(By.ID, 'images-slider-list') \
@@ -183,16 +180,10 @@ class ScraperVtacItalia:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Formateo del SKU
-        item['SKU'] = f'VS{item["SKU"]}'
+        item['sku'] = f'VS{item["sku"]}'
 
         # Formateo del titulo
-        item['name'] = f'[{item["SKU"]}] {item["name"]}'
-
-        # Renombrado de campos determinados
-        for field, new_field in cls.FIELDS_TO_RENAME.items():
-            if field in item:
-                item[new_field] = item[field]
-                del item[field]
+        item['name'] = f'[{item["sku"]}] {item["name"]}'
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

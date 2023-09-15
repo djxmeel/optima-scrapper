@@ -33,12 +33,8 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/smart-products.html',
         'https://www.vtacexports.com/default/electrical.html'
     ]
-
+    # TODO Stop using LITE
     FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'videos')
-
-    FIELDS_TO_RENAME = {
-
-    }
 
     @classmethod
     def instantiate_driver(cls):
@@ -110,7 +106,7 @@ class ScraperVtacUk:
 
         # Extracción del SKU
         try:
-            item['SKU'] = f'VS{Util.get_sku_from_link_uk(driver)}'
+            item['sku'] = f'VS{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
             cls.logger.warning('SKU NO ENCONTRADO')
 
@@ -129,7 +125,7 @@ class ScraperVtacUk:
                                                                           '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{item["SKU"]}] {item["name"]}'
+        item['name'] = f'[{item["sku"]}] {item["name"]}'
 
         # Extracción de imágenes
         try:
@@ -156,12 +152,6 @@ class ScraperVtacUk:
                 item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO ICONS')
-
-        # Renombrado de campos determinados
-        for field, new_field in cls.FIELDS_TO_RENAME.items():
-            if field in item:
-                item[new_field] = item[field]
-                del item[field]
 
         # Reemplazo de campos para ODOO
         if 'Peso bruto (kg)' in item:

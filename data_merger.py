@@ -27,12 +27,14 @@ class DataMerger:
         'default': ('es', 'uk', 'ita'),
         'icons': ('uk', 'ita', 'es'),
         'imgs': ('ita', 'uk', 'es'),
-        'descripcion': ('es', 'uk', 'ita')
+        'descripcion': ('es', 'uk', 'ita'),
+        'videos': ('uk', 'ita', 'es'),
     }
 
     # Fields to rename for common naming between countries
     FIELD_TO_MERGE = {
         "Código EAN": "EAN",
+        'EAN Código': 'EAN',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la Familia": "Código de familia",
         "Eficacia luminosa (lm/W)": "Eficacia luminosa",
@@ -42,7 +44,13 @@ class DataMerger:
         "Flujo luminoso/m": "Flujo luminoso",
         "Garanzia": "Garantía",
         "Dimensión": "Dimensiones",
-        "Dimensioni (AxLxP)": "Dimensiones"
+        "Dimensioni (AxLxP)": "Dimensiones",
+        "Nombre de la marca": "Marca",
+        'Ángulo de haz°': 'Ángulo de apertura',
+        'Ángulo de haz': 'Ángulo de apertura',
+        'Código de producto': 'Código de familia',
+        'Las condiciones de trabajo': 'Temperaturas de trabajo',
+        'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido'
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)
@@ -69,12 +77,18 @@ class DataMerger:
         # Filtering None
         # Merging fields when necessary
         cls.data[country] = [cls.merge_product_fields(p) for p in cls.data[country] if p is not None]
+
         cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
     @classmethod
     def load_all(cls):
         for country in cls.COUNTRY_DATA_DIR_PATHS.keys():
+            if len(cls.data.get(country)) > 0:
+                if input(f"Data for {country} already loaded. Load again? (y/n): ") == 'n':
+                    continue
+                cls.data[country] = []
             cls.load_data_for_country(country)
+        return cls
 
     @classmethod
     def get_data(cls, country):
@@ -87,7 +101,7 @@ class DataMerger:
     @classmethod
     def get_product_from_country_sku(cls, sku, country):
         for product in cls.data[country]:
-            if product["SKU"] == sku:
+            if product["sku"] == sku:
                 return product
         return None
 
@@ -113,16 +127,14 @@ class DataMerger:
 
     @classmethod
     def get_unique_skus_from_merged(cls):
-        return set(product['SKU'] for product in cls.load_merged_data())
+        return set(product['sku'] for product in cls.load_merged_data())
 
     @classmethod
     def get_unique_skus_from_countries(cls):
-        return set(product['SKU'] for product in cls.data['es'] + cls.data['uk'] + cls.data['ita'])
+        return set(product['sku'] for product in cls.data['es'] + cls.data['uk'] + cls.data['ita'])
 
     @classmethod
     def merge_data(cls):
-        cls.load_all()
-
         unique_product_skus = cls.get_unique_skus_from_countries()
 
         for sku in unique_product_skus:
@@ -174,7 +186,7 @@ class DataMerger:
     @classmethod
     def extract_merged_data(cls):
         if len(cls.merged_data) < 1:
-            cls.merge_data()
+            cls.load_all().merge_data()
 
         for index in range(0, len(cls.merged_data), cls.JSON_DUMP_FREQUENCY):
             counter = index + cls.JSON_DUMP_FREQUENCY
@@ -183,6 +195,3 @@ class DataMerger:
                 counter = len(cls.merged_data)
 
             Util.dump_to_json(cls.merged_data[index:counter], cls.JSON_DUMP_PATH_TEMPLATE.format(counter))
-
-# TODO use functional prog. for methods that are usually called before otherz
-# TODO enhance logger

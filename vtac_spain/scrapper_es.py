@@ -34,15 +34,6 @@ class ScraperVtacSpain:
 
     FIELDS_TO_DELETE_LITE = ('imgs', 'videos')
 
-    FIELDS_TO_RENAME = {
-        'Ángulo de haz°' : 'Ángulo de apertura',
-        'Ángulo de haz' : 'Ángulo de apertura',
-        'EAN Código' : 'EAN',
-        'Código de producto' :'Código de familia',
-        'Las condiciones de trabajo' : 'Temperaturas de trabajo',
-        'Hora de inicio al 100% encendido' : 'Tiempo de inicio al 100% encendido'
-    }
-
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
@@ -85,10 +76,10 @@ class ScraperVtacSpain:
 
         # Extracción y formateo del SKU
         if 'Código de orden' in item.keys():
-            item['SKU'] = f'VS{item["Código de orden"]}'
+            item['sku'] = f'VS{item["Código de orden"]}'
             del item['Código de orden']
         else:
-            item['SKU'] = f'VS{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
+            item['sku'] = f'VS{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
         # Extracción de la etiqueta energética
         # try:
@@ -107,6 +98,17 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             pass
 
+        # Extracción de imágenes
+        try:
+            # Find the image elements and extract their data
+            image_elements = driver.find_elements(By.XPATH, "//a[@rel='vm-additional-images']")
+
+            for index, image_element in enumerate(image_elements):
+                src = image_element.get_attribute('href')
+                item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
+        except NoSuchElementException:
+            cls.logger.warning('PRODUCT HAS NO IMGS')
+
         # Extracción de la descripción del producto
         try:
             product_desc = driver.find_element(By.XPATH, product_desc_xpath).get_attribute('innerHTML')
@@ -115,7 +117,7 @@ class ScraperVtacSpain:
             pass
 
         # Extracción del título
-        item['name'] = f'[{item["SKU"]}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{item["sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
@@ -124,12 +126,6 @@ class ScraperVtacSpain:
         if 'Peso del artículo' in item.keys():
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
-
-        # Renombrado de campos determinados
-        for field, new_field in cls.FIELDS_TO_RENAME.items():
-            if field in item:
-                item[new_field] = item[field]
-                del item[field]
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
