@@ -64,11 +64,11 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacUk.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}')
+    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}')
     ScraperVtacUk.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 try:
     url = ScraperVtacUk.DRIVER.current_url
     ScraperVtacUk.DRIVER.quit()
-except WebDriverException:
+except AttributeError:
     pass

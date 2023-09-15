@@ -1,5 +1,6 @@
 import copy
 from datetime import datetime
+from datetime import datetime
 from urllib.error import HTTPError
 
 import odoorpc
