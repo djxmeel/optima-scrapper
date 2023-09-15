@@ -90,7 +90,7 @@ class Util:
         return logger
 
     @staticmethod
-    def dump_to_json(dump, filename):
+    def dump_to_json(dump, filename, exclude=None):
         """
             Dumps data to a JSON file.
 
@@ -98,6 +98,13 @@ class Util:
             data (list): A list of data to be dumped to JSON.
             filename (str): Name of the JSON file.
             """
+
+        if exclude:
+            for item in dump:
+                for field in exclude:
+                    if item.get(field):
+                        del item[field]
+
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
@@ -206,10 +213,10 @@ class Util:
     def get_all_files_in_directory(directory_path):
         all_files = []
         for root, dirs, files in os.walk(directory_path):
-            for f in files:
+            for f in sorted(files):
                 path = os.path.join(root, f)
                 all_files.append(path)
-        return all_files
+        return sorted(all_files)
 
     @staticmethod
     def format_field_odoo(field):
@@ -336,10 +343,11 @@ class Util:
                 # Save each X to a JSON
                 if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
                     filename = f'{extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
-                    Util.dump_to_json(products_data, filename)
 
-                    # Dump lighter version of json
-                    Util.dump_product_info_lite(products_data, counter, scraper)
+                    Util.dump_to_json(products_data, filename, exclude=Util.MEDIA_FIELDS)
+
+                    # Dump PRODUCT MEDIA only
+                    Util.dump_product_media(products_data, counter, scraper)
 
                     products_data.clear()
         except:
@@ -349,14 +357,18 @@ class Util:
             Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
+
     @staticmethod
     def dump_product_media(products_data, counter, scraper):
         for product in products_data:
-            for field in Util.MEDIA_FIELDS:
-                del product[field]
+            fields = list(product.keys())
+            for field in fields:
+                if field not in Util.MEDIA_FIELDS and not 'sku':
+                    del product[field]
 
         Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
         scraper.logger.info(f'DUMPED {len(products_data)} PRODUCTS MEDIA')
+
 
     # Replace <use> tags with the referenced element for cairosvg to work
     @staticmethod
