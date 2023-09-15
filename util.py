@@ -20,6 +20,8 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
+    JSON_DUMP_FREQUENCY = 25
+
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
     VTAC_PRODUCT_INFO_LITE_DIR = 'VTAC_PRODUCT_INFO_LITE'
@@ -331,7 +333,7 @@ class Util:
                 logger.info(f'{counter}/{len(links)}\n')
 
                 # Save each X to a JSON
-                if counter % scraper.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
+                if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
                     filename = f'{extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
                     Util.dump_to_json(products_data, filename)
 
@@ -344,7 +346,7 @@ class Util:
             time.sleep(2)
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
-                                             counter - counter % scraper.JSON_DUMP_FREQUENCY)
+                                             counter - counter % Util.JSON_DUMP_FREQUENCY)
 
     @staticmethod
     def dump_product_info_lite(products_data, counter, scraper):

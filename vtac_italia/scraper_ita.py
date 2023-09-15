@@ -19,8 +19,6 @@ class ScraperVtacItalia:
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
-
-    JSON_DUMP_FREQUENCY = 50
     BEGIN_SCRAPE_FROM = 0
 
     SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
