@@ -231,6 +231,3 @@ class ScraperVtacSpain:
                 file.write(response.content)
 
         return len(pdf_elements)
-
-
-ScraperVtacSpain.DRIVER.close()

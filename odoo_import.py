@@ -50,7 +50,7 @@ def get_nested_directories(path):
 def create_attribute(name, value):
     attribute_vals = {
         'name': name,
-        'create_variant': 'never',  # Variants are created "always", "never", or "dynamic"
+        'create_variant': 'no_variant',  # Variants are created "always", "never", or "dynamic"
     }
 
     try:
