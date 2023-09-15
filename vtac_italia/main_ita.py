@@ -19,20 +19,13 @@ if IF_EXTRACT_ITEM_LINKS:
     ScraperVtacItalia.instantiate_driver()
     ScraperVtacItalia.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 
-    if not IF_UPDATE:
-        # EXTRACT LINKS TO A set()
-        extracted_links = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER, ScraperVtacItalia.CATEGORIES_LINKS)
+    # EXTRACT LINKS TO A set()
+    extracted_links, links_new = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER, ScraperVtacItalia.CATEGORIES_LINKS, IF_UPDATE)
 
-        Util.dump_to_json(list(extracted_links),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
-    else:
-        extracted_links, links_new = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER,
-                                                                     ScraperVtacItalia.CATEGORIES_LINKS, update=True)
-
-        Util.dump_to_json(list(extracted_links),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
-        if links_new:
-            Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+    Util.dump_to_json(list(extracted_links),
+                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+    if links_new:
+        Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 
     ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
 

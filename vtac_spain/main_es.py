@@ -17,24 +17,16 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     ScraperVtacSpain.instantiate_driver()
-    ScraperVtacSpain.logger.info(
-        f'BEGINNING LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+    ScraperVtacSpain.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
 
-    if not IF_UPDATE:
-        # EXTRACT LINKS TO A set()
-        extracted_links = ScraperVtacSpain.extract_all_links(ScraperVtacSpain.DRIVER, ScraperVtacSpain.CATEGORIES_LINKS)
+    # EXTRACT LINKS TO A set()
+    extracted_links, links_new = ScraperVtacSpain.extract_all_links(ScraperVtacSpain.DRIVER, ScraperVtacSpain.CATEGORIES_LINKS, IF_UPDATE)
 
-        Util.dump_to_json(list(extracted_links),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
-    else:
-        extracted_links, links_new = ScraperVtacSpain.extract_all_links(ScraperVtacSpain.DRIVER,
-                                                                        ScraperVtacSpain.CATEGORIES_LINKS, update=True)
-
-        Util.dump_to_json(list(extracted_links),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
-        if links_new:
-            Util.dump_to_json(list(links_new),
-                              f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+    Util.dump_to_json(list(extracted_links),
+                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+    if links_new:
+        Util.dump_to_json(list(links_new),
+                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
 
     ScraperVtacSpain.logger.info(
         f'FINISHED LINK EXTRACTION TO {Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
