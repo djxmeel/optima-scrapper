@@ -60,7 +60,7 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_MEDIA_{}.json'
 
-    NOT_TO_EXTRACT_FIELDS = ('list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons')
+    TO_EXTRACT_CUSTOM_FIELDS = ('sku', 'ean', 'descripcion', 'url', 'Código de familia', 'Marca')
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
@@ -108,6 +108,20 @@ class Util:
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
+
+    # TODO Fix media and field separation
+    @staticmethod
+    def dump_product_media(products_data, counter, scraper):
+        for product in products_data:
+            fields = list(product.keys())
+            for field in fields:
+                if field not in Util.MEDIA_FIELDS and not 'sku':
+                    del product[field]
+
+        Util.dump_to_json(products_data,
+                          f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
+        scraper.logger.info(f'DUMPED {len(products_data)} PRODUCTS MEDIA')
+
 
     @staticmethod
     def translate_from_to_spanish(_from, text):
@@ -220,9 +234,6 @@ class Util:
 
     @staticmethod
     def format_field_odoo(field):
-        # No need to format default fields
-        if Util.NOT_TO_EXTRACT_FIELDS.__contains__(field):
-            return field
         replacements = [
             (" ", "_"),
             ("(", ""),
@@ -258,10 +269,10 @@ class Util:
                 json_data.extend(json.load(file))
 
         for product in json_data:
-            for attr in product.keys():
+            for field in product.keys():
                 # Filter out non-custom fields
-                if attr not in Util.NOT_TO_EXTRACT_FIELDS:
-                    fields.add(attr)
+                if field in Util.TO_EXTRACT_CUSTOM_FIELDS:
+                    fields.add(field)
 
         excel_dicts = []
 
@@ -356,18 +367,6 @@ class Util:
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
-
-
-    @staticmethod
-    def dump_product_media(products_data, counter, scraper):
-        for product in products_data:
-            fields = list(product.keys())
-            for field in fields:
-                if field not in Util.MEDIA_FIELDS and not 'sku':
-                    del product[field]
-
-        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
-        scraper.logger.info(f'DUMPED {len(products_data)} PRODUCTS MEDIA')
 
 
     # Replace <use> tags with the referenced element for cairosvg to work
