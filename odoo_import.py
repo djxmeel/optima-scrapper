@@ -43,7 +43,7 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/VTAC_PRODUCT_PDF/',
                     'ita': 'vtac_italia/VTAC_PRODUCT_PDF/'}
 
 ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name')
-SEPARATE_IMPORT_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs')
+NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'ean', 'descripcion', 'Código de familia', 'url')
 ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'descripcion', 'url', 'Código de familia', 'Marca')
 
 
@@ -133,7 +133,7 @@ def import_products():
 
             for key in temp_keys:
                 if key not in ODOO_SUPPORTED_FIELDS:
-                    if key not in SEPARATE_IMPORT_FIELDS:
+                    if key not in NOT_ATTR_FIELDS:
                         create_attribute(key, product[key])
                         created_attrs.append(key)
                     if key not in ALWAYS_KEEP_FIELDS:
