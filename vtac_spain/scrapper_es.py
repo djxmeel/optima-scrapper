@@ -107,8 +107,16 @@ class ScraperVtacSpain:
 
         # Extracción de la descripción del producto
         try:
-            product_desc = driver.find_element(By.XPATH, product_desc_xpath).get_attribute('innerHTML')
-            item['descripcion'] = product_desc
+            titulos = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'h4')
+            u_lists = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'ul')
+            for titulo in titulos:
+                u_list = u_lists[titulos.index(titulo)]
+                lines = u_list.find_elements(By.TAG_NAME, 'li')
+
+                item['descripcion'] += f'{titulo.text}\n'
+                for line in lines:
+                    item['descripcion'] += f'{line.text}\n'
+
         except NoSuchElementException:
             pass
 
@@ -135,7 +143,7 @@ class ScraperVtacSpain:
                 driver.get(cat)
             except TimeoutException:
                 cls.logger.error("ERROR navegando a la página. Reintentando...")
-                ScraperVtacSpain.extract_all_links(driver, categories)
+                ScraperVtacSpain.extract_all_links(driver, categories, update)
                 return
 
             inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH,
