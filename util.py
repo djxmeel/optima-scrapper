@@ -273,6 +273,7 @@ class Util:
         json_data = []
         fields = set()
         ejemplos = {}
+        urls = {}
 
         for file_path in file_list:
             with open(file_path, "r", encoding='ISO-8859-1') as file:
@@ -281,7 +282,8 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 fields.add(field)
-                ejemplos[field] = f'{product["sku"]}: {product[field]}'
+                ejemplos[field] = f'{product["SKU"]} -> {product[field]}'
+                urls[field] = product["url"]
 
         excel_dicts = []
 
@@ -289,15 +291,10 @@ class Util:
 
         for field in fields:
             excel_dicts.append(
-                {'Nombre de campo': Util.format_field_odoo(field),
+                {
                  'Etiqueta de campo': field,
-                 'Modelo': 'product.template',
-                 'Tipo de campo': 'texto',
-                 'Indexado': True,
-                 'Almacenado': True,
-                 'Sólo lectura': False,
-                 'Modelo relacionado': '',
-                 'Ejemplo': ejemplos[field]
+                 'Ejemplo': ejemplos[field],
+                 'URL': urls[field]
                  }
             )
 
