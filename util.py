@@ -281,7 +281,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 fields.add(field)
-                ejemplos[field] = f'{product["SKU"]} -> {product[field]}'
+                ejemplos[field] = f'{product["sku"]} -> {product[field]}'
                 urls[field] = product["url"]
 
         excel_dicts = []

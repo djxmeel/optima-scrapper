@@ -112,45 +112,14 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             pass
 
-        # Extracción de la descripción del producto SIN HTML
-        titulos = []
-
-        try:
-            titulos.append(driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Ventajas del producto']"))
-        except NoSuchElementException:
-            try:
-                titulos.append(driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Beneficios del producto']"))
-            except NoSuchElementException:
-                pass
-
-        try:
-            titulos.append(driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Aplicaciones']"))
-        except NoSuchElementException:
-            pass
-
-        u_lists = []
-        try:
-            u_lists = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'ul')
-        except NoSuchElementException:
-            pass
-
-        try:
-            for titulo in titulos:
-                u_list = u_lists[titulos.index(titulo)]
-                lines = u_list.find_elements(By.TAG_NAME, 'li')
-
-                item['website_description'] += f'{titulo.text}\n'
-                for line in lines:
-                    item['website_description'] += f'{line.text}\n'
-        except IndexError:
-            pass
-
         # Extracción de la descripción del producto CON outerHTML
-        # try:
-        #     item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML')
-        #
-        # except NoSuchElementException:
-        #     pass
+        try:
+            # Check if an <h4> exists to determine wether a description exists
+            driver.find_element(By.XPATH, "//div[@class='product-description']/h4")
+            item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML').replace('<div><a class="uk-button uk-button-default" href="https://v-tac.es/contáctenos">Contáctenos</a></div>', '')
+
+        except NoSuchElementException:
+            pass
 
         # Extracción del título
         item['name'] = f'[{item["sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'

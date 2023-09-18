@@ -121,11 +121,11 @@ class ScraperVtacItalia:
 
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
-            desc_innerHTML = driver.find_element(By.XPATH,
+            desc_outerHTML = driver.find_element(By.XPATH,
                                                  f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
-                'innerHTML')
+                'outerHTML')
 
-            item['website_description'] = desc_innerHTML
+            item['website_description'] = Util.translate_from_to_spanish('it', desc_outerHTML)
         except NoSuchElementException:
             pass
 
@@ -146,8 +146,11 @@ class ScraperVtacItalia:
                 item['volume'] = float(item['Volume'].replace(',', '.').replace('m³', ''))
                 del item['Volume']
             if 'Peso' in item:
-                item['weight'] = float(item['Peso'].replace(',', '.').replace('Kg', ''))
+                item['weight'] = float(item['Peso'].lower().replace(',', '.').replace('kg', ''))
                 del item['Peso']
+            if 'SKU' in item:
+                item['sku'] = item['SKU']
+                del item['SKU']
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',

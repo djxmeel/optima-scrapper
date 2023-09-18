@@ -92,13 +92,17 @@ class ScraperVtacUk:
 
                 # Guardado de campos y valor en la estructura de datos
                 item[key] = value
-
             except NoSuchElementException:
-                # Se hace click() sobre el botón de Features para acceder al texto
-                driver.find_element(By.ID, 'tab-label-features').click()
+                pass
 
-                # <li> que no contiene <span> -> Feature
-                item['website_description'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
+        # Extracción de la descripción (Features)
+        try:
+            # Se hace click() sobre el botón de Features para acceder al texto
+            driver.find_element(By.ID, 'tab-label-features').click()
+            outerHTML = driver.find_element(By.XPATH, "//div[@id='product-features']//ul")
+            item['website_description'] = f'{Util.translate_from_to_spanish("en",outerHTML)}\n'
+        except NoSuchElementException:
+            pass
 
         # Extracción del SKU
         try:
