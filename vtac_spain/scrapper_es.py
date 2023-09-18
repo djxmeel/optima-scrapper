@@ -52,7 +52,7 @@ class ScraperVtacSpain:
         product_desc_xpath = "//div[@class='product-description']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -112,23 +112,45 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             pass
 
-        # Extracción de la descripción del producto
+        # Extracción de la descripción del producto SIN HTML
+        titulos = []
+
         try:
-            titulos = [
-                driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Ventajas del producto']"),
-                driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Aplicaciones']")
-            ]
+            titulos.append(driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Ventajas del producto']"))
+        except NoSuchElementException:
+            try:
+                titulos.append(driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Beneficios del producto']"))
+            except NoSuchElementException:
+                pass
+
+        try:
+            titulos.append(driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Aplicaciones']"))
+        except NoSuchElementException:
+            pass
+
+        u_lists = []
+        try:
             u_lists = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'ul')
+        except NoSuchElementException:
+            pass
+
+        try:
             for titulo in titulos:
                 u_list = u_lists[titulos.index(titulo)]
                 lines = u_list.find_elements(By.TAG_NAME, 'li')
 
-                item['descripcion'] += f'{titulo.text}\n'
+                item['website_description'] += f'{titulo.text}\n'
                 for line in lines:
-                    item['descripcion'] += f'{line.text}\n'
-
-        except NoSuchElementException:
+                    item['website_description'] += f'{line.text}\n'
+        except IndexError:
             pass
+
+        # Extracción de la descripción del producto CON outerHTML
+        # try:
+        #     item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML')
+        #
+        # except NoSuchElementException:
+        #     pass
 
         # Extracción del título
         item['name'] = f'[{item["sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'
