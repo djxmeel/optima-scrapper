@@ -61,7 +61,7 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_MEDIA_{}.json'
 
-    TO_EXTRACT_CUSTOM_FIELDS = ('sku', 'ean', 'descripcion', 'url', 'Código de familia', 'Marca')
+    TO_EXTRACT_CUSTOM_FIELDS = ('sku', 'ean', 'website_description', 'url', 'Código de familia', 'Marca')
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
@@ -266,7 +266,6 @@ class Util:
             formatted_field = formatted_field.replace(search, replace)
         return f'x_{formatted_field}'[:61]
 
-    # TODO temp use
     @staticmethod
     def extract_fields_example_to_excel(directory_path):
         file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')

@@ -31,7 +31,7 @@ class DataMerger:
     # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
-        'descripcion': ('es', 'uk', 'ita')
+        'website_description': ('es', 'uk', 'ita')
     }
 
     MEDIA_FIELDS_PRIORITIES = {

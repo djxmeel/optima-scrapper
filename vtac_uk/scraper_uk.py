@@ -65,7 +65,7 @@ class ScraperVtacUk:
                 continue
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -98,7 +98,7 @@ class ScraperVtacUk:
                 driver.find_element(By.ID, 'tab-label-features').click()
 
                 # <li> que no contiene <span> -> Feature
-                item['descripcion'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
+                item['website_description'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
 
         # Extracción del SKU
         try:

@@ -42,9 +42,9 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/VTAC_PRODUCT_PDF/',
                     'uk': 'vtac_uk/VTAC_PRODUCT_PDF/',
                     'ita': 'vtac_italia/VTAC_PRODUCT_PDF/'}
 
-ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name')
-NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'ean', 'descripcion', 'Código de familia', 'url')
-ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'descripcion', 'url', 'Código de familia', 'Marca')
+ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
+NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'ean', 'Código de familia', 'url')
+ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
 
 
 def get_all_files_in_directory(directory_path):

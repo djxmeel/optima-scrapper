@@ -51,7 +51,7 @@ class ScraperVtacItalia:
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [],
-                'descripcion': '',
+                'website_description': '',
                 'imgs': [], 'icons': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
@@ -125,7 +125,7 @@ class ScraperVtacItalia:
                                                  f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
                 'innerHTML')
 
-            item['descripcion'] = desc_innerHTML
+            item['website_description'] = desc_innerHTML
         except NoSuchElementException:
             pass
 
