@@ -1,4 +1,5 @@
 import base64
+import copy
 import json
 import os
 import re
@@ -21,7 +22,7 @@ class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
     #TODO reset to 25
-    JSON_DUMP_FREQUENCY = 3
+    JSON_DUMP_FREQUENCY = 2
 
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
@@ -101,31 +102,34 @@ class Util:
             """
 
         if exclude:
+            products_info = []
             for item in dump:
-                for field in exclude:
-                    if item.get(field):
-                        # TODO Remove this print
-                        print(f'Excluding {field} from {item["url"]}')
-                        del item[field]
+                product_info = {}
+                for field in item.keys():
+                    if field not in exclude:
+                        product_info[field] = copy.copy(item[field])
+                products_info.append(product_info)
+
+            dump = copy.deepcopy(products_info)
 
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
 
-    # TODO Fix media and field separation
     @staticmethod
     def dump_product_media(products_data, counter, scraper):
+        products_media = []
         for product in products_data:
-            fields = list(product.keys())
-            for field in fields:
-                if field not in Util.MEDIA_FIELDS and not 'sku':
-                    # TODO Remove this print
-                    print(f'Excluding MEDIA {field} from {product["url"]}')
-                    del product[field]
+            product_media = {}
+            for field in product.keys():
+                if field in Util.MEDIA_FIELDS or field in 'sku':
+                    product_media[field] = copy.copy(product[field])
+            products_media.append(product_media)
 
-        Util.dump_to_json(products_data,
+
+        Util.dump_to_json(products_media,
                           f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
-        scraper.logger.info(f'DUMPED {len(products_data)} PRODUCTS MEDIA')
+        scraper.logger.info(f'DUMPED {len(products_media)} PRODUCTS MEDIA')
 
 
     @staticmethod
