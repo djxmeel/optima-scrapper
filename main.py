@@ -20,6 +20,7 @@ if IF_MERGE:
 if IF_EXTRACT_FIELDS:
     DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
     Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
+    # Util.extract_fields_example_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
     DataMerger.logger.info('FINISHED FIELD EXTRACTION')
 
 
