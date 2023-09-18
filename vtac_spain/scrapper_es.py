@@ -114,7 +114,10 @@ class ScraperVtacSpain:
 
         # Extracción de la descripción del producto
         try:
-            titulos = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'h4')
+            titulos = [
+                driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Ventajas del producto']"),
+                driver.find_element(By.XPATH, product_desc_xpath).find_element(By.XPATH, "//h4[text()='Aplicaciones']")
+            ]
             u_lists = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'ul')
             for titulo in titulos:
                 u_list = u_lists[titulos.index(titulo)]
