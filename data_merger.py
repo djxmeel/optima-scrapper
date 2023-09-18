@@ -59,7 +59,8 @@ class DataMerger:
         'Ángulo de haz': 'Ángulo de apertura',
         'Código de producto': 'Código de familia',
         'Las condiciones de trabajo': 'Temperaturas de trabajo',
-        'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido'
+        'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
+        'SKU': 'sku'
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)
