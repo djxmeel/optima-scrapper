@@ -105,6 +105,13 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
+        # Extracción de video
+        try:
+            video_element = driver.find_element(By.XPATH, "//div[@uk-lightbox='']/a")
+            item['videos'].append(video_element.get_attribute('href'))
+        except NoSuchElementException:
+            pass
+
         # Extracción de la descripción del producto
         try:
             titulos = driver.find_element(By.XPATH, product_desc_xpath).find_elements(By.TAG_NAME, 'h4')
