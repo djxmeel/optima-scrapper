@@ -20,7 +20,8 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 25
+    #TODO reset to 25
+    JSON_DUMP_FREQUENCY = 3
 
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
@@ -103,6 +104,8 @@ class Util:
             for item in dump:
                 for field in exclude:
                     if item.get(field):
+                        # TODO Remove this print
+                        print(f'Excluding {field} from {item["url"]}')
                         del item[field]
 
         with open(filename, 'w') as file:
@@ -116,6 +119,8 @@ class Util:
             fields = list(product.keys())
             for field in fields:
                 if field not in Util.MEDIA_FIELDS and not 'sku':
+                    # TODO Remove this print
+                    print(f'Excluding MEDIA {field} from {product["url"]}')
                     del product[field]
 
         Util.dump_to_json(products_data,
@@ -258,6 +263,51 @@ class Util:
             formatted_field = formatted_field.replace(search, replace)
         return f'x_{formatted_field}'[:61]
 
+    # TODO temp use
+    @staticmethod
+    def extract_fields_example_to_excel(directory_path):
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+        json_data = []
+        fields = set()
+        ejemplos = {}
+
+        for file_path in file_list:
+            with open(file_path, "r", encoding='ISO-8859-1') as file:
+                json_data.extend(json.load(file))
+
+        for product in json_data:
+            for field in product.keys():
+                fields.add(field)
+                ejemplos[field] = f'{product["sku"]}: {product[field]}'
+
+        excel_dicts = []
+
+        print(f'FOUND {len(fields)} DISTINCT FIELDS')
+
+        for field in fields:
+            excel_dicts.append(
+                {'Nombre de campo': Util.format_field_odoo(field),
+                 'Etiqueta de campo': field,
+                 'Modelo': 'product.template',
+                 'Tipo de campo': 'texto',
+                 'Indexado': True,
+                 'Almacenado': True,
+                 'Sólo lectura': False,
+                 'Modelo relacionado': '',
+                 'Ejemplo': ejemplos[field]
+                 }
+            )
+
+        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+
+        # Read the JSON file
+        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+
+        # Write the DataFrame to an Excel file
+        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXCEL.xlsx"
+        data.to_excel(excel_file_path,
+                      index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
+
     @staticmethod
     def extract_distinct_fields_to_excel(directory_path):
         file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
@@ -287,7 +337,7 @@ class Util:
                  'Indexado': True,
                  'Almacenado': True,
                  'Sólo lectura': False,
-                 'Modelo relacionado': ''
+                 'Modelo relacionado': '',
                  }
             )
 

@@ -6,11 +6,11 @@ from util import Util
 # VTAC ES SCRAPER
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO = False
+IF_EXTRACT_ITEM_INFO = True
 # PDFs productos
 IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
@@ -63,7 +63,8 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacSpain.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}')
+    # TODO CHANGE TO USE extract_distinct_fields_to_excel
+    Util.extract_fields_example_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}')
     ScraperVtacSpain.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 try:
