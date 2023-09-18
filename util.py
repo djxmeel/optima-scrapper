@@ -21,8 +21,7 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    #TODO reset to 25
-    JSON_DUMP_FREQUENCY = 2
+    JSON_DUMP_FREQUENCY = 25
 
     VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
     VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
@@ -302,13 +301,13 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+        Util.dump_to_json(excel_dicts, f'{directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+        data = pd.read_json(f'{directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXCEL.xlsx"
+        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
