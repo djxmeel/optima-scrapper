@@ -308,7 +308,7 @@ class Util:
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
     @staticmethod
-    def extract_distinct_fields_to_excel(directory_path):
+    def extract_distinct_fields_to_excel(directory_path, extract_all=False):
         file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
         json_data = []
         fields = set()
@@ -320,7 +320,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 # Filter out non-custom fields
-                if field in Util.TO_EXTRACT_CUSTOM_FIELDS:
+                if extract_all or field in Util.TO_EXTRACT_CUSTOM_FIELDS:
                     fields.add(field)
 
         excel_dicts = []
