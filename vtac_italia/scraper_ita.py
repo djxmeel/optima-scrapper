@@ -228,10 +228,10 @@ class ScraperVtacItalia:
                     current_page += 1
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
 
             if os.path.exists(links_path):
-                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
+                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
@@ -281,7 +281,7 @@ class ScraperVtacItalia:
             if '/' in name:
                 name = name.replace('/', '-')
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_DIR["pdf"]}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIR["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             with open(f'{nested_dir}/{name}.pdf', 'wb') as file:

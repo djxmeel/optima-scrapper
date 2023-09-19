@@ -23,10 +23,10 @@ class Util:
 
     JSON_DUMP_FREQUENCY = 25
 
-    VTAC_PRODUCT_DIR = {
-        'info':'VTAC_PRODUCT_INFO',
-        'media':'VTAC_PRODUCT_MEDIA',
-        'pdf':'VTAC_PRODUCT_PDF'
+    PRODUCT_DIR = {
+        'info':'PRODUCT_INFO',
+        'media':'PRODUCT_MEDIA',
+        'pdf':'PRODUCT_PDF'
     }
 
     VTAC_COUNTRY_DIR = {
@@ -38,16 +38,16 @@ class Util:
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
-    VTAC_PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/VTAC_PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/VTAC_PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/VTAC_PRODUCTS_LINKS_ITA.json'
+    PRODUCTS_LINKS_FILE = {
+        'es': 'LINKS/PRODUCTS_LINKS_ES.json',
+        'uk': 'LINKS/PRODUCTS_LINKS_UK.json',
+        'ita': 'LINKS/PRODUCTS_LINKS_ITA.json'
     }
 
-    NEW_VTAC_PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_ITA.json'
+    NEW_PRODUCTS_LINKS_FILE = {
+        'es': 'LINKS/NEW_PRODUCTS_LINKS_ES.json',
+        'uk': 'LINKS/NEW_PRODUCTS_LINKS_UK.json',
+        'ita': 'LINKS/NEW_PRODUCTS_LINKS_ITA.json'
     }
 
     LOG_FILE_PATH = {
@@ -59,11 +59,13 @@ class Util:
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
     ODOO_IMPORT_LOG_FILE_PATH = 'logs/odooimport/import_{}.log'
 
-    VTAC_PRODUCTS_FIELDS_FILE = 'VTAC_PRODUCTS_FIELDS.json'
+    VTAC_PRODUCTS_FIELDS_JSON_PATH = 'FIELDS/VTAC_PRODUCTS_FIELDS.json'
+    VTAC_PRODUCTS_FIELDS_EXCEL_PATH = 'FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_MEDIA_{}.json'
 
-    CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'website_description', 'url', 'Código de familia', 'Marca')
+    CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
@@ -129,7 +131,7 @@ class Util:
 
 
         Util.dump_to_json(products_media,
-                          f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_DIR['media']}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
+                          f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.PRODUCT_DIR['media']}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
         scraper.logger.info(f'DUMPED {len(products_media)} PRODUCTS MEDIA')
 
 
@@ -269,8 +271,8 @@ class Util:
         return f'x_{formatted_field}'[:61]
 
     @staticmethod
-    def extract_fields_example_to_excel(directory_path):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCT_DIR["info"]}')
+    def extract_fields_example_to_excel(country_directory_path):
+        file_list = Util.get_all_files_in_directory(f'{country_directory_path}/{Util.PRODUCT_DIR["info"]}')
         json_data = []
         fields = set()
         ejemplos = {}
@@ -299,19 +301,19 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+        Util.dump_to_json(excel_dicts, f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+        data = pd.read_json(f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
+        excel_file_path = f"{country_directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
 
     @staticmethod
     def extract_distinct_fields_to_excel(directory_path, extract_all=False):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCT_DIR["info"]}')
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.PRODUCT_DIR["info"]}')
         json_data = []
         fields = set()
 
@@ -342,13 +344,13 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_JSON_PATH}')
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_JSON_PATH}')
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXCEL.xlsx"
+        excel_file_path = f"{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_EXCEL_PATH}"
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
