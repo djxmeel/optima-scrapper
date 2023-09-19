@@ -66,7 +66,7 @@ class Util:
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
-    MEDIA_FIELDS = ('sku', 'imgs', 'icons', 'videos')
+    MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
     def setup_logger(target_file, name):
@@ -122,6 +122,10 @@ class Util:
         products_media = []
         for product in products_data:
             product_media = {}
+            # Get product SKU
+            if 'sku' in product:
+                product_media['sku'] = product['sku']
+
             for field in Util.MEDIA_FIELDS:
                 if field in product:
                     product_media[field] = copy.deepcopy(product[field])
@@ -416,7 +420,7 @@ class Util:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, logger,
+            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
 
