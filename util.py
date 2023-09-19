@@ -59,11 +59,11 @@ class Util:
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
     ODOO_IMPORT_LOG_FILE_PATH = 'logs/odooimport/import_{}.log'
 
-    VTAC_PRODUCTS_FIELDS_JSON_PATH = 'FIELDS/VTAC_PRODUCTS_FIELDS.json'
-    VTAC_PRODUCTS_FIELDS_EXCEL_PATH = 'FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    PRODUCTS_FIELDS_JSON_PATH = 'FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
-    ITEMS_MEDIA_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_MEDIA_{}.json'
+    ITEMS_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
+    ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
@@ -344,13 +344,13 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_JSON_PATH}')
+        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_JSON_PATH}')
+        data = pd.read_json(f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_EXCEL_PATH}"
+        excel_file_path = f"{directory_path}/{Util.PRODUCTS_FIELDS_EXCEL_PATH}"
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 

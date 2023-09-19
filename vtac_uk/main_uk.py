@@ -32,7 +32,7 @@ if IF_EXTRACT_ITEM_LINKS:
 if IF_EXTRACT_ITEM_INFO:
     ScraperVtacUk.instantiate_driver()
     ScraperVtacUk.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIR["info"]}')
-    # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
+    # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacUk,
         f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}',

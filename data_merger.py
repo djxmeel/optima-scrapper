@@ -12,20 +12,20 @@ class DataMerger:
     print(f'LOGGER CREATED: {logger_path}')
 
     JSON_DUMP_FREQUENCY = 10
-    JSON_DUMP_PATH_TEMPLATE = 'merged_data/VTAC_PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
-    MERGED_PRODUCT_INFO_DIR_PATH = 'merged_data/VTAC_PRODUCT_INFO'
-    MERGED_DATA_DIR_PATH = 'merged_data'
+    JSON_DUMP_PATH_TEMPLATE = 'vtac_merged_data/PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
+    MERGED_PRODUCT_INFO_DIR_PATH = 'vtac_merged_data/PRODUCT_INFO'
+    MERGED_DATA_DIR_PATH = 'vtac_merged_data'
 
     COUNTRY_DATA_DIR_PATHS = {
-        'es': 'vtac_spain/VTAC_PRODUCT_INFO',
-        'uk': 'vtac_uk/VTAC_PRODUCT_INFO',
-        'ita': 'vtac_italia/VTAC_PRODUCT_INFO'
+        'es': 'vtac_spain/PRODUCT_INFO',
+        'uk': 'vtac_uk/PRODUCT_INFO',
+        'ita': 'vtac_italia/PRODUCT_INFO'
     }
 
     COUNTRY_MEDIA_DIR_PATHS = {
-        'es': 'vtac_spain/VTAC_PRODUCT_MEDIA',
-        'uk': 'vtac_uk/VTAC_PRODUCT_MEDIA',
-        'ita': 'vtac_italia/VTAC_PRODUCT_MEDIA'
+        'es': 'vtac_spain/PRODUCT_MEDIA',
+        'uk': 'vtac_uk/PRODUCT_MEDIA',
+        'ita': 'vtac_italia/PRODUCT_MEDIA'
     }
 
     # Field priorities, 'default' is for fields that are not in this list

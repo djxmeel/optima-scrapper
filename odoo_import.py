@@ -36,10 +36,10 @@ ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
 MEDIA_MODEL = odoo.env['product.image']
 PRODUCT_MODEL = odoo.env['product.template']
 
-PRODUCT_INFO_DIR = 'merged_data/VTAC_PRODUCT_INFO'
-PRODUCT_PDF_DIRS = {'es': 'vtac_spain/VTAC_PRODUCT_PDF/',
-                    'uk': 'vtac_uk/VTAC_PRODUCT_PDF/',
-                    'ita': 'vtac_italia/VTAC_PRODUCT_PDF/'}
+PRODUCT_INFO_DIR = 'vtac_merged_data/PRODUCT_INFO'
+PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
+                    'uk': 'vtac_uk/PRODUCT_PDF/',
+                    'ita': 'vtac_italia/PRODUCT_PDF/'}
 
 ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
 NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'ean', 'Código de familia', 'url')
