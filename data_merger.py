@@ -12,7 +12,7 @@ class DataMerger:
     print(f'LOGGER CREATED: {logger_path}')
 
     JSON_DUMP_FREQUENCY = 10
-    JSON_DUMP_PATH_TEMPLATE = 'vtac_merged_data/PRODUCT_INFO/VTAC_MERGED_INFO_{}.json'
+    JSON_DUMP_PATH_TEMPLATE = 'vtac_merged_data/PRODUCT_INFO/MERGED_INFO_{}.json'
     MERGED_PRODUCT_INFO_DIR_PATH = 'vtac_merged_data/PRODUCT_INFO'
     MERGED_DATA_DIR_PATH = 'vtac_merged_data'
 
