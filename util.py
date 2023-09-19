@@ -305,7 +305,7 @@ class Util:
         # Write the DataFrame to an Excel file
         excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
         data.to_excel(excel_file_path,
-                      index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
+                      index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
 
     @staticmethod
     def extract_distinct_fields_to_excel(directory_path, extract_all=False):

@@ -34,7 +34,7 @@ ATTRIBUTE_MODEL = odoo.env['product.attribute']
 ATTRIBUTE_VALUE_MODEL = odoo.env['product.attribute.value']
 ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
 
-IMAGE_MODEL = odoo.env['product.image']
+MEDIA_MODEL = odoo.env['product.image']
 PRODUCT_MODEL = odoo.env['product.template']
 
 PRODUCT_INFO_DIR = 'merged_data/VTAC_PRODUCT_INFO'
@@ -288,11 +288,10 @@ def import_imgs():
                         except RPCError:
                             pass
 
-                        image_ids = IMAGE_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
+                        image_ids = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
 
                         # Product existing images
-                        images = IMAGE_MODEL.browse(image_ids)
-
+                        images = MEDIA_MODEL.browse(image_ids)
                         images = [image.image_1920 for image in images]
 
                         # Iterate over the products 'imgs'
@@ -308,34 +307,37 @@ def import_imgs():
                                 }
                                 try:
                                     # Create the new product.image record
-                                    IMAGE_MODEL.create(new_image)
+                                    MEDIA_MODEL.create(new_image)
                                     logger.info(f'{product_data["sku"]}: UPLOADED IMAGE with name : {name}')
                                 except RPCError:
                                     pass
                             else:
                                 logger.info(f'{product_data["sku"]}: Image already exists')
 
-                        # Iterate over the products 'videos'
-                        for extra_img in product_data['videos']:
-                            # TODO
-                            if not images.__contains__(extra_img['img64']):
-                                name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
 
-                                new_image = {
+                        videos = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
+                        videos = [video.video_url for video in videos]
+
+                        # Iterate over the products 'videos'
+                        for video_url in product_data['videos']:
+                            # TODO TEST
+                            if not videos.__contains__(video_url):
+                                name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
+
+                                new_video = {
                                     'name': name,
                                     # Replace with your image name
-                                    'image_1920': extra_img['img64'],
+                                    'video_url': video_url,
                                     'product_tmpl_id': product_ids[0]
                                 }
                                 try:
                                     # Create the new product.image record
-                                    IMAGE_MODEL.create(new_image)
-                                    logger.info(f'{product_data["sku"]}: UPLOADED IMAGE with name : {name}')
+                                    MEDIA_MODEL.create(new_video)
+                                    logger.info(f'{product_data["sku"]}: UPLOADED VIDEO url with name : {name}')
                                 except RPCError:
                                     pass
                             else:
                                 logger.info(f'{product_data["sku"]}: Image already exists')
-
                 else:
                     logger.warn('PRODUCT NOT FOUND IN ODOO')
 
@@ -358,10 +360,10 @@ def import_icons():
             product_ids = PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
 
             if product_ids:
-                image_ids = IMAGE_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
+                image_ids = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
 
                 # Product existing icons
-                images = IMAGE_MODEL.browse(image_ids)
+                images = MEDIA_MODEL.browse(image_ids)
 
                 images = [image.image_1920 for image in images]
 
@@ -377,7 +379,7 @@ def import_icons():
 
                         try:
                             # Create the new product.image record
-                            IMAGE_MODEL.create(new_image)
+                            MEDIA_MODEL.create(new_image)
                             logger.info(f'{product["sku"]}: UPLOADED ICON with name : {name}')
                         except RPCError:
                             pass
