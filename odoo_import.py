@@ -295,7 +295,7 @@ def import_imgs():
 
                         images = [image.image_1920 for image in images]
 
-                        # Iterate over the products
+                        # Iterate over the products 'imgs'
                         for extra_img in product_data['imgs'][1:]:
                             if not images.__contains__(extra_img['img64']):
                                 name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
@@ -314,6 +314,28 @@ def import_imgs():
                                     pass
                             else:
                                 logger.info(f'{product_data["sku"]}: Image already exists')
+
+                        # Iterate over the products 'videos'
+                        for extra_img in product_data['videos']:
+                            # TODO
+                            if not images.__contains__(extra_img['img64']):
+                                name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
+
+                                new_image = {
+                                    'name': name,
+                                    # Replace with your image name
+                                    'image_1920': extra_img['img64'],
+                                    'product_tmpl_id': product_ids[0]
+                                }
+                                try:
+                                    # Create the new product.image record
+                                    IMAGE_MODEL.create(new_image)
+                                    logger.info(f'{product_data["sku"]}: UPLOADED IMAGE with name : {name}')
+                                except RPCError:
+                                    pass
+                            else:
+                                logger.info(f'{product_data["sku"]}: Image already exists')
+
                 else:
                     logger.warn('PRODUCT NOT FOUND IN ODOO')
 
