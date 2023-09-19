@@ -99,7 +99,7 @@ class ScraperVtacUk:
         try:
             # Se hace click() sobre el botón de Features para acceder al texto
             driver.find_element(By.ID, 'tab-label-features').click()
-            outerHTML = driver.find_element(By.XPATH, "//div[@id='product-features']//ul")
+            outerHTML = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
             item['website_description'] = f'{Util.translate_from_to_spanish("en",outerHTML)}\n'
         except NoSuchElementException:
             pass
