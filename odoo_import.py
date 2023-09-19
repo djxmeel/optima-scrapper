@@ -319,7 +319,6 @@ def import_imgs():
 
                         # Iterate over the products 'videos'
                         for video_url in product_data['videos']:
-                            # TODO TEST
                             if not videos.__contains__(video_url):
                                 name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
 
