@@ -132,7 +132,7 @@ class ScraperVtacSpain:
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
 
-        cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
+        cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"].encode("utf-8")}')
 
         return item
 

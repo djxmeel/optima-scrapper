@@ -37,6 +37,7 @@ if IF_EXTRACT_ITEM_INFO:
         ScraperVtacUk,
         f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}',
         f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIR["info"]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIR["media"]}',
         ScraperVtacUk.logger,
         ScraperVtacUk.BEGIN_SCRAPE_FROM
     )

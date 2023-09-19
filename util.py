@@ -66,7 +66,7 @@ class Util:
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
-    MEDIA_FIELDS = ('imgs', 'icons', 'videos')
+    MEDIA_FIELDS = ('sku', 'imgs', 'icons', 'videos')
 
     @staticmethod
     def setup_logger(target_file, name):
@@ -103,36 +103,32 @@ class Util:
             data (list): A list of data to be dumped to JSON.
             filename (str): Name of the JSON file.
             """
-
+        products_info = []
         if exclude:
-            products_info = []
             for item in dump:
-                product_info = {}
-                for field in item.keys():
-                    if field not in exclude:
-                        product_info[field] = copy.copy(item[field])
-                products_info.append(product_info)
+                for field in exclude:
+                    if field in item:
+                        del item[field]
+                products_info.append(item)
+            dump = products_info
 
-            dump = copy.deepcopy(products_info)
 
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
 
     @staticmethod
-    def dump_product_media(products_data, counter, scraper):
+    def get_products_media(products_data, scraper):
         products_media = []
         for product in products_data:
             product_media = {}
-            for field in product.keys():
-                if field in Util.MEDIA_FIELDS or field in 'sku':
-                    product_media[field] = copy.copy(product[field])
+            for field in Util.MEDIA_FIELDS:
+                if field in product:
+                    product_media[field] = copy.deepcopy(product[field])
             products_media.append(product_media)
 
-
-        Util.dump_to_json(products_media,
-                          f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.PRODUCT_DIR['media']}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
         scraper.logger.info(f'DUMPED {len(products_media)} PRODUCTS MEDIA')
+        return products_media
 
 
     @staticmethod
@@ -384,7 +380,7 @@ class Util:
             Util.begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, counter)
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, extraction_dir, logger, start_from=0):
+    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
         """
         Begins item info extraction.
 
@@ -406,19 +402,21 @@ class Util:
 
                 # Save each X to a JSON
                 if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
-                    filename = f'{extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    data_filename = f'{data_extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    media_filename = f'{media_extraction_dir}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}'
 
-                    Util.dump_to_json(products_data, filename, exclude=Util.MEDIA_FIELDS)
+                    products_media_only = Util.get_products_media(products_data, scraper)
 
+                    Util.dump_to_json(products_data, data_filename, exclude=Util.MEDIA_FIELDS)
                     # Dump PRODUCT MEDIA only
-                    Util.dump_product_media(products_data, counter, scraper)
+                    Util.dump_to_json(products_media_only, media_filename)
 
                     products_data.clear()
         except:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
+            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, logger,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
 
