@@ -62,6 +62,7 @@ def get_nested_directories(path):
             directories.append(os.path.join(root, name))
     return directories
 
+
 def create_attribute(name, value):
     attribute_vals = {
         'name': name,
@@ -112,6 +113,7 @@ def assign_attribute_values(product_id, product, attributes):
                 ATTRIBUTE_LINE_MODEL.create(line_vals)
             except RPCError:
                 pass
+
 
 def import_products():
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
@@ -217,7 +219,6 @@ def import_pdfs():
     directory_list_ita = get_nested_directories(PRODUCT_PDF_DIRS['ita'])
     sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
 
-
     unique_skus = DataMerger.get_unique_skus_from_merged()
 
     for sku in unique_skus:
@@ -241,7 +242,7 @@ def import_pdfs():
                     pdf_binary_data = file.read()
                     encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                attachment_name = Util.translate_from_to_spanish('detect' ,attachment_path.split('\\')[-1])
+                attachment_name = Util.translate_from_to_spanish('detect', attachment_path.split('\\')[-1])
                 attachment_name = f'{sku}_{attachment_name}'
 
                 existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
@@ -312,7 +313,6 @@ def import_imgs():
                                     pass
                             else:
                                 logger.info(f'{product_data["sku"]}: Image already exists')
-
 
                         videos = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
                         videos = [video.video_url for video in videos]

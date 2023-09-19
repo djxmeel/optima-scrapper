@@ -99,8 +99,8 @@ class ScraperVtacUk:
         try:
             # Se hace click() sobre el botón de Features para acceder al texto
             driver.find_element(By.ID, 'tab-label-features').click()
-            outerHTML = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
-            item['website_description'] = f'{Util.translate_from_to_spanish("en",outerHTML)}\n'
+            outer_html = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
+            item['website_description'] = f'{Util.translate_from_to_spanish("en",outer_html)}\n'
         except NoSuchElementException:
             pass
 
@@ -277,7 +277,7 @@ class ScraperVtacUk:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCT_DIR["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible

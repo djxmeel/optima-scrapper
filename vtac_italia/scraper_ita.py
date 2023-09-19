@@ -121,11 +121,11 @@ class ScraperVtacItalia:
 
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
-            desc_outerHTML = driver.find_element(By.XPATH,
+            desc_outer_html = driver.find_element(By.XPATH,
                                                  f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
                 'outerHTML')
 
-            item['website_description'] = Util.translate_from_to_spanish('it', desc_outerHTML)
+            item['website_description'] = Util.translate_from_to_spanish('it', desc_outer_html)
         except NoSuchElementException:
             pass
 
@@ -281,7 +281,7 @@ class ScraperVtacItalia:
             if '/' in name:
                 name = name.replace('/', '-')
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_DIR["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             with open(f'{nested_dir}/{name}.pdf', 'wb') as file:

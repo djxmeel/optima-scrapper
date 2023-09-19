@@ -23,9 +23,11 @@ class Util:
 
     JSON_DUMP_FREQUENCY = 25
 
-    VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
-    VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
-    VTAC_PRODUCT_MEDIA_DIR = 'VTAC_PRODUCT_MEDIA'
+    VTAC_PRODUCT_DIR = {
+        'info':'VTAC_PRODUCT_INFO',
+        'media':'VTAC_PRODUCT_MEDIA',
+        'pdf':'VTAC_PRODUCT_PDF'
+    }
 
     VTAC_COUNTRY_DIR = {
         'es': 'vtac_spain',
@@ -61,7 +63,7 @@ class Util:
     ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_MEDIA_{}.json'
 
-    TO_EXTRACT_CUSTOM_FIELDS = ('sku', 'ean', 'website_description', 'url', 'Código de familia', 'Marca')
+    CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'website_description', 'url', 'Código de familia', 'Marca')
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
@@ -127,7 +129,7 @@ class Util:
 
 
         Util.dump_to_json(products_media,
-                          f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_MEDIA_DIR}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
+                          f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_DIR['media']}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}")
         scraper.logger.info(f'DUMPED {len(products_media)} PRODUCTS MEDIA')
 
 
@@ -268,7 +270,7 @@ class Util:
 
     @staticmethod
     def extract_fields_example_to_excel(directory_path):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCT_DIR["info"]}')
         json_data = []
         fields = set()
         ejemplos = {}
@@ -309,7 +311,7 @@ class Util:
 
     @staticmethod
     def extract_distinct_fields_to_excel(directory_path, extract_all=False):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCT_DIR["info"]}')
         json_data = []
         fields = set()
 
@@ -320,7 +322,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 # Filter out non-custom fields
-                if extract_all or field in Util.TO_EXTRACT_CUSTOM_FIELDS:
+                if extract_all or field in Util.CUSTOM_FIELDS_TO_EXTRACT:
                     fields.add(field)
 
         excel_dicts = []

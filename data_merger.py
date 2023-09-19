@@ -217,17 +217,17 @@ class DataMerger:
                         cls.logger.info(f'{sku}: MERGE {country} -> {field}')
                         break
 
-                # Then, merge MEDIA fields in priority order
-                for field in cls.MEDIA_FIELDS_PRIORITIES.keys():
-                    for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
-                        if product_media.get(country) and product_media[country].get(field) and len(product_media[country][field]) > 0:
-                            if type(product_media[country][field]) is list:
-                                merged_product[field] = copy.deepcopy(product_media[country][field])
-                                cls.logger.info(f'{sku}: MERGE {country} -> {field}')
-                                break
-                            merged_product[field] = product_media[country][field]
+            # Then, merge MEDIA fields in priority order
+            for field in cls.MEDIA_FIELDS_PRIORITIES.keys():
+                for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
+                    if product_media.get(country) and product_media[country].get(field) and len(product_media[country][field]) > 0:
+                        if type(product_media[country][field]) is list:
+                            merged_product[field] = copy.deepcopy(product_media[country][field])
                             cls.logger.info(f'{sku}: MERGE {country} -> {field}')
                             break
+                        merged_product[field] = product_media[country][field]
+                        cls.logger.info(f'{sku}: MERGE {country} -> {field}')
+                        break
 
             for field_country in cls.COUNTRY_FIELDS_ALWAYS_KEEP:
                 try:
