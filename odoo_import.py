@@ -36,7 +36,7 @@ ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
 MEDIA_MODEL = odoo.env['product.image']
 PRODUCT_MODEL = odoo.env['product.template']
 
-PRODUCT_INFO_DIR = 'vtac_merged_data/PRODUCT_INFO'
+PRODUCT_INFO_DIR = 'vtac_merged/PRODUCT_INFO'
 PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
                     'uk': 'vtac_uk/PRODUCT_PDF/',
                     'ita': 'vtac_italia/PRODUCT_PDF/'}
