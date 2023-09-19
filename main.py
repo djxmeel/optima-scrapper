@@ -3,14 +3,16 @@ from data_merger import DataMerger
 from util import Util
 
 
-IF_MERGE = False
-IF_EXTRACT_FIELDS = False
+IF_MERGE = True
+IF_EXTRACT_FIELDS = True
+# If False : only extracts CUSTOM fields presen in ODOO
+IF_ALL_FIELDS = False
 
 IF_IMPORT_PRODUCTS = True
-IF_IMPORT_ACC = False
-IF_IMPORT_PDFS = False
-IF_IMPORT_IMGS = False
-IF_IMPORT_ICONS = False
+IF_IMPORT_ACC = True
+IF_IMPORT_PDFS = True
+IF_IMPORT_IMGS = True
+IF_IMPORT_ICONS = True
 
 # DATA MERGING
 if IF_MERGE:
@@ -19,7 +21,7 @@ if IF_MERGE:
     DataMerger.logger.info('FINISHED DATA MERGING')
 if IF_EXTRACT_FIELDS:
     DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
-    Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
+    Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH, extract_all=IF_ALL_FIELDS)
     # Util.extract_fields_example_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
     DataMerger.logger.info('FINISHED FIELD EXTRACTION')
 
