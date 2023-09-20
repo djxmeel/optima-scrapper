@@ -2,7 +2,7 @@ import json
 import copy
 from datetime import datetime
 
-from util import Util
+from utils.util import Util
 
 
 class DataMerger:
@@ -13,8 +13,8 @@ class DataMerger:
 
     JSON_DUMP_FREQUENCY = 10
     JSON_DUMP_PATH_TEMPLATE = 'vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
-    MERGED_PRODUCT_INFO_DIR_PATH = 'vtac_merged/PRODUCT_INFO'
-    MERGED_DATA_DIR_PATH = 'vtac_merged'
+    MERGED_PRODUCT_INFO_DIR_PATH = 'PRODUCT_INFO'
+    MERGED_DATA_DIR_PATH = ''
 
     COUNTRY_DATA_DIR_PATHS = {
         'es': 'vtac_spain/PRODUCT_INFO',

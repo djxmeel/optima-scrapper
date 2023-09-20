@@ -1,6 +1,6 @@
-import odoo_import as odoo_imp
-from data_merger import DataMerger
-from util import Util
+from utils import odoo_import as odoo_imp
+from vtac_merged.data_merger import DataMerger
+from utils.util import Util
 
 
 IF_MERGE = True

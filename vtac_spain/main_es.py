@@ -1,5 +1,5 @@
 from vtac_spain.scrapper_es import ScraperVtacSpain
-from util import Util
+from utils.util import Util
 
 
 # VTAC ES SCRAPER

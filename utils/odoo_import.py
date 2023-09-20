@@ -10,7 +10,7 @@ import base64
 from odoorpc.error import RPCError
 
 from util import Util
-from data_merger import DataMerger
+from vtac_merged.data_merger import DataMerger
 
 logger_path = Util.ODOO_IMPORT_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
 logger = Util.setup_logger(logger_path, 'odoo_import')
@@ -36,7 +36,7 @@ ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
 MEDIA_MODEL = odoo.env['product.image']
 PRODUCT_MODEL = odoo.env['product.template']
 
-PRODUCT_INFO_DIR = 'vtac_merged/PRODUCT_INFO'
+PRODUCT_INFO_DIR = '../vtac_merged/PRODUCT_INFO'
 PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
                     'uk': 'vtac_uk/PRODUCT_PDF/',
                     'ita': 'vtac_italia/PRODUCT_PDF/'}

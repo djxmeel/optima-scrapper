@@ -1,5 +1,5 @@
 from vtac_italia.scraper_ita import ScraperVtacItalia
-from util import Util
+from utils.util import Util
 
 
 # VTAC ITA SCRAPER
