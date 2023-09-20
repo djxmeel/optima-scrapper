@@ -36,13 +36,13 @@ ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
 MEDIA_MODEL = odoo.env['product.image']
 PRODUCT_MODEL = odoo.env['product.template']
 
-PRODUCT_INFO_DIR = '../vtac_merged/PRODUCT_INFO'
+PRODUCT_INFO_DIR = 'vtac_merged/PRODUCT_INFO'
 PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
                     'uk': 'vtac_uk/PRODUCT_PDF/',
                     'ita': 'vtac_italia/PRODUCT_PDF/'}
 
 ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
-NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'ean', 'Código de familia', 'url')
+NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
 
 
@@ -185,9 +185,9 @@ def import_accessories_kits():
                 main_product_id = PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
                 if len(main_product_id) > 0:
                     main_product_id = main_product_id[0]
-
-                if len(accessories_sku) > 0:
                     logger.info(f'SKU : {product["sku"]} Accesorios : {len(accessories_sku)}')
+                else:
+                    continue
 
                 for acc in accessories_sku:
                     existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
@@ -206,6 +206,7 @@ def import_accessories_kits():
                         logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
 
 
+# TODO search for skus in ODOO and use them to browse through dirs for potential DLs
 def import_pdfs():
     product_model = PRODUCT_MODEL
     attachments_model = odoo.env['ir.attachment']
@@ -261,9 +262,11 @@ def import_pdfs():
 
                 try:
                     attachment_id = attachments_model.create(attachment_data)
-                    logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED ODOO WITH ID {attachment_id}')
+                    logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
                 except HTTPError:
                     logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
+        else:
+            logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
 
 def import_imgs():
@@ -280,7 +283,7 @@ def import_imgs():
                 # Search for the product template with the given sku
                 product_ids = PRODUCT_MODEL.search([('x_sku', '=', product_data['sku'])])
 
-                if product_ids:
+                if len(product_ids) > 0:
                     # write/overwrite the image to the product
                     if len(product_data['imgs']) > 0:
                         try:
@@ -317,27 +320,28 @@ def import_imgs():
                         videos = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
                         videos = [video.video_url for video in videos]
 
-                        # Iterate over the products 'videos'
-                        for video_url in product_data['videos']:
-                            if not videos.__contains__(video_url):
-                                name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
+                        if 'videos' in product_data:
+                            # Iterate over the products 'videos'
+                            for video_url in product_data['videos']:
+                                if not videos.__contains__(video_url):
+                                    name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
 
-                                new_video = {
-                                    'name': name,
-                                    # Replace with your image name
-                                    'video_url': video_url,
-                                    'product_tmpl_id': product_ids[0]
-                                }
-                                try:
-                                    # Create the new product.image record
-                                    MEDIA_MODEL.create(new_video)
-                                    logger.info(f'{product_data["sku"]}: UPLOADED VIDEO url with name : {name}')
-                                except RPCError:
-                                    pass
-                            else:
-                                logger.info(f'{product_data["sku"]}: Image already exists')
+                                    new_video = {
+                                        'name': name,
+                                        # Replace with your image name
+                                        'video_url': video_url,
+                                        'product_tmpl_id': product_ids[0]
+                                    }
+                                    try:
+                                        # Create the new product.image record
+                                        MEDIA_MODEL.create(new_video)
+                                        logger.info(f'{product_data["sku"]}: UPLOADED VIDEO url with name : {name}')
+                                    except RPCError:
+                                        pass
+                                else:
+                                    logger.info(f'{product_data["sku"]}: Image already exists')
                 else:
-                    logger.warn('PRODUCT NOT FOUND IN ODOO')
+                    logger.warn(f'{product_data["sku"]} : PRODUCT NOT FOUND IN ODOO')
 
             else:
                 logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
