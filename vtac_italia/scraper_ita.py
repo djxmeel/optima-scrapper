@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-from util import Util
+from utils.util import Util
 
 
 # VTAC ITALIA SCRAPER
@@ -15,12 +15,10 @@ class ScraperVtacItalia:
 
     # Creación del logger
     logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path)
+    logger = Util.setup_logger(logger_path, 'vtac_italia')
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
-
-    JSON_DUMP_FREQUENCY = 50
     BEGIN_SCRAPE_FROM = 0
 
     SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
@@ -30,8 +28,6 @@ class ScraperVtacItalia:
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     )
-
-    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'kit', 'accesorios', 'videos')
 
     @classmethod
     def instantiate_driver(cls):
@@ -54,8 +50,8 @@ class ScraperVtacItalia:
             subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [],
-                'descripcion': '',
+        item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
+                'website_description': '',
                 'imgs': [], 'icons': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
@@ -66,7 +62,7 @@ class ScraperVtacItalia:
         for iframe in iframes:
             item['videos'].append(iframe.get_attribute('src'))
 
-        # Extracción del kit
+        # Extracción del kit al campo accesorios
         try:
             kit_anchor = driver.find_elements(By.XPATH, f'//h4[text() = \'Il kit comprende\']/parent::div//a')
 
@@ -78,7 +74,7 @@ class ScraperVtacItalia:
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
-                item['kit'].append(kit_info)
+                item['accesorios'].append(kit_info)
 
         except NoSuchElementException:
             cls.logger.warning('EL ARTICULO NO TIENE KIT')
@@ -125,11 +121,11 @@ class ScraperVtacItalia:
 
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
-            desc_innerHTML = driver.find_element(By.XPATH,
+            desc_outer_html = driver.find_element(By.XPATH,
                                                  f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
-                'innerHTML')
+                'outerHTML')
 
-            item['descripcion'] = desc_innerHTML
+            item['website_description'] = Util.translate_from_to_spanish('it', desc_outer_html)
         except NoSuchElementException:
             pass
 
@@ -150,8 +146,11 @@ class ScraperVtacItalia:
                 item['volume'] = float(item['Volume'].replace(',', '.').replace('m³', ''))
                 del item['Volume']
             if 'Peso' in item:
-                item['weight'] = float(item['Peso'].replace(',', '.').replace('Kg', ''))
+                item['weight'] = float(item['Peso'].lower().replace(',', '.').replace('kg', ''))
                 del item['Peso']
+            if 'SKU' in item:
+                item['sku'] = item['SKU']
+                del item['SKU']
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',
@@ -229,10 +228,10 @@ class ScraperVtacItalia:
                     current_page += 1
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
 
             if os.path.exists(links_path):
-                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
+                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
@@ -282,7 +281,7 @@ class ScraperVtacItalia:
             if '/' in name:
                 name = name.replace('/', '-')
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             with open(f'{nested_dir}/{name}.pdf', 'wb') as file:

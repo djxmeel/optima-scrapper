@@ -7,7 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-from util import Util
+from utils.util import Util
 
 
 # VTAC UK SCRAPER
@@ -16,12 +16,10 @@ class ScraperVtacUk:
 
     # Creación del logger
     logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path)
+    logger = Util.setup_logger(logger_path,'vtac_uk')
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
-
-    JSON_DUMP_FREQUENCY = 10
     BEGIN_SCRAPE_FROM = 0
 
     SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
@@ -33,8 +31,6 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/smart-products.html',
         'https://www.vtacexports.com/default/electrical.html'
     ]
-    # TODO Stop using LITE
-    FIELDS_TO_DELETE_LITE = ('imgs', 'icons', 'videos')
 
     @classmethod
     def instantiate_driver(cls):
@@ -69,7 +65,7 @@ class ScraperVtacUk:
                 continue
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -96,13 +92,17 @@ class ScraperVtacUk:
 
                 # Guardado de campos y valor en la estructura de datos
                 item[key] = value
-
             except NoSuchElementException:
-                # Se hace click() sobre el botón de Features para acceder al texto
-                driver.find_element(By.ID, 'tab-label-features').click()
+                pass
 
-                # <li> que no contiene <span> -> Feature
-                item['descripcion'] += f'{Util.translate_from_to_spanish("en", subcat_li.text)}\n'
+        # Extracción de la descripción (Features)
+        try:
+            # Se hace click() sobre el botón de Features para acceder al texto
+            driver.find_element(By.ID, 'tab-label-features').click()
+            outer_html = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
+            item['website_description'] = f'{Util.translate_from_to_spanish("en",outer_html)}\n'
+        except NoSuchElementException:
+            pass
 
         # Extracción del SKU
         try:
@@ -197,10 +197,10 @@ class ScraperVtacUk:
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
 
             if os.path.exists(links_path):
-                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
+                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     return extracted, new_links
@@ -277,7 +277,7 @@ class ScraperVtacUk:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible

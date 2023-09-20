@@ -1,4 +1,5 @@
 import base64
+import copy
 import json
 import os
 import re
@@ -20,9 +21,13 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    VTAC_PRODUCT_PDF_DIR = 'VTAC_PRODUCT_PDF'
-    VTAC_PRODUCTS_INFO_DIR = 'VTAC_PRODUCT_INFO'
-    VTAC_PRODUCT_INFO_LITE_DIR = 'VTAC_PRODUCT_INFO_LITE'
+    JSON_DUMP_FREQUENCY = 25
+
+    PRODUCT_DIRS = {
+        'info':'PRODUCT_INFO',
+        'media':'PRODUCT_MEDIA',
+        'pdf':'PRODUCT_PDF'
+    }
 
     VTAC_COUNTRY_DIR = {
         'es': 'vtac_spain',
@@ -33,16 +38,16 @@ class Util:
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
-    VTAC_PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/VTAC_PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/VTAC_PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/VTAC_PRODUCTS_LINKS_ITA.json'
+    PRODUCTS_LINKS_FILE = {
+        'es': 'LINKS/PRODUCTS_LINKS_ES.json',
+        'uk': 'LINKS/PRODUCTS_LINKS_UK.json',
+        'ita': 'LINKS/PRODUCTS_LINKS_ITA.json'
     }
 
-    NEW_VTAC_PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/NEW_VTAC_PRODUCTS_LINKS_ITA.json'
+    NEW_PRODUCTS_LINKS_FILE = {
+        'es': 'LINKS/NEW_PRODUCTS_LINKS_ES.json',
+        'uk': 'LINKS/NEW_PRODUCTS_LINKS_UK.json',
+        'ita': 'LINKS/NEW_PRODUCTS_LINKS_ITA.json'
     }
 
     LOG_FILE_PATH = {
@@ -54,16 +59,19 @@ class Util:
     MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
     ODOO_IMPORT_LOG_FILE_PATH = 'logs/odooimport/import_{}.log'
 
-    VTAC_PRODUCTS_FIELDS_FILE = 'VTAC_PRODUCTS_FIELDS.json'
-    ITEMS_INFO_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_{}.json'
-    ITEMS_INFO_LITE_FILENAME_TEMPLATE = 'VTAC_PRODUCTS_INFO_LITE_{}.json'
+    PRODUCTS_FIELDS_JSON_PATH = 'FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    NOT_TO_EXTRACT_FIELDS = ('list_price', 'volume', 'weight', 'name', 'kit', 'accesorios', 'imgs', 'videos', 'icons')
+    ITEMS_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
+    ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
+
+    CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
+    MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
-    def setup_logger(target_file):
+    def setup_logger(target_file, name):
         # Create or get a logger
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger(name)
 
         # Set log level
         logger.setLevel(logging.DEBUG)
@@ -87,7 +95,7 @@ class Util:
         return logger
 
     @staticmethod
-    def dump_to_json(dump, filename):
+    def dump_to_json(dump, filename, exclude=None):
         """
             Dumps data to a JSON file.
 
@@ -95,9 +103,37 @@ class Util:
             data (list): A list of data to be dumped to JSON.
             filename (str): Name of the JSON file.
             """
+        products_info = []
+        if exclude:
+            for item in dump:
+                for field in exclude:
+                    if field in item:
+                        del item[field]
+                products_info.append(item)
+            dump = products_info
+
+
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
+
+    @staticmethod
+    def get_products_media(products_data, scraper):
+        products_media = []
+        for product in products_data:
+            product_media = {}
+            # Get product SKU
+            if 'sku' in product:
+                product_media['sku'] = product['sku']
+
+            for field in Util.MEDIA_FIELDS:
+                if field in product:
+                    product_media[field] = copy.deepcopy(product[field])
+            products_media.append(product_media)
+
+        scraper.logger.info(f'DUMPED {len(products_media)} PRODUCTS MEDIA')
+        return products_media
+
 
     @staticmethod
     def translate_from_to_spanish(_from, text):
@@ -203,16 +239,13 @@ class Util:
     def get_all_files_in_directory(directory_path):
         all_files = []
         for root, dirs, files in os.walk(directory_path):
-            for f in files:
+            for f in sorted(files):
                 path = os.path.join(root, f)
                 all_files.append(path)
-        return all_files
+        return sorted(all_files)
 
     @staticmethod
     def format_field_odoo(field):
-        # No need to format default fields
-        if Util.NOT_TO_EXTRACT_FIELDS.__contains__(field):
-            return field
         replacements = [
             (" ", "_"),
             ("(", ""),
@@ -238,8 +271,49 @@ class Util:
         return f'x_{formatted_field}'[:61]
 
     @staticmethod
-    def extract_distinct_fields_to_excel(directory_path):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    def extract_fields_example_to_excel(country_directory_path):
+        file_list = Util.get_all_files_in_directory(f'{country_directory_path}/{Util.PRODUCT_DIRS["info"]}')
+        json_data = []
+        fields = set()
+        ejemplos = {}
+        urls = {}
+
+        for file_path in file_list:
+            with open(file_path, "r", encoding='ISO-8859-1') as file:
+                json_data.extend(json.load(file))
+
+        for product in json_data:
+            for field in product.keys():
+                fields.add(field)
+                ejemplos[field] = f'{product["sku"]} -> {product[field]}'
+                urls[field] = product["url"]
+
+        excel_dicts = []
+
+        print(f'FOUND {len(fields)} DISTINCT FIELDS')
+
+        for field in fields:
+            excel_dicts.append(
+                {
+                 'Etiqueta de campo': field,
+                 'Ejemplo': ejemplos[field],
+                 'URL': urls[field]
+                 }
+            )
+
+        Util.dump_to_json(excel_dicts, f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+
+        # Read the JSON file
+        data = pd.read_json(f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+
+        # Write the DataFrame to an Excel file
+        excel_file_path = f"{country_directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
+        data.to_excel(excel_file_path,
+                      index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
+
+    @staticmethod
+    def extract_distinct_fields_to_excel(directory_path, extract_all=False):
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.PRODUCT_DIRS["info"]}')
         json_data = []
         fields = set()
 
@@ -248,10 +322,10 @@ class Util:
                 json_data.extend(json.load(file))
 
         for product in json_data:
-            for attr in product.keys():
+            for field in product.keys():
                 # Filter out non-custom fields
-                if attr not in Util.NOT_TO_EXTRACT_FIELDS:
-                    fields.add(attr)
+                if extract_all or field in Util.CUSTOM_FIELDS_TO_EXTRACT:
+                    fields.add(field)
 
         excel_dicts = []
 
@@ -266,17 +340,17 @@ class Util:
                  'Indexado': True,
                  'Almacenado': True,
                  'Sólo lectura': False,
-                 'Modelo relacionado': ''
+                 'Modelo relacionado': '',
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/{Util.VTAC_PRODUCTS_FIELDS_FILE}')
+        data = pd.read_json(f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/DISTINCT_FIELDS_EXCEL.xlsx"
+        excel_file_path = f"{directory_path}/{Util.PRODUCTS_FIELDS_EXCEL_PATH}"
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
@@ -310,7 +384,7 @@ class Util:
             Util.begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, counter)
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, extraction_dir, logger, start_from=0):
+    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
         """
         Begins item info extraction.
 
@@ -331,29 +405,24 @@ class Util:
                 logger.info(f'{counter}/{len(links)}\n')
 
                 # Save each X to a JSON
-                if counter % scraper.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
-                    filename = f'{extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
-                    Util.dump_to_json(products_data, filename)
+                if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
+                    data_filename = f'{data_extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    media_filename = f'{media_extraction_dir}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}'
 
-                    # Dump lighter version of json
-                    Util.dump_product_info_lite(products_data, counter, scraper)
+                    products_media_only = Util.get_products_media(products_data, scraper)
+
+                    Util.dump_to_json(products_data, data_filename, exclude=Util.MEDIA_FIELDS)
+                    # Dump PRODUCT MEDIA only
+                    Util.dump_to_json(products_media_only, media_filename)
 
                     products_data.clear()
         except:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, extraction_dir, logger,
-                                             counter - counter % scraper.JSON_DUMP_FREQUENCY)
+            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
+                                             counter - counter % Util.JSON_DUMP_FREQUENCY)
 
-    @staticmethod
-    def dump_product_info_lite(products_data, counter, scraper):
-        for product in products_data:
-            for field in scraper.FIELDS_TO_DELETE_LITE:
-                del product[field]
-
-        Util.dump_to_json(products_data,f"{Util.VTAC_COUNTRY_DIR[scraper.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}/{Util.ITEMS_INFO_LITE_FILENAME_TEMPLATE.format(counter)}")
-        scraper.logger.info(f'DUMPED {len(products_data)} LITE PRODUCT INFO')
 
     # Replace <use> tags with the referenced element for cairosvg to work
     @staticmethod

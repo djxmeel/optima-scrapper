@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-from util import Util
+from utils.util import Util
 
 
 # VTAC ES SCRAPER
@@ -15,12 +15,10 @@ class ScraperVtacSpain:
 
     # Creación del logger
     logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path)
+    logger = Util.setup_logger(logger_path, 'vtac_spain')
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
-
-    JSON_DUMP_FREQUENCY = 100
     BEGIN_SCRAPE_FROM = 0
 
     SUBCATEGORIES = ()
@@ -31,8 +29,6 @@ class ScraperVtacSpain:
         'https://v-tac.es/smart-digital.html',
         'https://v-tac.es/el%C3%A9ctrico.html',
     )
-
-    FIELDS_TO_DELETE_LITE = ('imgs', 'videos')
 
     @classmethod
     def instantiate_driver(cls):
@@ -56,7 +52,7 @@ class ScraperVtacSpain:
         product_desc_xpath = "//div[@class='product-description']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'descripcion': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -109,10 +105,19 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Extracción de la descripción del producto
+        # Extracción de video
         try:
-            product_desc = driver.find_element(By.XPATH, product_desc_xpath).get_attribute('innerHTML')
-            item['descripcion'] = product_desc
+            video_element = driver.find_element(By.XPATH, "//div[@uk-lightbox='']/a")
+            item['videos'].append(video_element.get_attribute('href'))
+        except NoSuchElementException:
+            pass
+
+        # Extracción de la descripción del producto CON outerHTML
+        try:
+            # Check if an <h4> exists to determine wether a description exists
+            driver.find_element(By.XPATH, "//div[@class='product-description']/h4")
+            item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML').replace('<div><a class="uk-button uk-button-default" href="https://v-tac.es/contáctenos">Contáctenos</a></div>', '')
+
         except NoSuchElementException:
             pass
 
@@ -127,7 +132,7 @@ class ScraperVtacSpain:
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
 
-        cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
+        cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"].encode("utf-8")}')
 
         return item
 
@@ -139,7 +144,7 @@ class ScraperVtacSpain:
                 driver.get(cat)
             except TimeoutException:
                 cls.logger.error("ERROR navegando a la página. Reintentando...")
-                ScraperVtacSpain.extract_all_links(driver, categories)
+                ScraperVtacSpain.extract_all_links(driver, categories, update)
                 return
 
             inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH,
@@ -158,7 +163,7 @@ class ScraperVtacSpain:
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
 
             if os.path.exists(links_path):
                 with open(links_path, 'r') as file:
@@ -210,7 +215,7 @@ class ScraperVtacSpain:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible
@@ -227,6 +232,3 @@ class ScraperVtacSpain:
                 file.write(response.content)
 
         return len(pdf_elements)
-
-
-ScraperVtacSpain.DRIVER.close()

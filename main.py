@@ -1,16 +1,18 @@
-import odoo_import as odoo_imp
-from data_merger import DataMerger
-from util import Util
+from utils import odoo_import as odoo_imp
+from vtac_merged.data_merger import DataMerger
+from utils.util import Util
 
 
 IF_MERGE = False
 IF_EXTRACT_FIELDS = False
+# If False : only extracts CUSTOM fields present in ODOO
+IF_ALL_FIELDS = False
 
-IF_IMPORT_PRODUCTS = True
+IF_IMPORT_PRODUCTS = False
 IF_IMPORT_ACC = False
 IF_IMPORT_PDFS = False
-IF_IMPORT_IMGS = False
-IF_IMPORT_ICONS = False
+IF_IMPORT_IMGS = True
+IF_IMPORT_ICONS = True
 
 # DATA MERGING
 if IF_MERGE:
@@ -19,7 +21,8 @@ if IF_MERGE:
     DataMerger.logger.info('FINISHED DATA MERGING')
 if IF_EXTRACT_FIELDS:
     DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
-    Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
+    Util.extract_distinct_fields_to_excel(DataMerger.MERGED_DATA_DIR_PATH, extract_all=IF_ALL_FIELDS)
+    # Util.extract_fields_example_to_excel(DataMerger.MERGED_DATA_DIR_PATH)
     DataMerger.logger.info('FINISHED FIELD EXTRACTION')
 
 
@@ -30,9 +33,9 @@ if IF_IMPORT_PRODUCTS:
     odoo_imp.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
-    odoo_imp.logger.info(f'BEGINNING ACCESSORIES/KITS IMPORT')
-    odoo_imp.import_accessories_kits()
-    odoo_imp.logger.info(f'FINISHED ACCESSORIES/KITS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING ACCESSORIES IMPORT')
+    odoo_imp.import_accessories()
+    odoo_imp.logger.info(f'FINISHED ACCESSORIES IMPORT')
 
 if IF_IMPORT_PDFS:
     odoo_imp.logger.info(f'BEGINNING PDFS IMPORT')

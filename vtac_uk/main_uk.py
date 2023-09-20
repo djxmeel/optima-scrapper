@@ -1,6 +1,5 @@
-from selenium.common import WebDriverException
 from vtac_uk.scraper_uk import ScraperVtacUk
-from util import Util
+from utils.util import Util
 
 
 # VTAC UK SCRAPER
@@ -17,58 +16,55 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     ScraperVtacUk.instantiate_driver()
-    ScraperVtacUk.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
+    ScraperVtacUk.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
-    if not IF_UPDATE:
-        # EXTRACT LINKS TO A set()
-        extracted_links = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER, ScraperVtacUk.CATEGORIES_LINKS)
+    # EXTRACT LINKS TO A set()
+    extracted_links, links_new = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER, ScraperVtacUk.CATEGORIES_LINKS, IF_UPDATE)
 
-        Util.dump_to_json(list(extracted_links),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
-    else:
-        extracted_links, links_new = ScraperVtacUk.extract_all_links(ScraperVtacUk.DRIVER, ScraperVtacUk.CATEGORIES_LINKS, update=True)
+    Util.dump_to_json(list(extracted_links),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
-        Util.dump_to_json(list(extracted_links),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
-        if links_new:
-            Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.NEW_VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
+    if links_new:
+        Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.NEW_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
-    ScraperVtacUk.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
+    ScraperVtacUk.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}')
 
 # PRODUCTS INFO EXTRACTION
 if IF_EXTRACT_ITEM_INFO:
     ScraperVtacUk.instantiate_driver()
-    ScraperVtacUk.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}')
-    # EXTRACTION OF ITEMS INFO TO VTAC_PRODUCT_INFO
+    ScraperVtacUk.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
+    # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacUk,
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["media"]}',
         ScraperVtacUk.logger,
         ScraperVtacUk.BEGIN_SCRAPE_FROM
     )
-    ScraperVtacUk.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_INFO_DIR}')
+    ScraperVtacUk.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
 
 # PDF DL
 if IF_DL_ITEM_PDF:
     ScraperVtacUk.instantiate_driver()
-    ScraperVtacUk.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacUk.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}')
     Util.begin_items_PDF_download(
         ScraperVtacUk,
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacUk.COUNTRY]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}',
         'UK',
         ScraperVtacUk.logger
     )
-    ScraperVtacUk.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_PDF_DIR}')
+    ScraperVtacUk.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacUk.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}/{Util.VTAC_PRODUCT_INFO_LITE_DIR}')
+    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}')
+    # Util.extract_fields_example_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacUk.COUNTRY]}')
     ScraperVtacUk.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 try:
     url = ScraperVtacUk.DRIVER.current_url
     ScraperVtacUk.DRIVER.quit()
-except WebDriverException:
+except AttributeError:
     pass
