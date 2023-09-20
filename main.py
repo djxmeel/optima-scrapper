@@ -5,14 +5,14 @@ from utils.util import Util
 
 IF_MERGE = True
 IF_EXTRACT_FIELDS = True
-# If False : only extracts CUSTOM fields presen in ODOO
-IF_ALL_FIELDS = False
+# If False : only extracts CUSTOM fields present in ODOO
+IF_ALL_FIELDS = True
 
-IF_IMPORT_PRODUCTS = True
-IF_IMPORT_ACC = True
-IF_IMPORT_PDFS = True
-IF_IMPORT_IMGS = True
-IF_IMPORT_ICONS = True
+IF_IMPORT_PRODUCTS = False
+IF_IMPORT_ACC = False
+IF_IMPORT_PDFS = False
+IF_IMPORT_IMGS = False
+IF_IMPORT_ICONS = False
 
 # DATA MERGING
 if IF_MERGE:

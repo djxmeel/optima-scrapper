@@ -60,7 +60,7 @@ if IF_DL_ITEM_PDF:
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacItalia.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
     Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}')
-    Util.extract_fields_example_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}')
+    # Util.extract_fields_example_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}')
     ScraperVtacItalia.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 

@@ -1,7 +1,6 @@
 import json
 import copy
 from datetime import datetime
-
 from utils.util import Util
 
 
@@ -13,8 +12,7 @@ class DataMerger:
 
     JSON_DUMP_FREQUENCY = 10
     JSON_DUMP_PATH_TEMPLATE = 'vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
-    MERGED_PRODUCT_INFO_DIR_PATH = 'PRODUCT_INFO'
-    MERGED_DATA_DIR_PATH = ''
+    MERGED_DATA_DIR_PATH = 'vtac_merged'
 
     COUNTRY_DATA_DIR_PATHS = {
         'es': 'vtac_spain/PRODUCT_INFO',
@@ -160,7 +158,7 @@ class DataMerger:
         if not always_load and len(cls.merged_data) > 0:
             return cls.merged_data
 
-        file_list = Util.get_all_files_in_directory(cls.MERGED_PRODUCT_INFO_DIR_PATH)
+        file_list = Util.get_all_files_in_directory(f'{cls.MERGED_DATA_DIR_PATH}/{Util.PRODUCT_DIR["info"]}')
         for file_path in file_list:
             with open(file_path, "r", encoding='ISO-8859-1') as file:
                 cls.merged_data += json.load(file)

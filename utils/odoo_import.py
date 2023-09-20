@@ -9,7 +9,7 @@ import base64
 
 from odoorpc.error import RPCError
 
-from util import Util
+from utils.util import Util
 from vtac_merged.data_merger import DataMerger
 
 logger_path = Util.ODOO_IMPORT_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
