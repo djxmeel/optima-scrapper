@@ -13,21 +13,28 @@ country_scrapers = {
 
 # Prompt user to choose country
 while True:
-    chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({country_scrapers.keys()}) :')
+    chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
     if chosen_country.strip().lower() in country_scrapers:
         break
     print("País no válido, inténtelo de nuevo")
 
 scraper = country_scrapers[chosen_country]
 
+# TODO TEST FOR : ITA, UK
 # Datos productos
-IF_EXTRACT_ITEM_INFO = True
+IF_EXTRACT_ITEM_INFO = False
+
+# TODO TEST FOR : ITA, UK
 # PDFs productos
 IF_DL_ITEM_PDF = False
+
+# TODO TEST FOR : ES, ITA, UK
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+
+# TODO TEST FOR : ITA, UK
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
 
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
@@ -67,7 +74,7 @@ if IF_DL_ITEM_PDF:
     scraper.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH}')
     Util.begin_items_pdf_download(
         scraper,
-        scraper.CATEGORIES_LINKS,
+        scraper.PRODUCTS_LINKS_PATH,
         scraper.PRODUCTS_PDF_PATH,
         scraper.logger
     )

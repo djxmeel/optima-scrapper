@@ -14,6 +14,8 @@ from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 import logging
 
+from utils import odoo_import
+
 os.environ['path'] += r';dlls/'
 import cairosvg
 
@@ -21,7 +23,7 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 25
+    JSON_DUMP_FREQUENCY = 5
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
@@ -257,6 +259,8 @@ class Util:
         print(f'FOUND {len(fields)} DISTINCT FIELDS')
 
         for field in fields:
+            if field in odoo_import.ODOO_SUPPORTED_FIELDS:
+                continue
             excel_dicts.append(
                 {
                  'Etiqueta de campo': field,

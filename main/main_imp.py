@@ -1,10 +1,14 @@
 from utils import odoo_import as odoo_imp
 
-
+# TODO TEST
 IF_IMPORT_PRODUCTS = False
+# TODO TEST
 IF_IMPORT_ACC = False
+# TODO TEST
 IF_IMPORT_PDFS = False
+# TODO TEST
 IF_IMPORT_IMGS = True
+# TODO TEST
 IF_IMPORT_ICONS = True
 
 # ODOO IMPORT
