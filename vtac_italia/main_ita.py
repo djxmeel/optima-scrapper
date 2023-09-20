@@ -16,51 +16,51 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     ScraperVtacItalia.instantiate_driver()
-    ScraperVtacItalia.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+    ScraperVtacItalia.logger.info(f'BEGINNING LINK EXTRACTION TO {ScraperVtacItalia.PRODUCTS_LINKS_PATH}')
 
     # EXTRACT LINKS TO A set()
     extracted_links, links_new = ScraperVtacItalia.extract_all_links(ScraperVtacItalia.DRIVER, ScraperVtacItalia.CATEGORIES_LINKS, IF_UPDATE)
 
     Util.dump_to_json(list(extracted_links),
-                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+                      f'{ScraperVtacItalia.PRODUCTS_LINKS_PATH}')
     if links_new:
-        Util.dump_to_json(list(links_new),f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.NEW_PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+        Util.dump_to_json(list(links_new),f'{ScraperVtacItalia.NEW_PRODUCTS_LINKS_PATH}')
 
-    ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}')
+    ScraperVtacItalia.logger.info(f'FINISHED LINK EXTRACTION TO {ScraperVtacItalia.PRODUCTS_LINKS_PATH}')
 
 # PRODUCTS INFO EXTRACTION
 if IF_EXTRACT_ITEM_INFO:
     ScraperVtacItalia.instantiate_driver()
-    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
+    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {ScraperVtacItalia.PRODUCTS_INFO_PATH}')
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacItalia,
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["media"]}',
+        f'{ScraperVtacItalia.PRODUCTS_LINKS_PATH}',
+        f'{ScraperVtacItalia.PRODUCTS_INFO_PATH}',
+        f'{ScraperVtacItalia.PRODUCTS_MEDIA_PATH}',
         ScraperVtacItalia.logger,
         ScraperVtacItalia.BEGIN_SCRAPE_FROM
     )
-    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
+    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO {ScraperVtacItalia.PRODUCTS_INFO_PATH}')
 
 # PDF DL
 if IF_DL_ITEM_PDF:
     ScraperVtacItalia.instantiate_driver()
-    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}')
-    Util.begin_items_PDF_download(
+    ScraperVtacItalia.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {ScraperVtacItalia.PRODUCTS_PDF_PATH}')
+    Util.begin_items_pdf_download(
         ScraperVtacItalia,
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacItalia.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}',
+        f'{ScraperVtacItalia.PRODUCTS_LINKS_PATH}',
+        f'{ScraperVtacItalia.PRODUCTS_PDF_PATH}',
         'ITA',
         ScraperVtacItalia.logger
     )
-    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}')
+    ScraperVtacItalia.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {ScraperVtacItalia.PRODUCTS_PDF_PATH}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacItalia.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}')
-    # Util.extract_fields_example_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}')
+    Util.extract_distinct_fields_to_excel(ScraperVtacItalia.PRODUCTS_INFO_PATH, ScraperVtacItalia.PRODUCTS_FIELDS_JSON_PATH, ScraperVtacItalia.PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
+    Util.extract_fields_example_to_excel(ScraperVtacItalia.PRODUCTS_INFO_PATH, ScraperVtacItalia.PRODUCTS_FIELDS_JSON_PATH, ScraperVtacItalia.PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
     ScraperVtacItalia.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 

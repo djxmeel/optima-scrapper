@@ -16,55 +16,53 @@ IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     ScraperVtacSpain.instantiate_driver()
-    ScraperVtacSpain.logger.info(f'BEGINNING LINK EXTRACTION TO {Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+    ScraperVtacSpain.logger.info(f'BEGINNING LINK EXTRACTION TO {ScraperVtacSpain.PRODUCTS_LINKS_PATH}')
 
     # EXTRACT LINKS TO A set()
     extracted_links, links_new = ScraperVtacSpain.extract_all_links(ScraperVtacSpain.DRIVER, ScraperVtacSpain.CATEGORIES_LINKS, IF_UPDATE)
 
-    Util.dump_to_json(list(extracted_links),
-                      f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+    Util.dump_to_json(list(extracted_links), ScraperVtacSpain.PRODUCTS_LINKS_PATH)
     if links_new:
-        Util.dump_to_json(list(links_new),
-                          f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.NEW_PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+        Util.dump_to_json(list(links_new),ScraperVtacSpain.NEW_PRODUCTS_LINKS_PATH)
 
     ScraperVtacSpain.logger.info(
-        f'FINISHED LINK EXTRACTION TO {Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}')
+        f'FINISHED LINK EXTRACTION TO {ScraperVtacSpain.PRODUCTS_LINKS_PATH}')
 
 # PRODUCTS INFO EXTRACTION
 if IF_EXTRACT_ITEM_INFO:
     ScraperVtacSpain.instantiate_driver()
     ScraperVtacSpain.logger.info(
-        f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
+        f'BEGINNING PRODUCT INFO EXTRACTION TO {ScraperVtacSpain.PRODUCTS_INFO_PATH}')
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacSpain,
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["media"]}',
+        ScraperVtacSpain.PRODUCTS_LINKS_PATH,
+        ScraperVtacSpain.PRODUCTS_INFO_PATH,
+        ScraperVtacSpain.PRODUCTS_MEDIA_PATH,
         ScraperVtacSpain.logger,
         ScraperVtacSpain.BEGIN_SCRAPE_FROM,
     )
     ScraperVtacSpain.logger.info(
-        f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
+        f'FINISHED PRODUCT INFO EXTRACTION TO {ScraperVtacSpain.PRODUCTS_INFO_PATH}')
 
 # PDF DL
 if IF_DL_ITEM_PDF:
     ScraperVtacSpain.instantiate_driver()
-    ScraperVtacSpain.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.PRODUCT_DIRS["pdf"]}')
-    Util.begin_items_PDF_download(
+    ScraperVtacSpain.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {ScraperVtacSpain.PRODUCTS_PDF_PATH}')
+    Util.begin_items_pdf_download(
         ScraperVtacSpain,
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}',
+        ScraperVtacSpain.CATEGORIES_LINKS,
+        ScraperVtacSpain.PRODUCTS_PDF_PATH,
         'ES',
         ScraperVtacSpain.logger
     )
-    ScraperVtacSpain.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.PRODUCT_DIRS["pdf"]}')
+    ScraperVtacSpain.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {ScraperVtacSpain.PRODUCTS_PDF_PATH}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     ScraperVtacSpain.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}')
-    # Util.extract_fields_example_to_excel(f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}')
+    Util.extract_distinct_fields_to_excel(ScraperVtacSpain.PRODUCTS_INFO_PATH, ScraperVtacSpain.PRODUCTS_FIELDS_JSON_PATH, ScraperVtacSpain.PRODUCTS_FIELDS_EXCEL_PATH)
+    Util.extract_fields_example_to_excel(ScraperVtacSpain.PRODUCTS_INFO_PATH, ScraperVtacSpain.PRODUCTS_EXAMPLE_FIELDS_JSON_PATH, ScraperVtacSpain.PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
     ScraperVtacSpain.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
 try:

@@ -14,20 +14,36 @@ class ScraperVtacItalia:
     COUNTRY = 'ita'
 
     # Creación del logger
-    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
+    LOGGER_PATH_TEMPLATE = 'logs/ita/ita_{}.log'
+    logger_path = LOGGER_PATH_TEMPLATE.format(Util.DATETIME)
     logger = Util.setup_logger(logger_path, 'vtac_italia')
     print(f'LOGGER CREATED: {logger_path}')
 
     DRIVER = None
     BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
+    SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
 
     CATEGORIES_LINKS = (
         'https://led-italia.it/prodotti/M4E-fotovoltaico',
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     )
+
+    PRODUCTS_INFO_PATH = 'vtac_italia/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'vtac_italia/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'vtac_italia/PRODUCT_PDF'
+
+    PRODUCTS_LINKS_PATH = 'LINKS/PRODUCTS_LINKS_ITA.json'
+    NEW_PRODUCTS_LINKS_PATH = 'LINKS/NEW_PRODUCTS_LINKS_ITA.json'
+
+
+    PRODUCTS_FIELDS_JSON_PATH = 'vtac_italia/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'vtac_italia/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+
 
     @classmethod
     def instantiate_driver(cls):
@@ -228,10 +244,10 @@ class ScraperVtacItalia:
                     current_page += 1
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = ScraperVtacItalia.PRODUCTS_LINKS_PATH
 
             if os.path.exists(links_path):
-                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
+                with open(links_path, 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
@@ -281,7 +297,7 @@ class ScraperVtacItalia:
             if '/' in name:
                 name = name.replace('/', '-')
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
+            nested_dir = f'{ScraperVtacItalia.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             with open(f'{nested_dir}/{name}.pdf', 'wb') as file:

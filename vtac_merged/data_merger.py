@@ -1,29 +1,40 @@
 import json
 import copy
-from datetime import datetime
 from utils.util import Util
+from vtac_spain.scrapper_es import ScraperVtacSpain
+from vtac_italia.scraper_ita import ScraperVtacItalia
+from vtac_uk.scraper_uk import ScraperVtacUk
 
 
 class DataMerger:
     # Creación del logger
-    logger_path = Util.MERGER_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+    MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
+    logger_path = MERGER_LOG_FILE_PATH.format(Util.DATETIME)
     logger = Util.setup_logger(logger_path, 'data_merger')
     print(f'LOGGER CREATED: {logger_path}')
 
     JSON_DUMP_FREQUENCY = 10
     JSON_DUMP_PATH_TEMPLATE = 'vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
-    MERGED_DATA_DIR_PATH = 'vtac_merged'
 
-    COUNTRY_DATA_DIR_PATHS = {
-        'es': 'vtac_spain/PRODUCT_INFO',
-        'uk': 'vtac_uk/PRODUCT_INFO',
-        'ita': 'vtac_italia/PRODUCT_INFO'
+    MERGED_PRODUCT_INFO_DIR_PATH = 'vtac_merged/PRODUCT_INFO'
+
+    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
+    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+
+
+    COUNTRY_PRODUCT_INFO_DIR_PATHS = {
+        'es': ScraperVtacSpain.PRODUCTS_INFO_PATH,
+        'uk': ScraperVtacUk.PRODUCTS_INFO_PATH,
+        'ita': ScraperVtacItalia.PRODUCTS_INFO_PATH
     }
 
-    COUNTRY_MEDIA_DIR_PATHS = {
-        'es': 'vtac_spain/PRODUCT_MEDIA',
-        'uk': 'vtac_uk/PRODUCT_MEDIA',
-        'ita': 'vtac_italia/PRODUCT_MEDIA'
+    COUNTRY_PRODUCT_MEDIA_DIR_PATHS = {
+        'es': ScraperVtacSpain.PRODUCTS_MEDIA_PATH,
+        'uk': ScraperVtacUk.PRODUCTS_MEDIA_PATH,
+        'ita': ScraperVtacItalia.PRODUCTS_MEDIA_PATH
     }
 
     # Field priorities, 'default' is for fields that are not in this list
@@ -85,7 +96,7 @@ class DataMerger:
     @classmethod
     def load_data_for_country(cls, country):
         # Load data
-        file_list = Util.get_all_files_in_directory(cls.COUNTRY_DATA_DIR_PATHS[country])
+        file_list = Util.get_all_files_in_directory(cls.COUNTRY_PRODUCT_INFO_DIR_PATHS[country])
         for file_path in file_list:
             with open(file_path, "r", encoding='utf-8') as file:
                 cls.country_data[country] += json.load(file)
@@ -100,7 +111,7 @@ class DataMerger:
     @classmethod
     def load_media_for_country(cls, country):
         # Load media
-        file_list = Util.get_all_files_in_directory(cls.COUNTRY_MEDIA_DIR_PATHS[country])
+        file_list = Util.get_all_files_in_directory(cls.COUNTRY_PRODUCT_MEDIA_DIR_PATHS[country])
         for file_path in file_list:
             with open(file_path, "r", encoding='utf-8') as file:
                 cls.country_media[country] += json.load(file)
@@ -108,14 +119,14 @@ class DataMerger:
 
     @classmethod
     def load_all(cls):
-        for country in cls.COUNTRY_DATA_DIR_PATHS.keys():
+        for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
             if len(cls.country_data.get(country)) > 0:
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
             cls.load_data_for_country(country)
 
-        for country in cls.COUNTRY_DATA_DIR_PATHS.keys():
+        for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
             if len(cls.country_media.get(country)) > 0:
                 if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
@@ -159,7 +170,7 @@ class DataMerger:
         if not always_load and len(cls.merged_data) > 0:
             return cls.merged_data
 
-        file_list = Util.get_all_files_in_directory(f'{cls.MERGED_DATA_DIR_PATH}/{Util.PRODUCT_DIRS["info"]}')
+        file_list = Util.get_all_files_in_directory(f'{cls.MERGED_PRODUCT_INFO_DIR_PATH}')
         for file_path in file_list:
             with open(file_path, "r", encoding='ISO-8859-1') as file:
                 cls.merged_data += json.load(file)

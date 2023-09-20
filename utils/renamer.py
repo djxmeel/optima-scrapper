@@ -29,6 +29,6 @@ directory_paths = [
     "../vtac_uk/PRODUCT_MEDIA"
 ]
 #rename_files_in_directory(directory_path, lambda filename: filename.replace("VTAC_", ""))
-for directory_path in directory_paths:
-    rename_files_in_directory(directory_path, renamer)
+for path in directory_paths:
+    rename_files_in_directory(path, renamer)
     

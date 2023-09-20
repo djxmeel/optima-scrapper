@@ -23,44 +23,10 @@ class Util:
 
     JSON_DUMP_FREQUENCY = 25
 
-    PRODUCT_DIRS = {
-        'info':'PRODUCT_INFO',
-        'media':'PRODUCT_MEDIA',
-        'pdf':'PRODUCT_PDF'
-    }
-
-    VTAC_COUNTRY_DIR = {
-        'es': 'vtac_spain',
-        'uk': 'vtac_uk',
-        'ita': 'vtac_italia'
-    }
-
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
-    PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/PRODUCTS_LINKS_ITA.json'
-    }
-
-    NEW_PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/NEW_PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/NEW_PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/NEW_PRODUCTS_LINKS_ITA.json'
-    }
-
-    LOG_FILE_PATH = {
-        'es': 'logs/es/es_{}.log',
-        'uk': 'logs/uk/uk_{}.log',
-        'ita': 'logs/ita/ita_{}.log',
-    }
-
-    MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
     ODOO_IMPORT_LOG_FILE_PATH = 'logs/odooimport/import_{}.log'
-
-    PRODUCTS_FIELDS_JSON_PATH = 'FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
     ITEMS_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
     ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
@@ -271,8 +237,8 @@ class Util:
         return f'x_{formatted_field}'[:61]
 
     @staticmethod
-    def extract_fields_example_to_excel(country_directory_path):
-        file_list = Util.get_all_files_in_directory(f'{country_directory_path}/{Util.PRODUCT_DIRS["info"]}')
+    def extract_fields_example_to_excel(product_info_path, example_field_json_path, example_field_excel_path):
+        file_list = Util.get_all_files_in_directory(product_info_path)
         json_data = []
         fields = set()
         ejemplos = {}
@@ -301,19 +267,19 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+        Util.dump_to_json(excel_dicts, example_field_json_path)
 
         # Read the JSON file
-        data = pd.read_json(f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+        data = pd.read_json(example_field_json_path)
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{country_directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
+        excel_file_path = example_field_excel_path
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
 
     @staticmethod
-    def extract_distinct_fields_to_excel(directory_path, extract_all=False):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.PRODUCT_DIRS["info"]}')
+    def extract_distinct_fields_to_excel(product_info_path, field_json_path, field_excel_path, extract_all=False):
+        file_list = Util.get_all_files_in_directory(product_info_path)
         json_data = []
         fields = set()
 
@@ -344,18 +310,18 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
+        Util.dump_to_json(excel_dicts, field_json_path)
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
+        data = pd.read_json(field_json_path)
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/{Util.PRODUCTS_FIELDS_EXCEL_PATH}"
+        excel_file_path = field_excel_path
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
     @staticmethod
-    def begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, begin_from=0):
+    def begin_items_pdf_download(scraper, links_path, downloads_path, country, logger, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
 
@@ -381,7 +347,7 @@ class Util:
         except:
             logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
-            Util.begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, counter)
+            Util.begin_items_pdf_download(scraper, links_path, downloads_path, country, logger, counter)
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
@@ -400,7 +366,7 @@ class Util:
         try:
             for link in links[start_from:]:
                 products_data.append(
-                    scraper.scrape_item(scraper.DRIVER, link, scraper.SUBCATEGORIES))
+                    scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES))
                 counter += 1
                 logger.info(f'{counter}/{len(links)}\n')
 
