@@ -42,6 +42,7 @@ class DataMerger:
     FIELD_TO_MERGE = {
         "Código EAN": "EAN",
         'EAN Código': 'EAN',
+        'ean': 'EAN',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la Familia": "Código de familia",
         "Eficacia luminosa (lm/W)": "Eficacia luminosa",
