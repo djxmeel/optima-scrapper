@@ -13,9 +13,10 @@ country_scrapers = {
 
 # Prompt user to choose country
 while True:
-    chosen_country = input(f'CHOOSE COUNTRY TO SCRAPE FROM ({country_scrapers.keys()}) :')
+    chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({country_scrapers.keys()}) :')
     if chosen_country.strip().lower() in country_scrapers:
         break
+    print("País no válido, inténtelo de nuevo")
 
 scraper = country_scrapers[chosen_country]
 
