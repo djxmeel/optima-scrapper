@@ -34,31 +34,31 @@ if IF_EXTRACT_ITEM_LINKS:
 if IF_EXTRACT_ITEM_INFO:
     ScraperVtacSpain.instantiate_driver()
     ScraperVtacSpain.logger.info(
-        f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIR["info"]}')
+        f'BEGINNING PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
         ScraperVtacSpain,
         f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIR["info"]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIR["media"]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["media"]}',
         ScraperVtacSpain.logger,
         ScraperVtacSpain.BEGIN_SCRAPE_FROM,
     )
     ScraperVtacSpain.logger.info(
-        f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIR["info"]}')
+        f'FINISHED PRODUCT INFO EXTRACTION TO {Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["info"]}')
 
 # PDF DL
 if IF_DL_ITEM_PDF:
     ScraperVtacSpain.instantiate_driver()
-    ScraperVtacSpain.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.PRODUCT_DIR["pdf"]}')
+    ScraperVtacSpain.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {Util.PRODUCT_DIRS["pdf"]}')
     Util.begin_items_PDF_download(
         ScraperVtacSpain,
         f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[ScraperVtacSpain.COUNTRY]}',
-        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIR["pdf"]}',
+        f'{Util.VTAC_COUNTRY_DIR[ScraperVtacSpain.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}',
         'ES',
         ScraperVtacSpain.logger
     )
-    ScraperVtacSpain.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.PRODUCT_DIR["pdf"]}')
+    ScraperVtacSpain.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {Util.PRODUCT_DIRS["pdf"]}')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:

@@ -50,7 +50,7 @@ class ScraperVtacItalia:
             subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'kit': [], 'accesorios': [], 'list_price': 0, 'videos': [],
+        item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
                 'website_description': '',
                 'imgs': [], 'icons': []}
 
@@ -62,7 +62,7 @@ class ScraperVtacItalia:
         for iframe in iframes:
             item['videos'].append(iframe.get_attribute('src'))
 
-        # Extracción del kit
+        # Extracción del kit al campo accesorios
         try:
             kit_anchor = driver.find_elements(By.XPATH, f'//h4[text() = \'Il kit comprende\']/parent::div//a')
 
@@ -74,7 +74,7 @@ class ScraperVtacItalia:
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
-                item['kit'].append(kit_info)
+                item['accesorios'].append(kit_info)
 
         except NoSuchElementException:
             cls.logger.warning('EL ARTICULO NO TIENE KIT')
@@ -281,7 +281,7 @@ class ScraperVtacItalia:
             if '/' in name:
                 name = name.replace('/', '-')
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIR["pdf"]}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[ScraperVtacItalia.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             with open(f'{nested_dir}/{name}.pdf', 'wb') as file:

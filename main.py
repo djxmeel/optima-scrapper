@@ -3,16 +3,16 @@ from vtac_merged.data_merger import DataMerger
 from utils.util import Util
 
 
-IF_MERGE = True
-IF_EXTRACT_FIELDS = True
+IF_MERGE = False
+IF_EXTRACT_FIELDS = False
 # If False : only extracts CUSTOM fields present in ODOO
-IF_ALL_FIELDS = True
+IF_ALL_FIELDS = False
 
 IF_IMPORT_PRODUCTS = False
 IF_IMPORT_ACC = False
 IF_IMPORT_PDFS = False
-IF_IMPORT_IMGS = False
-IF_IMPORT_ICONS = False
+IF_IMPORT_IMGS = True
+IF_IMPORT_ICONS = True
 
 # DATA MERGING
 if IF_MERGE:
@@ -33,9 +33,9 @@ if IF_IMPORT_PRODUCTS:
     odoo_imp.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
-    odoo_imp.logger.info(f'BEGINNING ACCESSORIES/KITS IMPORT')
-    odoo_imp.import_accessories_kits()
-    odoo_imp.logger.info(f'FINISHED ACCESSORIES/KITS IMPORT')
+    odoo_imp.logger.info(f'BEGINNING ACCESSORIES IMPORT')
+    odoo_imp.import_accessories()
+    odoo_imp.logger.info(f'FINISHED ACCESSORIES IMPORT')
 
 if IF_IMPORT_PDFS:
     odoo_imp.logger.info(f'BEGINNING PDFS IMPORT')

@@ -277,7 +277,7 @@ class ScraperVtacUk:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCT_DIR["pdf"]}/{sku}'
+            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible

@@ -159,7 +159,7 @@ class DataMerger:
         if not always_load and len(cls.merged_data) > 0:
             return cls.merged_data
 
-        file_list = Util.get_all_files_in_directory(f'{cls.MERGED_DATA_DIR_PATH}/{Util.PRODUCT_DIR["info"]}')
+        file_list = Util.get_all_files_in_directory(f'{cls.MERGED_DATA_DIR_PATH}/{Util.PRODUCT_DIRS["info"]}')
         for file_path in file_list:
             with open(file_path, "r", encoding='ISO-8859-1') as file:
                 cls.merged_data += json.load(file)

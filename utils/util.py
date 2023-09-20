@@ -23,7 +23,7 @@ class Util:
 
     JSON_DUMP_FREQUENCY = 25
 
-    PRODUCT_DIR = {
+    PRODUCT_DIRS = {
         'info':'PRODUCT_INFO',
         'media':'PRODUCT_MEDIA',
         'pdf':'PRODUCT_PDF'
@@ -272,7 +272,7 @@ class Util:
 
     @staticmethod
     def extract_fields_example_to_excel(country_directory_path):
-        file_list = Util.get_all_files_in_directory(f'{country_directory_path}/{Util.PRODUCT_DIR["info"]}')
+        file_list = Util.get_all_files_in_directory(f'{country_directory_path}/{Util.PRODUCT_DIRS["info"]}')
         json_data = []
         fields = set()
         ejemplos = {}
@@ -313,7 +313,7 @@ class Util:
 
     @staticmethod
     def extract_distinct_fields_to_excel(directory_path, extract_all=False):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.PRODUCT_DIR["info"]}')
+        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.PRODUCT_DIRS["info"]}')
         json_data = []
         fields = set()
 

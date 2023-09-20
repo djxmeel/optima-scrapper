@@ -42,7 +42,7 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
                     'ita': 'vtac_italia/PRODUCT_PDF/'}
 
 ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
-NOT_ATTR_FIELDS = ('kit', 'accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
+NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
 
 
@@ -155,7 +155,7 @@ def import_products():
         logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
 
 
-def import_accessories_kits():
+def import_accessories():
     file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
 
     # Get the product template object
@@ -171,10 +171,6 @@ def import_accessories_kits():
         # Iterate over the products
         for index, product in enumerate(json_data):
             accessories_sku = []
-
-            if 'kit' in product and len(product['kit']) > 0:
-                for kit in product['kit']:
-                    accessories_sku.append(kit)
 
             if 'accesorios' in product and len(product['accesorios']) > 0:
                 for acc in product['accesorios']:
