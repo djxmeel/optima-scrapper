@@ -1,5 +1,4 @@
 import copy
-from datetime import datetime
 from urllib.error import HTTPError
 
 import odoorpc
@@ -10,9 +9,11 @@ import base64
 from odoorpc.error import RPCError
 
 from utils.util import Util
-from vtac_merged.data_merger import DataMerger
+from utils.data_merger import DataMerger
 
-logger_path = Util.ODOO_IMPORT_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
+
+LOGGER_PATH_TEMPLATE = 'logs/odooimport/import_{}.log'
+logger_path = LOGGER_PATH_TEMPLATE.format(Util.DATETIME)
 logger = Util.setup_logger(logger_path, 'odoo_import')
 print(f'LOGGER CREATED: {logger_path}')
 

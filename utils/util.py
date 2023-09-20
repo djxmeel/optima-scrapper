@@ -26,10 +26,8 @@ class Util:
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
-    ODOO_IMPORT_LOG_FILE_PATH = 'logs/odooimport/import_{}.log'
-
-    ITEMS_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
-    ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
+    PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
+    PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
@@ -164,7 +162,7 @@ class Util:
                                        "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
                 " ")[1]
         except NoSuchElementException:
-            from vtac_uk.scraper_uk import ScraperVtacUk
+            from scrapers.scraper_uk import ScraperVtacUk
             ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'UK')
@@ -174,7 +172,7 @@ class Util:
         try:
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
-            from vtac_spain.scrapper_es import ScraperVtacSpain
+            from scrapers.scrapper_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
@@ -321,7 +319,7 @@ class Util:
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
     @staticmethod
-    def begin_items_pdf_download(scraper, links_path, downloads_path, country, logger, begin_from=0):
+    def begin_items_pdf_download(scraper, links_path, downloads_path, logger, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
 
@@ -331,7 +329,7 @@ class Util:
         try:
             for link in loaded_links[begin_from:]:
                 counter += 1
-                sku = Util.get_sku_from_link(scraper.DRIVER, link, country)
+                sku = Util.get_sku_from_link(scraper.DRIVER, link, scraper.COUNTRY)
 
                 # Check if sku directory exists and has the same number of files as the number of files
                 if pdf_existing_dirs_sku.__contains__(sku):
@@ -347,7 +345,7 @@ class Util:
         except:
             logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
-            Util.begin_items_pdf_download(scraper, links_path, downloads_path, country, logger, counter)
+            Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
@@ -372,8 +370,8 @@ class Util:
 
                 # Save each X to a JSON
                 if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
-                    data_filename = f'{data_extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
-                    media_filename = f'{media_extraction_dir}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}'
+                    data_filename = f'{data_extraction_dir}/{Util.PRODUCT_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    media_filename = f'{media_extraction_dir}/{Util.PRODUCT_MEDIA_FILENAME_TEMPLATE.format(counter)}'
 
                     products_media_only = Util.get_products_media(products_data, scraper)
 

@@ -1,9 +1,9 @@
 import json
 import copy
 from utils.util import Util
-from vtac_spain.scrapper_es import ScraperVtacSpain
-from vtac_italia.scraper_ita import ScraperVtacItalia
-from vtac_uk.scraper_uk import ScraperVtacUk
+from scrapers.scrapper_es import ScraperVtacSpain
+from scrapers.scraper_ita import ScraperVtacItalia
+from scrapers.scraper_uk import ScraperVtacUk
 
 
 class DataMerger:
