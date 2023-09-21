@@ -464,8 +464,8 @@ class Util:
                   f"Sólamente NOVEDADES : {if_only_new_items}\n"
                   f"\nScrapear descargables productos : {if_dl_item_pdf}\n"
                   f"\nExtraer campos : {if_extract_distinct_items_fields}\n")
-            chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
-            if chosen_country.strip().lower() in country_scrapers:
+            chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) : ').strip().lower()
+            if chosen_country in country_scrapers:
                 if input(
                         f'¿Está seguro de que desea hacer scraping de "{chosen_country}"? (s/n) :').strip().lower() == 's':
                     break
