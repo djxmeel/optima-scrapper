@@ -120,14 +120,14 @@ class DataMerger:
     @classmethod
     def load_all(cls):
         for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
-            if len(cls.country_data.get(country)) > 0:
+            if cls.country_data.get(country):
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
             cls.load_data_for_country(country)
 
         for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
-            if len(cls.country_media.get(country)) > 0:
+            if cls.country_media.get(country):
                 if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
@@ -136,7 +136,7 @@ class DataMerger:
 
     @classmethod
     def get_data(cls, country):
-        if len(cls.country_data.get(country)) > 0:
+        if cls.country_data.get(country):
             return cls.country_data.get(country, None)
         else:
             cls.load_data_for_country(country)
@@ -167,7 +167,7 @@ class DataMerger:
 
     @classmethod
     def load_merged_data(cls, always_load=False):
-        if not always_load and len(cls.merged_data) > 0:
+        if not always_load and cls.merged_data:
             return cls.merged_data
 
         file_list = Util.get_all_files_in_directory(f'{cls.MERGED_PRODUCT_INFO_DIR_PATH}')
@@ -218,7 +218,7 @@ class DataMerger:
                 if field == 'default':
                     continue
                 for country in cls.FIELD_PRIORITIES[field]:
-                    if product_data.get(country) and product_data[country].get(field) and len(product_data[country][field]) > 0:
+                    if product_data.get(country) and product_data[country].get(field) and product_data[country][field]:
                         if type(product_data[country][field]) is list:
                             merged_product[field] = copy.deepcopy(product_data[country][field])
                             cls.logger.info(f'{sku}: MERGE {country} -> {field}')
@@ -230,7 +230,7 @@ class DataMerger:
             # Then, merge MEDIA fields in priority order
             for field in cls.MEDIA_FIELDS_PRIORITIES.keys():
                 for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
-                    if product_media.get(country) and product_media[country].get(field) and len(product_media[country][field]) > 0:
+                    if product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
                         if type(product_media[country][field]) is list:
                             merged_product[field] = copy.deepcopy(product_media[country][field])
                             cls.logger.info(f'{sku}: MERGE {country} -> {field}')
@@ -243,7 +243,7 @@ class DataMerger:
                 try:
                     if product_data[field_country['country']]:
                         field_to_keep = product_data[field_country['country']][field_country['field']]
-                        if len(field_to_keep) > 0 and merged_product[field_country['field']] is not field_to_keep:
+                        if field_to_keep and merged_product[field_country['field']] is not field_to_keep:
                             merged_product[field_country['field']] += field_to_keep
                             cls.logger.info(f'{sku}: KEEP {field_country["country"]} -> {field_country["field"]}')
                 except KeyError:

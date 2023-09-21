@@ -234,7 +234,7 @@ class ScraperVtacItalia:
 
                     before = len(extracted)
 
-                    if len(articles_in_page) > 0:
+                    if articles_in_page:
                         for article in articles_in_page:
                             extracted.add(article.get_attribute('href').split('?asq=')[0])
                     else:

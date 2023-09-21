@@ -71,7 +71,7 @@ def create_attribute(name, value):
 
     attribute_ids = ATTRIBUTE_MODEL.search([('name', '=', name)])
 
-    if len(attribute_ids) > 0:
+    if attribute_ids:
         attribute_id = attribute_ids[0]
     else:
         attribute_id = ATTRIBUTE_MODEL.create(attribute_vals)
@@ -97,11 +97,11 @@ def assign_attribute_values(product_id, product, attributes):
         attribute_id = ATTRIBUTE_MODEL.search([('name', '=', attribute)])[0]
         attribute_value_ids = ATTRIBUTE_VALUE_MODEL.search([('name', '=', product[attribute]), ('attribute_id', '=', attribute_id)])
 
-        if len(attribute_value_ids) > 0:
+        if attribute_value_ids:
             existing_lines = ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
             # Unlink existing attribute lines of a product for update
-            if len(existing_lines) > 0:
+            if existing_lines:
                 ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
 
             line_vals = {
@@ -172,14 +172,14 @@ def import_accessories():
         for index, product in enumerate(json_data):
             accessories_sku = []
 
-            if 'accesorios' in product and len(product['accesorios']) > 0:
+            if 'accesorios' in product and product['accesorios']:
                 for acc in product['accesorios']:
                     accessories_sku.append(acc)
 
-            if len(accessories_sku) > 0:
+            if accessories_sku:
                 # Search for the product template with the given name
                 main_product_id = PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
-                if len(main_product_id) > 0:
+                if main_product_id:
                     main_product_id = main_product_id[0]
                     logger.info(f'SKU : {product["sku"]} Accesorios : {len(accessories_sku)}')
                 else:
@@ -188,7 +188,7 @@ def import_accessories():
                 for acc in accessories_sku:
                     existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
 
-                    if len(existing_acc_ids) > 0:
+                    if existing_acc_ids:
                         logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
                         updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
                     else:
@@ -221,7 +221,7 @@ def import_pdfs():
     for sku in unique_skus:
         product_ids = product_model.search([('x_sku', '=', sku)])
 
-        if len(product_ids) > 0:
+        if product_ids:
             attachment_paths = []
 
             # Remove 'VS' prefix [2:]
@@ -232,7 +232,7 @@ def import_pdfs():
             elif sku[2:] in sku_list_ita:
                 attachment_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
 
-            if len(attachment_paths) > 0:
+            if attachment_paths:
                 logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
             for attachment_path in attachment_paths:
                 with open(attachment_path, 'rb') as file:
@@ -244,7 +244,7 @@ def import_pdfs():
 
                 existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
-                if len(existing_attachment) > 0:
+                if existing_attachment:
                     logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
                     continue
 
@@ -279,9 +279,9 @@ def import_imgs():
                 # Search for the product template with the given sku
                 product_ids = PRODUCT_MODEL.search([('x_sku', '=', product_data['sku'])])
 
-                if len(product_ids) > 0:
+                if product_ids:
                     # write/overwrite the image to the product
-                    if len(product_data['imgs']) > 0:
+                    if product_data['imgs']:
                         try:
                             PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
                         except RPCError:
