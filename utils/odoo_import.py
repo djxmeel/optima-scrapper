@@ -42,9 +42,8 @@ PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
                     'uk': 'vtac_uk/PRODUCT_PDF/',
                     'ita': 'vtac_italia/PRODUCT_PDF/'}
 
-ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
+# Fields not to create as attributes in ODOO
 NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
-ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
 
 
 def get_all_files_in_directory(directory_path):
@@ -134,11 +133,11 @@ def import_products():
             sku = product["sku"]
 
             for key in temp_keys:
-                if key not in ODOO_SUPPORTED_FIELDS:
+                if key not in Util.ODOO_SUPPORTED_FIELDS:
                     if key not in NOT_ATTR_FIELDS:
                         create_attribute(key, product[key])
                         created_attrs.append(key)
-                    if key not in ALWAYS_KEEP_FIELDS:
+                    if key not in Util.ODOO_CUSTOM_FIELDS:
                         del product[key]
                     else:
                         product[Util.format_field_odoo(key)] = product[key]
