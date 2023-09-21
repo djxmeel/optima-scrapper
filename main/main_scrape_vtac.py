@@ -30,23 +30,7 @@ IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
-Util.print_title()
-
-# Prompt user to choose country
-while True:
-    print("\nConfiguracion de scraping actual:\n" 
-          f"\nExtracción de URLs : {IF_EXTRACT_ITEM_LINKS}\n"
-          f"Extraer NOVEDADES : {IF_UPDATE}\n"
-          f"\nScrapear información productos : {IF_EXTRACT_ITEM_INFO}\n"
-          f"Sólamente NOVEDADES : {IF_ONLY_NEW_ITEMS}\n"
-          f"\nScrapear descargables productos : {IF_DL_ITEM_PDF}\n"
-          f"\nExtraer campos : {IF_EXTRACT_DISTINCT_ITEMS_FIELDS}\n")
-    chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
-    if chosen_country.strip().lower() in country_scrapers:
-        if input(f'¿Está seguro de que desea hacer scraping de "{chosen_country}"? (s/n) :').strip().lower() == 's':
-            break
-    print("País no válido, inténtelo de nuevo")
-
+chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
 scraper = country_scrapers[chosen_country]
 
 

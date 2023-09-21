@@ -451,3 +451,25 @@ class Util:
             "| |__| | |      | |   _| |_| |  | |/ ____ \   ____) | |____| | \ \ / ____ \| |    | |    | |____| | \ \\\n" 
             " \____/|_|      |_|  |_____|_|  |_/_/    \_\ |_____/ \_____|_|  \_/_/    \_|_|    |_|    |______|_|  \_\\\n")
 
+
+    @classmethod
+    def get_chosen_country_from_menu(cls, country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
+        Util.print_title()
+        # Prompt user to choose country
+        while True:
+            print("\nConfiguracion de scraping actual:\n"
+                  f"\nExtracción de URLs : {if_extract_item_links}\n"
+                  f"Extraer NOVEDADES : {if_update}\n"
+                  f"\nScrapear información productos : {if_extract_item_info}\n"
+                  f"Sólamente NOVEDADES : {if_only_new_items}\n"
+                  f"\nScrapear descargables productos : {if_dl_item_pdf}\n"
+                  f"\nExtraer campos : {if_extract_distinct_items_fields}\n")
+            chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
+            if chosen_country.strip().lower() in country_scrapers:
+                if input(
+                        f'¿Está seguro de que desea hacer scraping de "{chosen_country}"? (s/n) :').strip().lower() == 's':
+                    break
+            print("País no válido, inténtelo de nuevo")
+
+        return chosen_country
+
