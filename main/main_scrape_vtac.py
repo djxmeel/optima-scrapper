@@ -9,24 +9,22 @@ from scrapers.scraper_uk import ScraperVtacUk
 
 country_scrapers = {
     'es' : ScraperVtacSpain,
-    'uk' : ScraperVtacItalia,
-    'ita' : ScraperVtacUk
+    'uk' : ScraperVtacUk,
+    'ita' : ScraperVtacItalia
 }
-# TODO remove use on len() when checking for list EMPTINESS
 
-# TODO TEST FOR : ITA, UK
+# TODO TEST FOR : UK
 # Datos productos
 IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = False, False
 
-# TODO TEST FOR : ITA, UK
+# TODO TEST FOR : UK
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
-# TODO TEST FOR : ITA, UK
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 
-# TODO TEST FOR : ITA, UK
+# TODO TEST FOR : UK
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
@@ -47,7 +45,6 @@ if IF_EXTRACT_ITEM_LINKS:
     Util.dump_to_json(list(extracted_links), scraper.PRODUCTS_LINKS_PATH)
     if links_new:
         Util.dump_to_json(list(links_new),scraper.NEW_PRODUCTS_LINKS_PATH)
-        scraper.logger.info(f'FOUND {len(links_new)} NEW PRODUCTS')
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(
@@ -60,7 +57,7 @@ if IF_EXTRACT_ITEM_INFO:
 
     scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
 
-    links_path = scraper.PRODUCTS_LINKS_PATH if IF_ONLY_NEW_ITEMS else scraper.NEW_PRODUCTS_LINKS_PATH
+    links_path = scraper.NEW_PRODUCTS_LINKS_PATH if IF_ONLY_NEW_ITEMS else scraper.PRODUCTS_LINKS_PATH
 
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
