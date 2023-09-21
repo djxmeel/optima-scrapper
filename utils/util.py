@@ -14,8 +14,6 @@ from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
 import logging
 
-from utils import odoo_import
-
 os.environ['path'] += r';dlls/'
 import cairosvg
 
@@ -31,7 +29,11 @@ class Util:
     PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
-    CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
+    # The fields kept in ODOO as custom fields
+    ODOO_CUSTOM_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
+    # Default fields supported by Odoo (not custom)
+    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
+    # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     @staticmethod
@@ -259,7 +261,7 @@ class Util:
         print(f'FOUND {len(fields)} DISTINCT FIELDS')
 
         for field in fields:
-            if field in odoo_import.ODOO_SUPPORTED_FIELDS:
+            if field in Util.ODOO_SUPPORTED_FIELDS:
                 continue
             excel_dicts.append(
                 {
@@ -292,7 +294,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 # Filter out non-custom fields
-                if extract_all or field in Util.CUSTOM_FIELDS_TO_EXTRACT:
+                if extract_all or field in Util.ODOO_CUSTOM_FIELDS:
                     fields.add(field)
 
         excel_dicts = []
@@ -425,3 +427,17 @@ class Util:
             logger.error('ERROR CONVERTING SVG TO BASE64. Retrying...')
             time.sleep(10)
             return Util.svg_to_base64(svg_html, logger)
+
+    @staticmethod
+    def get_elapsed_time(start_seconds, end_seconds):
+        # Calculate the difference in seconds
+        elapsed_seconds = end_seconds - start_seconds
+
+        # Convert seconds to minutes and hours
+        elapsed_minutes = elapsed_seconds // 60
+        elapsed_hours = elapsed_minutes // 60
+        remaining_minutes = elapsed_minutes % 60
+        remaining_seconds = elapsed_seconds % 60
+
+        return int(elapsed_hours), int(remaining_minutes), int(remaining_seconds)
+

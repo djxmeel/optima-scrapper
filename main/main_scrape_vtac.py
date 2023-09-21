@@ -1,3 +1,5 @@
+import time
+
 from scrapers.scraper_ita import ScraperVtacItalia
 from scrapers.scrapper_es import ScraperVtacSpain
 from utils.util import Util
@@ -11,15 +13,6 @@ country_scrapers = {
     'ita' : ScraperVtacUk
 }
 
-# Prompt user to choose country
-while True:
-    chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
-    if chosen_country.strip().lower() in country_scrapers:
-        break
-    print("País no válido, inténtelo de nuevo")
-
-scraper = country_scrapers[chosen_country]
-
 # TODO TEST FOR : ITA, UK
 # Datos productos
 IF_EXTRACT_ITEM_INFO = False
@@ -28,17 +21,37 @@ IF_EXTRACT_ITEM_INFO = False
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
-# TODO TEST FOR : ES, ITA, UK
+# TODO TEST FOR : ITA, UK
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 
 # TODO TEST FOR : ITA, UK
 # Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = True
+IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+
+
+# Prompt user to choose country
+while True:
+    print("Configuracion de scraping actual:\n" 
+          f"Extracción de URLs : {IF_EXTRACT_ITEM_LINKS}\n"
+          f"Sacar nuevos productos : {IF_UPDATE}\n"
+          f"Scrapear información productos : {IF_EXTRACT_ITEM_INFO}\n"
+          f"Scrapear descargables productos : {IF_DL_ITEM_PDF}\n"
+          f"Extraer campos : {IF_EXTRACT_DISTINCT_ITEMS_FIELDS}\n")
+    chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
+    if chosen_country.strip().lower() in country_scrapers:
+        if input(f'¿Está seguro de que desea hacer scraping de "{chosen_country}"? (s/n) :').strip().lower() == 's':
+            break
+    print("País no válido, inténtelo de nuevo")
+
+scraper = country_scrapers[chosen_country]
+
 
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
     scraper.instantiate_driver()
+    start_time = time.time()
+
     scraper.logger.info(f'BEGINNING LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH}')
 
     # EXTRACT LINKS TO A set()
@@ -47,13 +60,17 @@ if IF_EXTRACT_ITEM_LINKS:
     Util.dump_to_json(list(extracted_links), scraper.PRODUCTS_LINKS_PATH)
     if links_new:
         Util.dump_to_json(list(links_new),scraper.NEW_PRODUCTS_LINKS_PATH)
+        scraper.logger.info(f'FOUND {len(links_new)} NEW PRODUCTS')
 
+    elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(
-        f'FINISHED LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH}')
+        f'FINISHED LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH} in {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 # PRODUCTS INFO EXTRACTION
 if IF_EXTRACT_ITEM_INFO:
     scraper.instantiate_driver()
+    start_time = time.time()
+
     scraper.logger.info(
         f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
@@ -65,12 +82,16 @@ if IF_EXTRACT_ITEM_INFO:
         scraper.logger,
         scraper.BEGIN_SCRAPE_FROM,
     )
+
+    elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(
-        f'FINISHED PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
+        f'FINISHED PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 # PDF DL
 if IF_DL_ITEM_PDF:
     scraper.instantiate_driver()
+    start_time = time.time()
+
     scraper.logger.info(f'BEGINNING PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH}')
     Util.begin_items_pdf_download(
         scraper,
@@ -78,7 +99,9 @@ if IF_DL_ITEM_PDF:
         scraper.PRODUCTS_PDF_PATH,
         scraper.logger
     )
-    scraper.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH}')
+
+    elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
+    scraper.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
