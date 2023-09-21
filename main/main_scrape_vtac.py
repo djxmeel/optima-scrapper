@@ -12,10 +12,11 @@ country_scrapers = {
     'uk' : ScraperVtacItalia,
     'ita' : ScraperVtacUk
 }
+# TODO remove use on len() when checking for list EMPTINESS
 
 # TODO TEST FOR : ITA, UK
 # Datos productos
-IF_EXTRACT_ITEM_INFO = False
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = False, False
 
 # TODO TEST FOR : ITA, UK
 # PDFs productos
@@ -29,15 +30,17 @@ IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
+Util.print_title()
 
 # Prompt user to choose country
 while True:
-    print("Configuracion de scraping actual:\n" 
-          f"Extracción de URLs : {IF_EXTRACT_ITEM_LINKS}\n"
-          f"Sacar nuevos productos : {IF_UPDATE}\n"
-          f"Scrapear información productos : {IF_EXTRACT_ITEM_INFO}\n"
-          f"Scrapear descargables productos : {IF_DL_ITEM_PDF}\n"
-          f"Extraer campos : {IF_EXTRACT_DISTINCT_ITEMS_FIELDS}\n")
+    print("\nConfiguracion de scraping actual:\n" 
+          f"\nExtracción de URLs : {IF_EXTRACT_ITEM_LINKS}\n"
+          f"Extraer NOVEDADES : {IF_UPDATE}\n"
+          f"\nScrapear información productos : {IF_EXTRACT_ITEM_INFO}\n"
+          f"Sólamente NOVEDADES : {IF_ONLY_NEW_ITEMS}\n"
+          f"\nScrapear descargables productos : {IF_DL_ITEM_PDF}\n"
+          f"\nExtraer campos : {IF_EXTRACT_DISTINCT_ITEMS_FIELDS}\n")
     chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) :')
     if chosen_country.strip().lower() in country_scrapers:
         if input(f'¿Está seguro de que desea hacer scraping de "{chosen_country}"? (s/n) :').strip().lower() == 's':
@@ -71,12 +74,14 @@ if IF_EXTRACT_ITEM_INFO:
     scraper.instantiate_driver()
     start_time = time.time()
 
-    scraper.logger.info(
-        f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
+    scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
+
+    links_path = scraper.PRODUCTS_LINKS_PATH if IF_ONLY_NEW_ITEMS else scraper.NEW_PRODUCTS_LINKS_PATH
+
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
         scraper,
-        scraper.PRODUCTS_LINKS_PATH,
+        links_path,
         scraper.PRODUCTS_INFO_PATH,
         scraper.PRODUCTS_MEDIA_PATH,
         scraper.logger,
