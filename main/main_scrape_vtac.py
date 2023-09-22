@@ -15,18 +15,18 @@ country_scrapers = {
 }
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = True, False
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = False, False
 
-# TODO TEST FOR : UK
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 
-# TODO TEST FOR : UK
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
+# If False : only extracts CUSTOM fields present in ODOO
+IF_ALL_FIELDS = False
 
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
 scraper = country_scrapers[chosen_country]
@@ -97,7 +97,7 @@ if IF_DL_ITEM_PDF:
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
 if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
     scraper.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(scraper.PRODUCTS_INFO_PATH, scraper.PRODUCTS_FIELDS_JSON_PATH, scraper.PRODUCTS_FIELDS_EXCEL_PATH)
+    Util.extract_distinct_fields_to_excel(scraper.PRODUCTS_INFO_PATH, scraper.PRODUCTS_FIELDS_JSON_PATH, scraper.PRODUCTS_FIELDS_EXCEL_PATH, extract_all=IF_ALL_FIELDS)
     Util.extract_fields_example_to_excel(scraper.PRODUCTS_INFO_PATH, scraper.PRODUCTS_EXAMPLE_FIELDS_JSON_PATH, scraper.PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
     scraper.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
 
