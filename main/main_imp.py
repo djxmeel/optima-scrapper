@@ -1,8 +1,11 @@
 from utils.odoo_import import OdooImport
 from utils.loggers import Loggers
 
+
+# TODO auto import fields
+IF_IMPORT_FIELDS = True
 # TODO TEST
-IF_IMPORT_PRODUCTS = False
+IF_IMPORT_PRODUCTS = True
 # TODO TEST
 IF_IMPORT_ACC = False
 # TODO TEST
