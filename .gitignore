@@ -1,13 +1,6 @@
 /logs
-/data/vtac_spain/PRODUCT_INFO
-/data/vtac_spain/PRODUCT_MEDIA
-/data/vtac_spain/PRODUCT_PDF
-/data/vtac_italia/PRODUCT_INFO
-/data/vtac_italia/VTAC_PRODUCT_INFO_LITE
-/data/vtac_italia/PRODUCT_PDF
-/data/vtac_uk/PRODUCT_INFO
-/data/vtac_uk/VTAC_PRODUCT_INFO_LITE
-/data/vtac_uk/PRODUCT_PDF
+/data
+/dlls
 .idea/shelf/
 .idea/misc.xml
 .idea/modules.xml
