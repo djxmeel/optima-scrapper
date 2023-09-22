@@ -99,6 +99,7 @@ class OdooImport:
                 existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
                 # Unlink existing attribute lines of a product for update
+                # TODO only add missing attr. and NOT UNLINK for faster runtime
                 if existing_lines:
                     cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
 
