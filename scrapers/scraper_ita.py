@@ -14,6 +14,7 @@ class ScraperVtacItalia:
     COUNTRY = 'ita'
 
     DRIVER = None
+    logger = None
     BEGIN_SCRAPE_FROM = 0
 
     SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")

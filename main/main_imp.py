@@ -1,4 +1,5 @@
-from utils import odoo_import as odoo_imp
+from utils.odoo_import import OdooImport
+from utils.loggers import Loggers
 
 # TODO TEST
 IF_IMPORT_PRODUCTS = False
@@ -11,28 +12,30 @@ IF_IMPORT_IMGS = True
 # TODO TEST
 IF_IMPORT_ICONS = True
 
+OdooImport.logger = Loggers.setup_odoo_import_logger()
+
 # ODOO IMPORT
 if IF_IMPORT_PRODUCTS:
-    odoo_imp.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    odoo_imp.import_products()
-    odoo_imp.logger.info(f'FINISHED PRODUCTS IMPORT')
+    OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
+    OdooImport.import_products()
+    OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
-    odoo_imp.logger.info(f'BEGINNING ACCESSORIES IMPORT')
-    odoo_imp.import_accessories()
-    odoo_imp.logger.info(f'FINISHED ACCESSORIES IMPORT')
+    OdooImport.logger.info(f'BEGINNING ACCESSORIES IMPORT')
+    OdooImport.import_accessories()
+    OdooImport.logger.info(f'FINISHED ACCESSORIES IMPORT')
 
 if IF_IMPORT_PDFS:
-    odoo_imp.logger.info(f'BEGINNING PDFS IMPORT')
-    odoo_imp.import_pdfs()
-    odoo_imp.logger.info(f'FINISHED PDFS IMPORT')
+    OdooImport.logger.info(f'BEGINNING PDFS IMPORT')
+    OdooImport.import_pdfs()
+    OdooImport.logger.info(f'FINISHED PDFS IMPORT')
 
 if IF_IMPORT_IMGS:
-    odoo_imp.logger.info(f'BEGINNING IMGS IMPORT')
-    odoo_imp.import_imgs()
-    odoo_imp.logger.info(f'FINISHED IMGS IMPORT')
+    OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
+    OdooImport.import_imgs()
+    OdooImport.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:
-    odoo_imp.logger.info(f'BEGINNING ICONS IMPORT')
-    odoo_imp.import_icons()
-    odoo_imp.logger.info(f'FINISHED ICONS IMPORT')
+    OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
+    OdooImport.import_icons()
+    OdooImport.logger.info(f'FINISHED ICONS IMPORT')

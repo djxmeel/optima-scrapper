@@ -14,6 +14,7 @@ class ScraperVtacSpain:
     COUNTRY = 'es'
 
     DRIVER = None
+    logger = None
     BEGIN_SCRAPE_FROM = 0
 
     SPECS_SUBCATEGORIES = ()
@@ -57,7 +58,6 @@ class ScraperVtacSpain:
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
         energy_tag_xpath = "//img[@alt = 'Energy Class']"
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
-        product_desc_xpath = "//div[@class='product-description']"
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
@@ -122,8 +122,9 @@ class ScraperVtacSpain:
 
         # Extracción de la descripción del producto CON outerHTML
         try:
-            # Check if an <h4> exists to determine wether a description exists
+            # Check if an <h4> exists to determine whether a description exists
             driver.find_element(By.XPATH, "//div[@class='product-description']/h4")
+            # Removing "Contáctenos" button before saving
             item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML').replace('<div><a class="uk-button uk-button-default" href="https://v-tac.es/contáctenos">Contáctenos</a></div>', '')
 
         except NoSuchElementException:

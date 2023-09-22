@@ -15,6 +15,7 @@ class ScraperVtacUk:
     COUNTRY = 'uk'
 
     DRIVER = None
+    logger = None
     BEGIN_SCRAPE_FROM = 0
 
     SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
