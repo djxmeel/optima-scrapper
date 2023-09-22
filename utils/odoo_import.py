@@ -17,11 +17,11 @@ logger_path = LOGGER_PATH_TEMPLATE.format(Util.DATETIME)
 logger = Util.setup_logger(logger_path, 'odoo_import')
 print(f'LOGGER CREATED: {logger_path}')
 
-odoo_host = 'trialdb.odoo.com'
+odoo_host = 'trialdb2.odoo.com'
 odoo_protocol = 'jsonrpc+ssl'
 odoo_port = '443'
 
-odoo_db = 'trialdb'
+odoo_db = 'trialdb2'
 odoo_login = 'itprotrial@outlook.com'
 odoo_pass = 'itprotrial'
 
