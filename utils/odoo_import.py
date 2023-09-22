@@ -15,11 +15,11 @@ from utils.data_merger import DataMerger
 class OdooImport:
     logger = None
 
-    odoo_host = 'trialdb.odoo.com'
+    odoo_host = 'trialdb2.odoo.com'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
 
-    odoo_db = 'trialdb'
+    odoo_db = 'trialdb2'
     odoo_login = 'itprotrial@outlook.com'
     odoo_pass = 'itprotrial'
 
@@ -35,7 +35,7 @@ class OdooImport:
     MEDIA_MODEL = odoo.env['product.image']
     PRODUCT_MODEL = odoo.env['product.template']
 
-    PRODUCT_INFO_DIR = 'vtac_merged/PRODUCT_INFO'
+    PRODUCT_INFO_DIR = 'data/vtac_merged/PRODUCT_INFO'
     PRODUCT_PDF_DIRS = {'es': 'vtac_es/PRODUCT_PDF/',
                         'uk': 'vtac_uk/PRODUCT_PDF/',
                         'ita': 'vtac_ita/PRODUCT_PDF/'}
