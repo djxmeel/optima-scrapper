@@ -1,21 +1,25 @@
 from utils.data_merger import DataMerger
 from utils.util import Util
 
-# TODO TEST
+
 IF_MERGE = False
-# TODO TEST
 IF_EXTRACT_FIELDS = False
 # If False : only extracts CUSTOM fields present in ODOO
 IF_ALL_FIELDS = False
 
+# Creación del logger
+MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
+logger_path = MERGER_LOG_FILE_PATH.format(Util.DATETIME)
+logger = Util.setup_logger(logger_path, 'data_merger')
+print(f'LOGGER CREATED: {logger_path}')
 
 # DATA MERGING
 if IF_MERGE:
-    DataMerger.logger.info('BEGINNING DATA MERGING')
+    logger.info('BEGINNING DATA MERGING')
     DataMerger.extract_merged_data()
-    DataMerger.logger.info('FINISHED DATA MERGING')
+    logger.info('FINISHED DATA MERGING')
 if IF_EXTRACT_FIELDS:
-    DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
+    logger.info('BEGINNING FIELD EXTRACTION')
     Util.extract_distinct_fields_to_excel(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, DataMerger.MERGED_PRODUCTS_FIELDS_JSON_PATH, DataMerger.MERGED_PRODUCTS_FIELDS_EXCEL_PATH, extract_all=IF_ALL_FIELDS)
     Util.extract_fields_example_to_excel(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, DataMerger.MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH, DataMerger.MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
-    DataMerger.logger.info('FINISHED FIELD EXTRACTION')
+    logger.info('FINISHED FIELD EXTRACTION')

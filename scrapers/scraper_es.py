@@ -13,12 +13,6 @@ from utils.util import Util
 class ScraperVtacSpain:
     COUNTRY = 'es'
 
-    # Creación del logger
-    LOGGER_PATH_TEMPLATE = 'logs/es/es_{}.log'
-    logger_path = LOGGER_PATH_TEMPLATE.format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path, 'vtac_spain')
-    print(f'LOGGER CREATED: {logger_path}')
-
     DRIVER = None
     BEGIN_SCRAPE_FROM = 0
 
@@ -31,18 +25,18 @@ class ScraperVtacSpain:
         'https://v-tac.es/el%C3%A9ctrico.html',
     )
 
-    PRODUCTS_INFO_PATH = 'data/vtac_spain/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_spain/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_es/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_es/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_es/PRODUCT_PDF'
 
-    PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json'
+    PRODUCTS_LINKS_PATH = 'data/vtac_es/LINKS/PRODUCTS_LINKS_ES.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_es/LINKS/NEW_PRODUCTS_LINKS_ES.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_es/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_es/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_es/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_es/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     @classmethod
     def instantiate_driver(cls):

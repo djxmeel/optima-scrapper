@@ -38,9 +38,9 @@ MEDIA_MODEL = odoo.env['product.image']
 PRODUCT_MODEL = odoo.env['product.template']
 
 PRODUCT_INFO_DIR = 'vtac_merged/PRODUCT_INFO'
-PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
+PRODUCT_PDF_DIRS = {'es': 'vtac_es/PRODUCT_PDF/',
                     'uk': 'vtac_uk/PRODUCT_PDF/',
-                    'ita': 'vtac_italia/PRODUCT_PDF/'}
+                    'ita': 'vtac_ita/PRODUCT_PDF/'}
 
 # Fields not to create as attributes in ODOO
 NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')

@@ -1,28 +1,22 @@
 import json
 import copy
 from utils.util import Util
-from scrapers.scrapper_es import ScraperVtacSpain
+from scrapers.scraper_es import ScraperVtacSpain
 from scrapers.scraper_ita import ScraperVtacItalia
 from scrapers.scraper_uk import ScraperVtacUk
 
 
 class DataMerger:
-    # Creación del logger
-    MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
-    logger_path = MERGER_LOG_FILE_PATH.format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path, 'data_merger')
-    print(f'LOGGER CREATED: {logger_path}')
-
     JSON_DUMP_FREQUENCY = 10
-    JSON_DUMP_PATH_TEMPLATE = 'vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
+    JSON_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
 
-    MERGED_PRODUCT_INFO_DIR_PATH = 'vtac_merged/PRODUCT_INFO'
+    MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
 
-    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
-    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
+    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
 
     COUNTRY_PRODUCT_INFO_DIR_PATHS = {

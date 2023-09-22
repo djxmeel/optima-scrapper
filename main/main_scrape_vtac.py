@@ -1,7 +1,7 @@
 import time
 
 from scrapers.scraper_ita import ScraperVtacItalia
-from scrapers.scrapper_es import ScraperVtacSpain
+from scrapers.scraper_es import ScraperVtacSpain
 from utils.util import Util
 from scrapers.scraper_uk import ScraperVtacUk
 
@@ -24,12 +24,17 @@ IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 
-# TODO TEST FOR : UK
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
 scraper = country_scrapers[chosen_country]
+
+# Creación del logger
+LOGGER_PATH_TEMPLATE = 'logs/{}/{}_{}.log'
+logger_path = LOGGER_PATH_TEMPLATE.format(chosen_country, chosen_country, Util.DATETIME)
+logger = Util.setup_logger(logger_path,f'vtac_{chosen_country}')
+print(f'LOGGER CREATED: {logger_path}')
 
 
 # LINK EXTRACTION

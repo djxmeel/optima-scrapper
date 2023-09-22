@@ -14,12 +14,6 @@ from utils.util import Util
 class ScraperVtacUk:
     COUNTRY = 'uk'
 
-    # Creación del logger
-    LOGGER_PATH_TEMPLATE = 'logs/uk/uk_{}.log'
-    logger_path = LOGGER_PATH_TEMPLATE.format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path,'vtac_uk')
-    print(f'LOGGER CREATED: {logger_path}')
-
     DRIVER = None
     BEGIN_SCRAPE_FROM = 0
 

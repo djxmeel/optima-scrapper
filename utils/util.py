@@ -176,7 +176,7 @@ class Util:
         try:
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
-            from scrapers.scrapper_es import ScraperVtacSpain
+            from scrapers.scraper_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
