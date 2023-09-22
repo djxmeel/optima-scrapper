@@ -1,3 +1,4 @@
+import os.path
 import time
 
 from scrapers.scraper_ita import ScraperVtacItalia
@@ -13,9 +14,8 @@ country_scrapers = {
     'ita' : ScraperVtacItalia
 }
 
-# TODO TEST FOR : UK
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = False, False
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = True, False
 
 # TODO TEST FOR : UK
 # PDFs productos
@@ -39,6 +39,7 @@ if IF_EXTRACT_ITEM_LINKS:
 
     scraper.logger.info(f'BEGINNING LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH}')
 
+
     # EXTRACT LINKS TO A set()
     extracted_links, links_new = scraper.extract_all_links(scraper.DRIVER, scraper.CATEGORIES_LINKS, IF_UPDATE)
 
@@ -58,6 +59,10 @@ if IF_EXTRACT_ITEM_INFO:
     scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
 
     links_path = scraper.NEW_PRODUCTS_LINKS_PATH if IF_ONLY_NEW_ITEMS else scraper.PRODUCTS_LINKS_PATH
+
+    if not os.path.exists(links_path):
+        scraper.logger.info(f'No links file found at {links_path}. Please extract links first.')
+        exit()
 
     # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
     Util.begin_items_info_extraction(
