@@ -1,13 +1,13 @@
 from utils.data_merger import DataMerger
+from utils.loggers import Loggers
 from utils.util import Util
 
-# TODO TEST
+
 IF_MERGE = False
-# TODO TEST
 IF_EXTRACT_FIELDS = False
 # If False : only extracts CUSTOM fields present in ODOO
 IF_ALL_FIELDS = False
-
+DataMerger.logger = Loggers.setup_merge_logger()
 
 # DATA MERGING
 if IF_MERGE:

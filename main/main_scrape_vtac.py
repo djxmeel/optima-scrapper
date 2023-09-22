@@ -2,16 +2,17 @@ import os.path
 import time
 
 from scrapers.scraper_ita import ScraperVtacItalia
-from scrapers.scrapper_es import ScraperVtacSpain
+from scrapers.scraper_es import ScraperVtacSpain
+from utils.loggers import Loggers
 from utils.util import Util
 from scrapers.scraper_uk import ScraperVtacUk
 
 # VTAC SCRAPER
 
 country_scrapers = {
-    'es' : ScraperVtacSpain,
-    'uk' : ScraperVtacUk,
-    'ita' : ScraperVtacItalia
+    'es': ScraperVtacSpain,
+    'uk': ScraperVtacUk,
+    'ita': ScraperVtacItalia
 }
 
 # Datos productos
@@ -30,7 +31,7 @@ IF_ALL_FIELDS = False
 
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
 scraper = country_scrapers[chosen_country]
-
+scraper.logger = Loggers.setup_vtac_logger(chosen_country)
 
 # LINK EXTRACTION
 if IF_EXTRACT_ITEM_LINKS:
@@ -45,7 +46,7 @@ if IF_EXTRACT_ITEM_LINKS:
 
     Util.dump_to_json(list(extracted_links), scraper.PRODUCTS_LINKS_PATH)
     if links_new:
-        Util.dump_to_json(list(links_new),scraper.NEW_PRODUCTS_LINKS_PATH)
+        Util.dump_to_json(list(links_new), scraper.NEW_PRODUCTS_LINKS_PATH)
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(

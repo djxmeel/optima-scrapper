@@ -12,7 +12,6 @@ from googletrans import Translator
 from selenium.common import NoSuchElementException
 from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
-import logging
 
 os.environ['path'] += r';dlls/'
 import cairosvg
@@ -30,37 +29,11 @@ class Util:
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('sku', 'EAN', 'url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
     ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
-
-    @staticmethod
-    def setup_logger(target_file, name):
-        # Create or get a logger
-        logger = logging.getLogger(name)
-
-        # Set log level
-        logger.setLevel(logging.DEBUG)
-
-        # Create a file handler
-        fh = logging.FileHandler(target_file)
-        fh.setLevel(logging.DEBUG)
-
-        # Create a console handler and set its logging level
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-
-        # Create a formatter and set the formatter for the handler
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(formatter)
-
-        # Add the handlers to logger
-        logger.addHandler(fh)
-        logger.addHandler(console_handler)
-
-        return logger
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
@@ -176,7 +149,7 @@ class Util:
         try:
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
-            from scrapers.scrapper_es import ScraperVtacSpain
+            from scrapers.scraper_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')

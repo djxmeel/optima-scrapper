@@ -1,28 +1,24 @@
 import json
 import copy
 from utils.util import Util
-from scrapers.scrapper_es import ScraperVtacSpain
+from scrapers.scraper_es import ScraperVtacSpain
 from scrapers.scraper_ita import ScraperVtacItalia
 from scrapers.scraper_uk import ScraperVtacUk
 
 
 class DataMerger:
-    # Creación del logger
-    MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
-    logger_path = MERGER_LOG_FILE_PATH.format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path, 'data_merger')
-    print(f'LOGGER CREATED: {logger_path}')
+    logger = None
 
     JSON_DUMP_FREQUENCY = 10
-    JSON_DUMP_PATH_TEMPLATE = 'vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
+    JSON_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
 
-    MERGED_PRODUCT_INFO_DIR_PATH = 'vtac_merged/PRODUCT_INFO'
+    MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
 
-    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
-    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
+    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
 
     COUNTRY_PRODUCT_INFO_DIR_PATHS = {
@@ -49,8 +45,8 @@ class DataMerger:
         'videos': ('uk', 'ita', 'es')
     }
 
-    # Fields to rename for common naming between countries
-    FIELD_TO_MERGE = {
+    # Fields to rename for common naming between data sources
+    FIELDS_RENAMES = {
         "Código EAN": "EAN",
         'EAN Código': 'EAN',
         'ean': 'EAN',
@@ -103,7 +99,7 @@ class DataMerger:
 
         # Filtering None
         # Merging fields when necessary
-        cls.country_data[country] = [cls.merge_product_fields(p) for p in cls.country_data[country] if p is not None]
+        cls.country_data[country] = [cls.rename_product_fields(p, cls.FIELDS_RENAMES) for p in cls.country_data[country] if p is not None]
 
         cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
@@ -158,8 +154,8 @@ class DataMerger:
 
 
     @classmethod
-    def merge_product_fields(cls, product):
-        for key, value in cls.FIELD_TO_MERGE.items():
+    def rename_product_fields(cls, product, fields_to_rename):
+        for key, value in fields_to_rename.items():
             if product.get(key):
                 product[value] = product[key]
                 del product[key]
