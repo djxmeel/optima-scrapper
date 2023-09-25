@@ -34,7 +34,6 @@ class OdooImport:
     MEDIA_MODEL = odoo.env['product.image']
     PRODUCT_MODEL = odoo.env['product.template']
 
-    PRODUCT_INFO_DIR = 'data/vtac_merged/PRODUCT_INFO'
     PRODUCT_PDF_DIRS = {'es': 'vtac_es/PRODUCT_PDF/',
                         'uk': 'vtac_uk/PRODUCT_PDF/',
                         'ita': 'vtac_ita/PRODUCT_PDF/'}
@@ -103,8 +102,8 @@ class OdooImport:
                     pass
 
     @classmethod
-    def import_products(cls):
-        file_list = Util.get_all_files_in_directory(cls.PRODUCT_INFO_DIR)
+    def import_products(cls, target_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
         for file_path in file_list:
             with open(file_path, "r") as file:
                 products = json.load(file)
@@ -143,8 +142,8 @@ class OdooImport:
             cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
 
     @classmethod
-    def import_accessories(cls):
-        file_list = Util.get_all_files_in_directory(cls.PRODUCT_INFO_DIR)
+    def import_accessories(cls, target_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
 
         # Get the product template object
         acc_model = cls.odoo.env['x_accesorios_producto_model']
@@ -190,7 +189,6 @@ class OdooImport:
                             cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
 
 
-    # TODO search for skus in ODOO and use them to browse through dirs for potential DLs
     @classmethod
     def import_pdfs(cls, skus=None):
         product_model = cls.PRODUCT_MODEL
@@ -257,8 +255,8 @@ class OdooImport:
 
 
     @classmethod
-    def import_imgs(cls):
-        file_list = Util.get_all_files_in_directory(cls.PRODUCT_INFO_DIR)
+    def import_imgs(cls, target_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in file_list:
             with open(file_path, "r") as file:
@@ -335,8 +333,8 @@ class OdooImport:
                     cls.logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
 
     @classmethod
-    def import_icons(cls):
-        file_list = Util.get_all_files_in_directory(cls.PRODUCT_INFO_DIR)
+    def import_icons(cls, target_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in file_list:
             with open(file_path, "r") as file:
@@ -382,11 +380,11 @@ class OdooImport:
                 cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
 
     @classmethod
-    def import_fields(cls):
+    def import_fields(cls, fields):
         # The 'ir.model.fields' model is used to create, read, and write fields in Odoo
         fields_model = cls.odoo.env['ir.model.fields']
 
-        for new_field in Util.ODOO_CUSTOM_FIELDS:
+        for new_field in fields:
             if fields_model.search([('name', '=', Util.format_field_odoo(new_field)), ('model', '=', 'product.template')]):
                 cls.logger.info(f'Field {new_field} already exists in Odoo')
                 continue

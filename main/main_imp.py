@@ -22,17 +22,17 @@ OdooImport.logger = Loggers.setup_odoo_import_logger()
 # ODOO IMPORT
 if IF_IMPORT_FIELDS:
     OdooImport.logger.info(f'BEGINNING FIELDS IMPORT')
-    OdooImport.import_fields()
+    OdooImport.import_fields(Util.ODOO_CUSTOM_FIELDS)
     OdooImport.logger.info(f'FINISHED FIELDS IMPORT')
 
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    OdooImport.import_products()
+    OdooImport.import_products(TARGET_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
     OdooImport.logger.info(f'BEGINNING ACCESSORIES IMPORT')
-    OdooImport.import_accessories()
+    OdooImport.import_accessories(TARGET_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ACCESSORIES IMPORT')
 
 if IF_IMPORT_PDFS:
@@ -42,10 +42,10 @@ if IF_IMPORT_PDFS:
 
 if IF_IMPORT_IMGS:
     OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    OdooImport.import_imgs()
+    OdooImport.import_imgs(TARGET_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:
     OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
-    OdooImport.import_icons()
+    OdooImport.import_icons(TARGET_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ICONS IMPORT')
