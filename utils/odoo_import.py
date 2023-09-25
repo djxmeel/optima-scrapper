@@ -3,7 +3,6 @@ from urllib.error import HTTPError
 
 import odoorpc
 import json
-import os
 import base64
 
 from odoorpc.error import RPCError
@@ -44,23 +43,6 @@ class OdooImport:
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
     @classmethod
-    def get_all_files_in_directory(cls, directory_path):
-        all_files = []
-        for root, dirs, files in os.walk(directory_path):
-            for f in files:
-                path = os.path.join(root, f)
-                all_files.append(path)
-        return all_files
-
-    @classmethod
-    def get_nested_directories(cls, path):
-        directories = []
-        for root, dirs, _ in os.walk(path):
-            for name in dirs:
-                directories.append(os.path.join(root, name))
-        return directories
-
-    @classmethod
     def create_attribute(cls, name, value):
         attribute_vals = {
             'name': name,
@@ -96,12 +78,20 @@ class OdooImport:
             attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', product[attribute]), ('attribute_id', '=', attribute_id)])
 
             if attribute_value_ids:
-                existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+                existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id), ('value_ids', '=', attribute_value_ids)])
 
-                # Unlink existing attribute lines of a product for update
-                # TODO only add missing attr. and NOT UNLINK for faster runtime
+                # Skip if the attribute line already exists with the same value
                 if existing_lines:
-                    cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
+                    # TODO remove
+                    print(f"Skipping {attribute} for product {product['sku']} as it already exists with the same value")
+                    continue
+                # TODO TEST attr update & creation
+                # Delete existing lines with the same attribute but different value
+                old_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+                if old_lines:
+                    # TODO remove
+                    print(f"Unlinking {attribute} for product {product['sku']} to update it with the new value {product[attribute]}")
+                    cls.ATTRIBUTE_LINE_MODEL.unlink(old_lines)
 
                 line_vals = {
                     'product_tmpl_id': product_id,
@@ -388,3 +378,28 @@ class OdooImport:
 
             else:
                 cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
+
+    @classmethod
+    def import_fields(cls):
+        # The 'ir.model.fields' model is used to create, read, and write fields in Odoo
+        fields_model = cls.odoo.env['ir.model.fields']
+
+        for new_field in Util.ODOO_CUSTOM_FIELDS:
+            if fields_model.search([('name', '=', Util.format_field_odoo(new_field)), ('model', '=', 'product.template')]):
+                cls.logger.info(f'Field {new_field} already exists in Odoo')
+                continue
+
+            # Create a dictionary for the custom field
+            custom_field_data = {
+                'name': Util.format_field_odoo(new_field),
+                'ttype': 'char',
+                'model': 'product.template',
+                'model_id': cls.odoo.env['ir.model'].search([('model', '=', 'product.template')])[0],
+                'state': 'manual',  # This field is being added manually, not through a module
+                'field_description': new_field,
+                'help': new_field
+            }
+
+            # Create the custom field in the Odoo instance
+            new_field_id = fields_model.create(custom_field_data)
+            cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")

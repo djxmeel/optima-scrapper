@@ -2,22 +2,26 @@ from utils.odoo_import import OdooImport
 from utils.loggers import Loggers
 
 
-# TODO auto import fields
 IF_IMPORT_FIELDS = True
 
-IF_IMPORT_PRODUCTS = True
+IF_IMPORT_PRODUCTS = False
 # TODO TEST
 IF_IMPORT_ACC = False
 # TODO TEST
 IF_IMPORT_PDFS = False
 # TODO TEST
-IF_IMPORT_IMGS = True
+IF_IMPORT_IMGS = False
 # TODO TEST
-IF_IMPORT_ICONS = True
+IF_IMPORT_ICONS = False
 
 OdooImport.logger = Loggers.setup_odoo_import_logger()
 
 # ODOO IMPORT
+if IF_IMPORT_FIELDS:
+    OdooImport.logger.info(f'BEGINNING FIELDS IMPORT')
+    OdooImport.import_fields()
+    OdooImport.logger.info(f'FINISHED FIELDS IMPORT')
+
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
     OdooImport.import_products()
