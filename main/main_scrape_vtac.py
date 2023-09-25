@@ -1,11 +1,11 @@
 import os.path
 import time
 
-from scrapers.scraper_ita import ScraperVtacItalia
-from scrapers.scraper_es import ScraperVtacSpain
+from scrapers.scraper_vtac_ita import ScraperVtacItalia
+from scrapers.scraper_vtac_es import ScraperVtacSpain
 from utils.loggers import Loggers
 from utils.util import Util
-from scrapers.scraper_uk import ScraperVtacUk
+from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 # VTAC SCRAPER
 
