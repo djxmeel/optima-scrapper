@@ -5,7 +5,7 @@ from utils.util import Util
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 
-IF_IMPORT_FIELDS = True
+IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PRODUCTS = False
 # TODO TEST
@@ -27,7 +27,7 @@ if IF_IMPORT_FIELDS:
 
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    OdooImport.import_products(TARGET_DATA_DIR_PATH)
+    OdooImport.import_products(TARGET_DATA_DIR_PATH, skip_attrs_of_existing=False)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:

@@ -102,7 +102,7 @@ class OdooImport:
                     pass
 
     @classmethod
-    def import_products(cls, target_dir_path):
+    def import_products(cls, target_dir_path, skip_attrs_of_existing=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         for file_path in file_list:
             with open(file_path, "r") as file:
@@ -133,11 +133,13 @@ class OdooImport:
                 if not product_ids:
                     product_id = product_model.create(product)
                     cls.logger.info(f'Created product {sku}')
+
+                    cls.assign_attribute_values(product_id, product_copy, created_attrs)
                 else:
                     product_id = product_ids[0]
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
-
-                cls.assign_attribute_values(product_id, product_copy, created_attrs)
+                    if not skip_attrs_of_existing:
+                        cls.assign_attribute_values(product_id, product_copy, created_attrs)
 
             cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
 
