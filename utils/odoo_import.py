@@ -40,6 +40,7 @@ class OdooImport:
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
+
     @classmethod
     def create_attribute(cls, name, value):
         attribute_vals = {
@@ -68,6 +69,7 @@ class OdooImport:
             cls.ATTRIBUTE_VALUE_MODEL.create(attribute_value_vals)
         except RPCError:
             pass
+
 
     @classmethod
     def assign_attribute_values(cls, product_id, product, attributes):
@@ -98,6 +100,7 @@ class OdooImport:
                 except RPCError:
                     pass
         cls.logger.info(f"FINISHED PROCESSING {product['sku']} ATTRIBUTES")
+
 
     @classmethod
     def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False):
@@ -150,8 +153,10 @@ class OdooImport:
 
             cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
 
+        # TODO TEST
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+
 
     @classmethod
     def import_accessories(cls, target_dir_path):
@@ -266,6 +271,7 @@ class OdooImport:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
 
+    # TODO TEST progress persistence
     @classmethod
     def import_imgs(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -350,6 +356,8 @@ class OdooImport:
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
+
+    # TODO TEST progress persistence
     @classmethod
     def import_icons(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -402,6 +410,7 @@ class OdooImport:
 
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+
 
     @classmethod
     def import_fields(cls, fields):
