@@ -1,6 +1,9 @@
+from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.loggers import Loggers
+from utils.util import Util
 
+TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 
 IF_IMPORT_FIELDS = True
 
@@ -34,7 +37,7 @@ if IF_IMPORT_ACC:
 
 if IF_IMPORT_PDFS:
     OdooImport.logger.info(f'BEGINNING PDFS IMPORT')
-    OdooImport.import_pdfs()
+    OdooImport.import_pdfs(Util.get_unique_skus_from_dir(TARGET_DATA_DIR_PATH))
     OdooImport.logger.info(f'FINISHED PDFS IMPORT')
 
 if IF_IMPORT_IMGS:
