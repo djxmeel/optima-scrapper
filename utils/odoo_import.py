@@ -1,4 +1,5 @@
 import copy
+import os.path
 from urllib.error import HTTPError
 
 import odoorpc
@@ -6,9 +7,7 @@ import json
 import base64
 
 from odoorpc.error import RPCError
-
 from utils.util import Util
-from utils.data_merger import DataMerger
 
 
 class OdooImport:
@@ -81,7 +80,6 @@ class OdooImport:
 
                 # Skip if the attribute line already exists with the same value
                 if existing_lines:
-                    print(f"SKIPPING attribute {attribute} value for product {product['sku']}")
                     continue
 
                 # Delete existing lines with the same attribute but different value
@@ -97,20 +95,19 @@ class OdooImport:
                 }
                 try:
                     cls.ATTRIBUTE_LINE_MODEL.create(line_vals)
-                    print(f"CREATING attribute {attribute} for product {product['sku']}")
                 except RPCError:
                     pass
         cls.logger.info(f"FINISHED PROCESSING {product['sku']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, skip_attrs_of_existing=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
         for file_path in file_list:
-            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file.name}')
-
             with open(file_path, "r") as file:
                 products = json.load(file)
+
+            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file.name}')
 
             product_model = cls.PRODUCT_MODEL
 
@@ -146,9 +143,15 @@ class OdooImport:
                     if not skip_attrs_of_existing:
                         cls.assign_attribute_values(product_id, product_copy, created_attrs)
 
-                print(f"PROCESSED : {counter} products")
+                cls.logger.info(f"PROCESSED : {counter} products\n")
+
+            # Moving uploaded files to separate dir to persist progress
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
             cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
+
+        # Restoring target dir's original name
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
     @classmethod
     def import_accessories(cls, target_dir_path):
@@ -264,7 +267,7 @@ class OdooImport:
 
 
     @classmethod
-    def import_imgs(cls, target_dir_path):
+    def import_imgs(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in file_list:
@@ -341,52 +344,64 @@ class OdooImport:
                 else:
                     cls.logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
 
+            # Moving uploaded files to separate dir to persist progress
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+
+        # Restoring target dir's original name
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+
     @classmethod
-    def import_icons(cls, target_dir_path):
+    def import_icons(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in file_list:
             with open(file_path, "r") as file:
                 json_data = json.load(file)
 
-        for product in json_data:
-            if 'icons' in product:
-                cls.logger.info(f'{product["sku"]} icons: {len(product["icons"])}')
+            for product in json_data:
+                if 'icons' in product:
+                    cls.logger.info(f'{product["sku"]} icons: {len(product["icons"])}')
 
-                # Search for the product template with the given sku
-                product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+                    # Search for the product template with the given sku
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
 
-                if product_ids:
-                    image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
+                    if product_ids:
+                        image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
 
-                    # Product existing icons
-                    images = cls.MEDIA_MODEL.browse(image_ids)
+                        # Product existing icons
+                        images = cls.MEDIA_MODEL.browse(image_ids)
 
-                    images = [image.image_1920 for image in images]
+                        images = [image.image_1920 for image in images]
 
-                    # Iterate over the products
-                    for icon in product['icons']:
-                        if not images.__contains__(icon):
-                            name = f'{product_ids[0]}_{product["icons"].index(icon)}'
-                            new_image = {
-                                'name': name,  # Replace with your image name
-                                'image_1920': icon,
-                                'product_tmpl_id': product_ids[0]
-                            }
+                        # Iterate over the products
+                        for icon in product['icons']:
+                            if not images.__contains__(icon):
+                                name = f'{product_ids[0]}_{product["icons"].index(icon)}'
+                                new_image = {
+                                    'name': name,  # Replace with your image name
+                                    'image_1920': icon,
+                                    'product_tmpl_id': product_ids[0]
+                                }
 
-                            try:
-                                # Create the new product.image record
-                                cls.MEDIA_MODEL.create(new_image)
-                                cls.logger.info(f'{product["sku"]}: UPLOADED ICON with name : {name}')
-                            except RPCError:
-                                pass
-                        else:
-                            cls.logger.info('Icon already exists')
+                                try:
+                                    # Create the new product.image record
+                                    cls.MEDIA_MODEL.create(new_image)
+                                    cls.logger.info(f'{product["sku"]}: UPLOADED ICON with name : {name}')
+                                except RPCError:
+                                    pass
+                            else:
+                                cls.logger.info('Icon already exists')
+                    else:
+                        cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
+
                 else:
-                    cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
+                    cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
 
-            else:
-                cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
+            # Moving uploaded files to separate dir to persist progress
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+
+        # Restoring target dir's original name
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
     @classmethod
     def import_fields(cls, fields):

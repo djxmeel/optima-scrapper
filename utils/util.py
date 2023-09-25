@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+import shutil
 from datetime import datetime
 
 import pandas as pd
@@ -35,6 +36,7 @@ class Util:
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
+
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
         """
@@ -57,6 +59,7 @@ class Util:
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
+
 
     @staticmethod
     def get_products_media(products_data, scraper):
@@ -105,10 +108,12 @@ class Util:
 
         return text
 
+
     @staticmethod
     def src_to_base64(src):
         response = requests.get(src)
         return base64.b64encode(response.content).decode('utf-8')
+
 
     @staticmethod
     def get_sku_from_link(driver, link, country):
@@ -127,10 +132,12 @@ class Util:
         else:
             raise Exception(f'Invalid country : {country}')
 
+
     @staticmethod
     def get_sku_from_link_ita(driver):
         link = driver.current_url
         return str(link).split('/')[6]
+
 
     @staticmethod
     def get_sku_from_link_uk(driver):
@@ -144,6 +151,7 @@ class Util:
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'UK')
 
+
     @staticmethod
     def get_sku_from_link_es(driver):
         try:
@@ -153,6 +161,7 @@ class Util:
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
+
 
     @staticmethod
     def load_json_data(file_path):
@@ -168,6 +177,7 @@ class Util:
         with open(file_path) as file:
             return json.load(file)
 
+
     @staticmethod
     def get_nested_directories(path):
         directories = []
@@ -175,6 +185,20 @@ class Util:
             for name in dirs:
                 directories.append(os.path.join(root, name))
         return directories
+
+
+    @staticmethod
+    def move_file_or_directory(src_path, dest_path):
+        if not os.path.exists(src_path):
+            print(f"Error: Source path '{src_path}' does not exist.")
+            return
+
+        try:
+            shutil.move(src_path, dest_path)
+            print(f"'{src_path}' has been moved to '{dest_path}'.")
+        except Exception as e:
+            print(f"Error occurred while moving: {e}")
+
 
     @staticmethod
     def get_all_files_in_directory(directory_path):
@@ -184,6 +208,7 @@ class Util:
                 path = os.path.join(root, f)
                 all_files.append(path)
         return sorted(all_files)
+
 
     @staticmethod
     def load_data_in_dir(directory):
@@ -196,13 +221,16 @@ class Util:
 
         return loaded_data
 
+
     @staticmethod
     def get_unique_skus_from_dir(directory):
         return set(product['sku'] for product in Util.load_data_in_dir(directory))
 
+
     @staticmethod
     def get_unique_skus_from_dictionary(dictionary):
         return set(product['sku'] for product in dictionary)
+
 
     @staticmethod
     def format_field_odoo(field):
@@ -229,6 +257,7 @@ class Util:
         for search, replace in replacements:
             formatted_field = formatted_field.replace(search, replace)
         return f'x_{formatted_field}'[:61]
+
 
     @staticmethod
     def extract_fields_example_to_excel(product_info_path, example_field_json_path, example_field_excel_path):
@@ -273,6 +302,7 @@ class Util:
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
 
+
     @staticmethod
     def extract_distinct_fields_to_excel(product_info_path, field_json_path, field_excel_path, extract_all=False):
         file_list = Util.get_all_files_in_directory(product_info_path)
@@ -316,6 +346,7 @@ class Util:
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
+
     @staticmethod
     def begin_items_pdf_download(scraper, links_path, downloads_path, logger, begin_from=0):
         with open(links_path) as f:
@@ -344,6 +375,7 @@ class Util:
             logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
             Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)
+
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
@@ -398,11 +430,13 @@ class Util:
                 return referenced_element.group(0)
         return use_tag
 
+
     @staticmethod
     def remove_defs_tags(svg_html):
         # Use regular expression to find and remove <defs> tags and their contents
         cleaned_svg = re.sub(r'<defs>.*?</defs>', '', svg_html, flags=re.DOTALL)
         return cleaned_svg
+
 
     @staticmethod
     def svg_to_base64(svg_html, logger):
@@ -420,6 +454,7 @@ class Util:
             time.sleep(10)
             return Util.svg_to_base64(svg_html, logger)
 
+
     @staticmethod
     def get_elapsed_time(start_seconds, end_seconds):
         # Calculate the difference in seconds
@@ -432,6 +467,7 @@ class Util:
         remaining_seconds = elapsed_seconds % 60
 
         return int(elapsed_hours), int(remaining_minutes), int(remaining_seconds)
+
 
     @staticmethod
     def print_title():

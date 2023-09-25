@@ -4,6 +4,10 @@ from utils.loggers import Loggers
 from utils.util import Util
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
+TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
+
+UPLOADED_DATA_DIR_PATH = DataMerger.UPLOADED_DATA_DIR_PATH
+UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
 IF_IMPORT_FIELDS = False
 
@@ -27,7 +31,7 @@ if IF_IMPORT_FIELDS:
 
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    OdooImport.import_products(TARGET_DATA_DIR_PATH, skip_attrs_of_existing=False)
+    OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, skip_attrs_of_existing=False)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
@@ -42,10 +46,10 @@ if IF_IMPORT_PDFS:
 
 if IF_IMPORT_IMGS:
     OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    OdooImport.import_imgs(TARGET_DATA_DIR_PATH)
+    OdooImport.import_imgs(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:
     OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
-    OdooImport.import_icons(TARGET_DATA_DIR_PATH)
+    OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ICONS IMPORT')
