@@ -5,7 +5,7 @@ from scrapers.scraper_es import ScraperVtacSpain
 from scrapers.scraper_ita import ScraperVtacItalia
 from scrapers.scraper_uk import ScraperVtacUk
 
-
+# TODO TEST SEPARATE MERGE
 class DataMerger:
     logger = None
 
