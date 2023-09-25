@@ -82,15 +82,13 @@ class OdooImport:
 
                 # Skip if the attribute line already exists with the same value
                 if existing_lines:
-                    # TODO remove
-                    print(f"Skipping {attribute} value for product {product['sku']}")
+                    print(f"SKIPPING attribute {attribute} value for product {product['sku']}")
                     continue
-                # TODO TEST attr update & creation
+
                 # Delete existing lines with the same attribute but different value
                 old_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
                 if old_lines:
-                    # TODO remove
-                    print(f"Updating {attribute} value for product {product['sku']}")
+                    print(f"UPDATING attribute {attribute} value for product {product['sku']}")
                     cls.ATTRIBUTE_LINE_MODEL.unlink(old_lines)
 
                 line_vals = {
@@ -100,7 +98,7 @@ class OdooImport:
                 }
                 try:
                     cls.ATTRIBUTE_LINE_MODEL.create(line_vals)
-                    print(f"Created attribute {attribute} for product {product['sku']}")
+                    print(f"CREATING attribute {attribute} for product {product['sku']}")
                 except RPCError:
                     pass
 
