@@ -186,6 +186,25 @@ class Util:
         return sorted(all_files)
 
     @staticmethod
+    def load_data_in_dir(directory):
+        loaded_data = []
+
+        file_list = Util.get_all_files_in_directory(directory)
+
+        for file_path in file_list:
+            loaded_data += Util.load_json_data(file_path)
+
+        return loaded_data
+
+    @staticmethod
+    def get_unique_skus_from_dir(directory):
+        return set(product['sku'] for product in Util.load_data_in_dir(directory))
+
+    @staticmethod
+    def get_unique_skus_from_dictionary(dictionary):
+        return set(product['sku'] for product in dictionary)
+
+    @staticmethod
     def format_field_odoo(field):
         replacements = [
             (" ", "_"),

@@ -90,18 +90,26 @@ class DataMerger:
     }
 
     @classmethod
-    def load_data_for_country(cls, country):
+    def load_data_for_country(cls, country, only_media= False):
+        directory_path = cls.COUNTRY_PRODUCT_INFO_DIR_PATHS[country]
+        data = []
+
+        if only_media:
+            directory_path = cls.COUNTRY_PRODUCT_MEDIA_DIR_PATHS[country]
+
         # Load data
-        file_list = Util.get_all_files_in_directory(cls.COUNTRY_PRODUCT_INFO_DIR_PATHS[country])
+        file_list = Util.get_all_files_in_directory(directory_path)
         for file_path in file_list:
             with open(file_path, "r", encoding='utf-8') as file:
-                cls.country_data[country] += json.load(file)
+                data += json.load(file)
 
-        # Filtering None
-        # Merging fields when necessary
-        cls.country_data[country] = [cls.rename_product_fields(p, cls.FIELDS_RENAMES) for p in cls.country_data[country] if p is not None]
+        if not only_media:
+            # Filtering None
+            # Merging fields when necessary
+            data = [cls.rename_product_fields(p, cls.FIELDS_RENAMES) for p in data if p is not None]
+            cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
-        cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
+        return data
 
 
     @classmethod
@@ -120,34 +128,30 @@ class DataMerger:
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.load_data_for_country(country)
+            cls.country_data[country] = cls.load_data_for_country(country)
 
         for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
             if cls.country_media.get(country):
                 if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.load_media_for_country(country)
+            cls.country_media[country] = cls.load_data_for_country(country, True)
         return cls
 
     @classmethod
-    def get_data(cls, country):
+    def get_country_data(cls, country):
         if cls.country_data.get(country):
             return cls.country_data.get(country, None)
-        else:
-            cls.load_data_for_country(country)
-            return cls.country_data.get(country, None)
+
+        return cls.load_data_for_country(country)
 
     @classmethod
-    def get_product_data_from_country_sku(cls, sku, country):
-        for product in cls.country_data[country]:
-            if product["sku"] == sku:
-                return product
-        return None
+    def get_product_data_from_country_sku(cls, sku, country, only_media= False):
+        data = cls.country_data[country]
+        if only_media:
+            data = cls.country_media[country]
 
-    @classmethod
-    def get_product_media_from_country_sku(cls, sku, country):
-        for product in cls.country_media[country]:
+        for product in data:
             if product["sku"] == sku:
                 return product
         return None
@@ -161,38 +165,19 @@ class DataMerger:
                 del product[key]
         return product
 
-    @classmethod
-    def load_merged_data(cls, always_load=False):
-        if not always_load and cls.merged_data:
-            return cls.merged_data
-
-        file_list = Util.get_all_files_in_directory(f'{cls.MERGED_PRODUCT_INFO_DIR_PATH}')
-        for file_path in file_list:
-            with open(file_path, "r", encoding='ISO-8859-1') as file:
-                cls.merged_data += json.load(file)
-
-        return cls.merged_data
-
-    @classmethod
-    def get_unique_skus_from_merged(cls):
-        return set(product['sku'] for product in cls.load_merged_data())
-
-    @classmethod
-    def get_unique_skus_from_countries(cls):
-        return set(product['sku'] for product in cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
 
     @classmethod
     def merge_data(cls):
-        unique_product_skus = cls.get_unique_skus_from_countries()
+        unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
 
         for sku in unique_product_skus:
             product_data = {'es': cls.get_product_data_from_country_sku(sku, 'es'),
                        'uk': cls.get_product_data_from_country_sku(sku, 'uk'),
                        'ita': cls.get_product_data_from_country_sku(sku, 'ita')}
 
-            product_media = {'es': cls.get_product_media_from_country_sku(sku, 'es'),
-                            'uk': cls.get_product_media_from_country_sku(sku, 'uk'),
-                            'ita': cls.get_product_media_from_country_sku(sku, 'ita')}
+            product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
+                            'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
+                            'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
 
             # Add empty spaces to SKU to make it 8 characters long for better readability
             sku += ' ' * (8 - len(sku))

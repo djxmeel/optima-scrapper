@@ -192,7 +192,7 @@ class OdooImport:
 
     # TODO search for skus in ODOO and use them to browse through dirs for potential DLs
     @classmethod
-    def import_pdfs(cls):
+    def import_pdfs(cls, skus=None):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
@@ -205,9 +205,7 @@ class OdooImport:
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
         sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
 
-        unique_skus = DataMerger.get_unique_skus_from_merged()
-
-        for sku in unique_skus:
+        for sku in skus:
             product_ids = product_model.search([('x_sku', '=', sku)])
 
             if product_ids:
@@ -215,11 +213,14 @@ class OdooImport:
 
                 # Remove 'VS' prefix [2:]
                 if sku[2:] in sku_list_es:
-                    attachment_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
+                    attachment_paths = Util.get_all_files_in_directory(
+                        directory_list_es[sku_list_es.index(sku[2:])])
                 elif sku[2:] in sku_list_uk:
-                    attachment_paths = Util.get_all_files_in_directory(directory_list_uk[sku_list_uk.index(sku[2:])])
+                    attachment_paths = Util.get_all_files_in_directory(
+                        directory_list_uk[sku_list_uk.index(sku[2:])])
                 elif sku[2:] in sku_list_ita:
-                    attachment_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
+                    attachment_paths = Util.get_all_files_in_directory(
+                        directory_list_ita[sku_list_ita.index(sku[2:])])
 
                 if attachment_paths:
                     cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
@@ -241,17 +242,19 @@ class OdooImport:
                         'name': attachment_name,
                         'datas': encoded_data,
                         'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                        'res_id': product_ids[0],  # ID of the record of the above model you want to link the attachment to (optional)
+                        'res_id': product_ids[0], # ID of the record of the above model you want to link the attachment to (optional)
                         'type': 'binary',
                     }
 
                     try:
                         attachment_id = attachments_model.create(attachment_data)
-                        cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+                        cls.logger.info(
+                            f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
                     except HTTPError:
                         cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
+
 
     @classmethod
     def import_imgs(cls):
