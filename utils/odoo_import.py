@@ -100,17 +100,22 @@ class OdooImport:
                     print(f"CREATING attribute {attribute} for product {product['sku']}")
                 except RPCError:
                     pass
+        cls.logger.info(f"FINISHED PROCESSING {product['sku']} ATTRIBUTES")
 
     @classmethod
     def import_products(cls, target_dir_path, skip_attrs_of_existing=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
+        counter = 0
         for file_path in file_list:
+            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file.name}')
+
             with open(file_path, "r") as file:
                 products = json.load(file)
 
             product_model = cls.PRODUCT_MODEL
 
             for product in products:
+                counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
 
                 created_attrs = []
@@ -140,6 +145,8 @@ class OdooImport:
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
                     if not skip_attrs_of_existing:
                         cls.assign_attribute_values(product_id, product_copy, created_attrs)
+
+                print(f"PROCESSED : {counter} products")
 
             cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
 
