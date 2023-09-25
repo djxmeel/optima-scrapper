@@ -12,7 +12,8 @@ DataMerger.logger = Loggers.setup_merge_logger()
 # DATA MERGING
 if IF_MERGE:
     DataMerger.logger.info('BEGINNING DATA MERGING')
-    DataMerger.extract_merged_data()
+    DataMerger.extract_merged_data(DataMerger.merged_data)
+    DataMerger.extract_merged_data(DataMerger.merged_media, True)
     DataMerger.logger.info('FINISHED DATA MERGING')
 if IF_EXTRACT_FIELDS:
     DataMerger.logger.info('BEGINNING FIELD EXTRACTION')
