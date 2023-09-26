@@ -13,11 +13,11 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    odoo_host = 'trialdb2.odoo.com'
+    odoo_host = 'trialdb3.odoo.com'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
 
-    odoo_db = 'trialdb2'
+    odoo_db = 'trialdb3'
     odoo_login = 'itprotrial@outlook.com'
     odoo_pass = 'itprotrial'
 
@@ -38,68 +38,80 @@ class OdooImport:
                         'ita': 'vtac_ita/PRODUCT_PDF/'}
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
 
     @classmethod
-    def create_attribute(cls, name, value):
-        attribute_vals = {
-            'name': name,
-            'create_variant': 'no_variant',  # Variants are created "always", "no_variant", or "dynamic"
-        }
+    def create_attributes(cls, attributes):
+        attributes_list = []
+        created_attrs_ids = {}
 
-        attribute_ids = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
+        for name, value in attributes.items():
+            existing_attr_ids  = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
 
-        if attribute_ids:
-            attribute_id = attribute_ids[0]
-        else:
-            attribute_id = cls.ATTRIBUTE_MODEL.create(attribute_vals)
-            cls.logger.info(f'CREATED NEW ATTRIBUTE : {name}')
+            # Skip empty values
+            if str(value).strip() == '':
+                continue
 
-        # Skip empty values
-        if str(value).strip() == '':
-            return
+            # Skip if the attribute already exists
+            if existing_attr_ids:
+                created_attrs_ids[existing_attr_ids[0]] = value
+                continue
 
-        # Create attribute values
-        attribute_value_vals = {
-            'name': value,
-            'attribute_id': attribute_id
-        }
-        try:
-            cls.ATTRIBUTE_VALUE_MODEL.create(attribute_value_vals)
-        except RPCError:
-            pass
+            attr = {
+                'name': name,
+                'create_variant': 'no_variant'  # Variants are created "always", "no_variant", or "dynamic"
+            }
+
+            created_attrs_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
+
+        attr_values_to_create = []
+
+        for id, value in created_attrs_ids.items():
+            try:
+                # Create attribute values
+                cls.ATTRIBUTE_VALUE_MODEL.create({
+                    'name': value,
+                    'attribute_id': id
+                })
+            except RPCError:
+                pass
+
+        return created_attrs_ids
 
 
     @classmethod
-    def assign_attribute_values(cls, product_id, product, attributes):
-        for attribute in attributes:
-            attribute_id = cls.ATTRIBUTE_MODEL.search([('name', '=', attribute)])[0]
-            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', product[attribute]), ('attribute_id', '=', attribute_id)])
+    def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
+        attr_lines = []
 
-            if attribute_value_ids:
-                existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id), ('value_ids', '=', attribute_value_ids)])
+        for attribute_id, value in attributes_ids_values.items():
+            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
 
-                # Skip if the attribute line already exists with the same value
-                if existing_lines:
+            # Only check if the attribute line already exists
+            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+
+            # Skip if the attribute line already exists
+            if existing_lines:
+                if update_mode:
+                    # Delete existing lines with the same attribute but different value
+                    cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
+                else:
                     continue
 
-                # Delete existing lines with the same attribute but different value
-                old_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
-                if old_lines:
-                    print(f"UPDATING attribute {attribute} value for product {product['sku']}")
-                    cls.ATTRIBUTE_LINE_MODEL.unlink(old_lines)
-
-                line_vals = {
+            # Create the attribute line
+            attr_lines.append({
                     'product_tmpl_id': product_id,
                     'attribute_id': attribute_id,
                     'value_ids': [(6, 0, attribute_value_ids)]
-                }
-                try:
-                    cls.ATTRIBUTE_LINE_MODEL.create(line_vals)
-                except RPCError:
-                    pass
-        cls.logger.info(f"FINISHED PROCESSING {product['sku']} ATTRIBUTES")
+                })
+
+        try:
+            cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
+        except RPCError:
+            cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
+            return
+
+        cls.logger.info(f"FINISHED ASSIGNING {product['sku']} ATTRIBUTES")
 
 
     @classmethod
@@ -118,33 +130,35 @@ class OdooImport:
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
 
-                created_attrs = []
+                attrs_to_create = {}
                 temp_keys = list(product.keys())
                 product_copy = copy.deepcopy(product)
 
                 sku = product["sku"]
+                url = product["url"]
 
                 for key in temp_keys:
                     if key not in Util.ODOO_SUPPORTED_FIELDS:
                         if key not in cls.NOT_ATTR_FIELDS:
-                            cls.create_attribute(key, product[key])
-                            created_attrs.append(key)
+                            attrs_to_create[key] = product[key]
                         if key not in Util.ODOO_CUSTOM_FIELDS:
                             del product[key]
                         else:
                             product[Util.format_field_odoo(key)] = product[key]
                             del product[key]
 
+                created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+
                 if not product_ids:
                     product_id = product_model.create(product)
-                    cls.logger.info(f'Created product {sku}')
+                    cls.logger.info(f'Created product {sku} with origin URL : {url}')
 
-                    cls.assign_attribute_values(product_id, product_copy, created_attrs)
+                    cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
                 else:
                     product_id = product_ids[0]
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
                     if not skip_attrs_of_existing:
-                        cls.assign_attribute_values(product_id, product_copy, created_attrs)
+                        cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
 
                 cls.logger.info(f"PROCESSED : {counter} products\n")
 
