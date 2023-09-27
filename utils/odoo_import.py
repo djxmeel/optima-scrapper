@@ -331,20 +331,21 @@ class OdooImport:
 
                                     new_image = {
                                         'name': name,
-                                        # Replace with your image name
                                         'image_1920': extra_img['img64'],
                                         'product_tmpl_id': product_ids[0]
                                     }
                                     try:
                                         # Create the new product.image record
                                         cls.MEDIA_MODEL.create(new_image)
-                                        cls.logger.info(f'{product_data["sku"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
                                         pass
                                 else:
                                     cls.logger.info(f'{product_data["sku"]}: Image already exists')
 
+                            cls.logger.info(f"{product_data['sku']}:FINISHED UPLOADING IMAGES")
+
                             videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
+                            videos = cls.MEDIA_MODEL.browse(videos)
                             videos = [video.video_url for video in videos]
 
                             if 'videos' in product_data:
@@ -355,18 +356,18 @@ class OdooImport:
 
                                         new_video = {
                                             'name': name,
-                                            # Replace with your image name
                                             'video_url': video_url,
                                             'product_tmpl_id': product_ids[0]
                                         }
                                         try:
                                             # Create the new product.image record
                                             cls.MEDIA_MODEL.create(new_video)
-                                            cls.logger.info(f'{product_data["sku"]}: UPLOADED VIDEO url with name : {name}')
                                         except RPCError:
                                             pass
                                     else:
-                                        cls.logger.info(f'{product_data["sku"]}: Image already exists')
+                                        cls.logger.info(f'{product_data["sku"]}: Video already exists')
+
+                                cls.logger.info(f"{product_data['sku']}:FINISHED UPLOADING VIDEOS")
                     else:
                         cls.logger.warn(f'{product_data["sku"]} : PRODUCT NOT FOUND IN ODOO')
 
@@ -374,12 +375,10 @@ class OdooImport:
                     cls.logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
 
             # Moving uploaded files to separate dir to persist progress
-            # TODO uncomment
-            #Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
-        # TODO uncomment
-        #Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
 
     # TODO TEST progress persistence
@@ -431,12 +430,10 @@ class OdooImport:
                     cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
 
             # Moving uploaded files to separate dir to persist progress
-            # TODO uncomment
-            #Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
-        # TODO uncomment
-        #Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
 
     @classmethod
