@@ -70,7 +70,7 @@ class OdooImport:
         for id, value in created_attrs_ids.items():
             try:
                 if cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value)]):
-                    raise RPCError
+                    raise RPCError(f'Attribute\'s value {value} already exists')
 
                 # Create attribute values
                 cls.ATTRIBUTE_VALUE_MODEL.create({
@@ -78,7 +78,7 @@ class OdooImport:
                     'attribute_id': id
                 })
             except RPCError:
-                cls.logger.info(f"Attribute's value {value} already exists")
+                pass
 
         return created_attrs_ids
 
@@ -101,12 +101,13 @@ class OdooImport:
 
             attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
 
-            # Create the attribute line
-            attr_lines.append({
-                    'product_tmpl_id': product_id,
-                    'attribute_id': attribute_id,
-                    'value_ids': [(6, 0, attribute_value_ids)]
-                })
+            if attribute_value_ids:
+                # Create the attribute line
+                attr_lines.append({
+                        'product_tmpl_id': product_id,
+                        'attribute_id': attribute_id,
+                        'value_ids': [(6, 0, [attribute_value_ids[0]])]
+                    })
 
         try:
             cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
@@ -150,9 +151,9 @@ class OdooImport:
                             product[Util.format_field_odoo(key)] = product[key]
                             del product[key]
 
-                created_attrs_ids_values = cls.create_attributes(attrs_to_create)
-
                 if not product_ids:
+                    created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+
                     product_id = product_model.create(product)
                     cls.logger.info(f'Created product {sku} with origin URL : {url}')
 
@@ -161,6 +162,7 @@ class OdooImport:
                     product_id = product_ids[0]
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
                     if not skip_attrs_of_existing:
+                        created_attrs_ids_values = cls.create_attributes(attrs_to_create)
                         cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
 
                 cls.logger.info(f"PROCESSED : {counter} products\n")
