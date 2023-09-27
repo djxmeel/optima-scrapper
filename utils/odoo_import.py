@@ -13,11 +13,11 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    odoo_host = 'trialdb3.odoo.com'
+    odoo_host = 'trialdb2.odoo.com'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
 
-    odoo_db = 'trialdb3'
+    odoo_db = 'trialdb2'
     odoo_login = 'itprotrial@outlook.com'
     odoo_pass = 'itprotrial'
 
@@ -40,7 +40,7 @@ class OdooImport:
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
-
+    # TODO store attribute ids and attr, values ids for product to then use them in assign_attribute_values instead of search() for ids
     @classmethod
     def create_attributes(cls, attributes):
         attributes_list = []
@@ -69,13 +69,16 @@ class OdooImport:
 
         for id, value in created_attrs_ids.items():
             try:
+                if cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value)]):
+                    raise RPCError
+
                 # Create attribute values
                 cls.ATTRIBUTE_VALUE_MODEL.create({
                     'name': value,
                     'attribute_id': id
                 })
             except RPCError:
-                pass
+                cls.logger.info(f"Attribute's value {value} already exists")
 
         return created_attrs_ids
 
@@ -85,8 +88,6 @@ class OdooImport:
         attr_lines = []
 
         for attribute_id, value in attributes_ids_values.items():
-            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
-
             # Only check if the attribute line already exists
             existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
@@ -97,6 +98,8 @@ class OdooImport:
                     cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
                 else:
                     continue
+
+            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
 
             # Create the attribute line
             attr_lines.append({

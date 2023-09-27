@@ -13,13 +13,13 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PRODUCTS = True
 # TODO TEST
-IF_IMPORT_ACC = False
+IF_IMPORT_ACC = True
 # TODO TEST
-IF_IMPORT_PDFS = False
+IF_IMPORT_PDFS = True
 # TODO TEST
-IF_IMPORT_IMGS = False
+IF_IMPORT_IMGS = True
 # TODO TEST
-IF_IMPORT_ICONS = False
+IF_IMPORT_ICONS = True
 
 OdooImport.logger = Loggers.setup_odoo_import_logger()
 
@@ -31,7 +31,7 @@ if IF_IMPORT_FIELDS:
 
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, skip_attrs_of_existing=False)
+    OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, skip_attrs_of_existing=True)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
