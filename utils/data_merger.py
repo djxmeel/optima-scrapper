@@ -71,7 +71,8 @@ class DataMerger:
         'Código de producto': 'Código de familia',
         'Las condiciones de trabajo': 'Temperaturas de trabajo',
         'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
-        'SKU': 'sku'
+        'SKU': 'sku',
+        'kit': 'accesorios'
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)

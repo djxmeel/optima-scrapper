@@ -58,11 +58,13 @@ class OdooImport:
                 created_attrs_ids[existing_attr_ids[0]] = value
                 continue
 
+            # The attr to create
             attr = {
                 'name': name,
                 'create_variant': 'no_variant'  # Variants are created "always", "no_variant", or "dynamic"
             }
 
+            # Saving the created IDs as keys in dict with their values
             created_attrs_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
 
         attr_values_to_create = []
@@ -177,7 +179,8 @@ class OdooImport:
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         # Get the product template object
-        acc_model = cls.odoo.env['x_accesorios_producto_model']
+        acc_model = cls.odoo.env['x_accesorios_productos']
+
 
         # Delete all accessory model records
         # acc_model.unlink(acc_model.search([]))
