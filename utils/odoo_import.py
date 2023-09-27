@@ -13,11 +13,11 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    odoo_host = 'trialdb3.odoo.com'
+    odoo_host = 'trialdb2.odoo.com'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
 
-    odoo_db = 'trialdb3'
+    odoo_db = 'trialdb2'
     odoo_login = 'itprotrial@outlook.com'
     odoo_pass = 'itprotrial'
 
@@ -40,7 +40,7 @@ class OdooImport:
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
-
+    # TODO store attribute ids and attr, values ids for product to then use them in assign_attribute_values instead of search() for ids
     @classmethod
     def create_attributes(cls, attributes):
         attributes_list = []
@@ -71,6 +71,9 @@ class OdooImport:
 
         for id, value in created_attrs_ids.items():
             try:
+                if cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value)]):
+                    raise RPCError(f'Attribute\'s value {value} already exists')
+
                 # Create attribute values
                 cls.ATTRIBUTE_VALUE_MODEL.create({
                     'name': value,
@@ -87,8 +90,6 @@ class OdooImport:
         attr_lines = []
 
         for attribute_id, value in attributes_ids_values.items():
-            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
-
             # Only check if the attribute line already exists
             existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
@@ -100,12 +101,15 @@ class OdooImport:
                 else:
                     continue
 
-            # Create the attribute line
-            attr_lines.append({
-                    'product_tmpl_id': product_id,
-                    'attribute_id': attribute_id,
-                    'value_ids': [(6, 0, attribute_value_ids)]
-                })
+            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
+
+            if attribute_value_ids:
+                # Create the attribute line
+                attr_lines.append({
+                        'product_tmpl_id': product_id,
+                        'attribute_id': attribute_id,
+                        'value_ids': [(6, 0, [attribute_value_ids[0]])]
+                    })
 
         try:
             cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
@@ -149,9 +153,9 @@ class OdooImport:
                             product[Util.format_field_odoo(key)] = product[key]
                             del product[key]
 
-                created_attrs_ids_values = cls.create_attributes(attrs_to_create)
-
                 if not product_ids:
+                    created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+
                     product_id = product_model.create(product)
                     cls.logger.info(f'Created product {sku} with origin URL : {url}')
 
@@ -160,6 +164,7 @@ class OdooImport:
                     product_id = product_ids[0]
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
                     if not skip_attrs_of_existing:
+                        created_attrs_ids_values = cls.create_attributes(attrs_to_create)
                         cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
 
                 cls.logger.info(f"PROCESSED : {counter} products\n")
