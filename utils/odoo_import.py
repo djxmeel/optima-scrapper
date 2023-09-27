@@ -374,10 +374,12 @@ class OdooImport:
                     cls.logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
 
             # Moving uploaded files to separate dir to persist progress
-            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+            # TODO uncomment
+            #Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
-        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        # TODO uncomment
+        #Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
 
     # TODO TEST progress persistence
@@ -429,10 +431,12 @@ class OdooImport:
                     cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
 
             # Moving uploaded files to separate dir to persist progress
-            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+            # TODO uncomment
+            #Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
-        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        # TODO uncomment
+        #Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
 
 
     @classmethod
