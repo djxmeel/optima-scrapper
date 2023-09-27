@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+import shutil
 from datetime import datetime
 
 import pandas as pd
@@ -12,7 +13,6 @@ from googletrans import Translator
 from selenium.common import NoSuchElementException
 from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
-import logging
 
 os.environ['path'] += r';dlls/'
 import cairosvg
@@ -21,78 +21,21 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 25
-
-    PRODUCT_DIRS = {
-        'info':'PRODUCT_INFO',
-        'media':'PRODUCT_MEDIA',
-        'pdf':'PRODUCT_PDF'
-    }
-
-    VTAC_COUNTRY_DIR = {
-        'es': 'vtac_spain',
-        'uk': 'vtac_uk',
-        'ita': 'vtac_italia'
-    }
+    JSON_DUMP_FREQUENCY = 5
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
 
-    PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/PRODUCTS_LINKS_ITA.json'
-    }
+    PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
+    PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
-    NEW_PRODUCTS_LINKS_FILE = {
-        'es': 'LINKS/NEW_PRODUCTS_LINKS_ES.json',
-        'uk': 'LINKS/NEW_PRODUCTS_LINKS_UK.json',
-        'ita': 'LINKS/NEW_PRODUCTS_LINKS_ITA.json'
-    }
-
-    LOG_FILE_PATH = {
-        'es': 'logs/es/es_{}.log',
-        'uk': 'logs/uk/uk_{}.log',
-        'ita': 'logs/ita/ita_{}.log',
-    }
-
-    MERGER_LOG_FILE_PATH = 'logs/datamerger/merge_{}.log'
-    ODOO_IMPORT_LOG_FILE_PATH = 'logs/odooimport/import_{}.log'
-
-    PRODUCTS_FIELDS_JSON_PATH = 'FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    ITEMS_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
-    ITEMS_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
-
-    CUSTOM_FIELDS_TO_EXTRACT = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
+    # The fields kept in ODOO as custom fields
+    ODOO_CUSTOM_FIELDS = ('sku', 'EAN', 'url', 'Código de familia', 'Marca')
+    # Default fields supported by Odoo (not custom)
+    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
+    # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
-    @staticmethod
-    def setup_logger(target_file, name):
-        # Create or get a logger
-        logger = logging.getLogger(name)
-
-        # Set log level
-        logger.setLevel(logging.DEBUG)
-
-        # Create a file handler
-        fh = logging.FileHandler(target_file)
-        fh.setLevel(logging.DEBUG)
-
-        # Create a console handler and set its logging level
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-
-        # Create a formatter and set the formatter for the handler
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(formatter)
-
-        # Add the handlers to logger
-        logger.addHandler(fh)
-        logger.addHandler(console_handler)
-
-        return logger
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
@@ -116,6 +59,7 @@ class Util:
         with open(filename, 'w') as file:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
+
 
     @staticmethod
     def get_products_media(products_data, scraper):
@@ -164,10 +108,12 @@ class Util:
 
         return text
 
+
     @staticmethod
     def src_to_base64(src):
         response = requests.get(src)
         return base64.b64encode(response.content).decode('utf-8')
+
 
     @staticmethod
     def get_sku_from_link(driver, link, country):
@@ -186,10 +132,12 @@ class Util:
         else:
             raise Exception(f'Invalid country : {country}')
 
+
     @staticmethod
     def get_sku_from_link_ita(driver):
         link = driver.current_url
         return str(link).split('/')[6]
+
 
     @staticmethod
     def get_sku_from_link_uk(driver):
@@ -198,20 +146,22 @@ class Util:
                                        "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
                 " ")[1]
         except NoSuchElementException:
-            from vtac_uk.scraper_uk import ScraperVtacUk
+            from scrapers.scraper_vtac_uk import ScraperVtacUk
             ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'UK')
+
 
     @staticmethod
     def get_sku_from_link_es(driver):
         try:
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
-            from vtac_spain.scrapper_es import ScraperVtacSpain
+            from scrapers.scraper_vtac_es import ScraperVtacSpain
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
+
 
     @staticmethod
     def load_json_data(file_path):
@@ -227,6 +177,7 @@ class Util:
         with open(file_path) as file:
             return json.load(file)
 
+
     @staticmethod
     def get_nested_directories(path):
         directories = []
@@ -234,6 +185,20 @@ class Util:
             for name in dirs:
                 directories.append(os.path.join(root, name))
         return directories
+
+
+    @staticmethod
+    def move_file_or_directory(src_path, dest_path):
+        if not os.path.exists(src_path):
+            print(f"Error: Source path '{src_path}' does not exist.")
+            return
+
+        try:
+            shutil.move(src_path, dest_path)
+            print(f"'{src_path}' has been moved to '{dest_path}'.")
+        except Exception as e:
+            print(f"Error occurred while moving: {e}")
+
 
     @staticmethod
     def get_all_files_in_directory(directory_path):
@@ -243,6 +208,29 @@ class Util:
                 path = os.path.join(root, f)
                 all_files.append(path)
         return sorted(all_files)
+
+
+    @staticmethod
+    def load_data_in_dir(directory):
+        loaded_data = []
+
+        file_list = Util.get_all_files_in_directory(directory)
+
+        for file_path in file_list:
+            loaded_data += Util.load_json_data(file_path)
+
+        return loaded_data
+
+
+    @staticmethod
+    def get_unique_skus_from_dir(directory):
+        return set(product['sku'] for product in Util.load_data_in_dir(directory))
+
+
+    @staticmethod
+    def get_unique_skus_from_dictionary(dictionary):
+        return set(product['sku'] for product in dictionary)
+
 
     @staticmethod
     def format_field_odoo(field):
@@ -270,9 +258,10 @@ class Util:
             formatted_field = formatted_field.replace(search, replace)
         return f'x_{formatted_field}'[:61]
 
+
     @staticmethod
-    def extract_fields_example_to_excel(country_directory_path):
-        file_list = Util.get_all_files_in_directory(f'{country_directory_path}/{Util.PRODUCT_DIRS["info"]}')
+    def extract_fields_example_to_excel(product_info_path, example_field_json_path, example_field_excel_path):
+        file_list = Util.get_all_files_in_directory(product_info_path)
         json_data = []
         fields = set()
         ejemplos = {}
@@ -293,6 +282,8 @@ class Util:
         print(f'FOUND {len(fields)} DISTINCT FIELDS')
 
         for field in fields:
+            if field in Util.ODOO_SUPPORTED_FIELDS:
+                continue
             excel_dicts.append(
                 {
                  'Etiqueta de campo': field,
@@ -301,19 +292,20 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+        Util.dump_to_json(excel_dicts, example_field_json_path)
 
         # Read the JSON file
-        data = pd.read_json(f'{country_directory_path}/DISTINCT_FIELDS_EXAMPLES.json')
+        data = pd.read_json(example_field_json_path)
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{country_directory_path}/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx"
+        excel_file_path = example_field_excel_path
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
 
+
     @staticmethod
-    def extract_distinct_fields_to_excel(directory_path, extract_all=False):
-        file_list = Util.get_all_files_in_directory(f'{directory_path}/{Util.PRODUCT_DIRS["info"]}')
+    def extract_distinct_fields_to_excel(product_info_path, field_json_path, field_excel_path, extract_all=False):
+        file_list = Util.get_all_files_in_directory(product_info_path)
         json_data = []
         fields = set()
 
@@ -324,7 +316,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 # Filter out non-custom fields
-                if extract_all or field in Util.CUSTOM_FIELDS_TO_EXTRACT:
+                if extract_all or field in Util.ODOO_CUSTOM_FIELDS:
                     fields.add(field)
 
         excel_dicts = []
@@ -344,18 +336,19 @@ class Util:
                  }
             )
 
-        Util.dump_to_json(excel_dicts, f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
+        Util.dump_to_json(excel_dicts, field_json_path)
 
         # Read the JSON file
-        data = pd.read_json(f'{directory_path}/{Util.PRODUCTS_FIELDS_JSON_PATH}')
+        data = pd.read_json(field_json_path)
 
         # Write the DataFrame to an Excel file
-        excel_file_path = f"{directory_path}/{Util.PRODUCTS_FIELDS_EXCEL_PATH}"
+        excel_file_path = field_excel_path
         data.to_excel(excel_file_path,
                       index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
 
+
     @staticmethod
-    def begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, begin_from=0):
+    def begin_items_pdf_download(scraper, links_path, downloads_path, logger, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
 
@@ -365,7 +358,7 @@ class Util:
         try:
             for link in loaded_links[begin_from:]:
                 counter += 1
-                sku = Util.get_sku_from_link(scraper.DRIVER, link, country)
+                sku = Util.get_sku_from_link(scraper.DRIVER, link, scraper.COUNTRY)
 
                 # Check if sku directory exists and has the same number of files as the number of files
                 if pdf_existing_dirs_sku.__contains__(sku):
@@ -381,7 +374,8 @@ class Util:
         except:
             logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
-            Util.begin_items_PDF_download(scraper, links_path, downloads_path, country, logger, counter)
+            Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)
+
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
@@ -400,14 +394,14 @@ class Util:
         try:
             for link in links[start_from:]:
                 products_data.append(
-                    scraper.scrape_item(scraper.DRIVER, link, scraper.SUBCATEGORIES))
+                    scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES))
                 counter += 1
                 logger.info(f'{counter}/{len(links)}\n')
 
                 # Save each X to a JSON
                 if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
-                    data_filename = f'{data_extraction_dir}/{Util.ITEMS_INFO_FILENAME_TEMPLATE.format(counter)}'
-                    media_filename = f'{media_extraction_dir}/{Util.ITEMS_MEDIA_FILENAME_TEMPLATE.format(counter)}'
+                    data_filename = f'{data_extraction_dir}/{Util.PRODUCT_INFO_FILENAME_TEMPLATE.format(counter)}'
+                    media_filename = f'{media_extraction_dir}/{Util.PRODUCT_MEDIA_FILENAME_TEMPLATE.format(counter)}'
 
                     products_media_only = Util.get_products_media(products_data, scraper)
 
@@ -436,11 +430,13 @@ class Util:
                 return referenced_element.group(0)
         return use_tag
 
+
     @staticmethod
     def remove_defs_tags(svg_html):
         # Use regular expression to find and remove <defs> tags and their contents
         cleaned_svg = re.sub(r'<defs>.*?</defs>', '', svg_html, flags=re.DOTALL)
         return cleaned_svg
+
 
     @staticmethod
     def svg_to_base64(svg_html, logger):
@@ -457,3 +453,51 @@ class Util:
             logger.error('ERROR CONVERTING SVG TO BASE64. Retrying...')
             time.sleep(10)
             return Util.svg_to_base64(svg_html, logger)
+
+
+    @staticmethod
+    def get_elapsed_time(start_seconds, end_seconds):
+        # Calculate the difference in seconds
+        elapsed_seconds = end_seconds - start_seconds
+
+        # Convert seconds to minutes and hours
+        elapsed_minutes = elapsed_seconds // 60
+        elapsed_hours = elapsed_minutes // 60
+        remaining_minutes = elapsed_minutes % 60
+        remaining_seconds = elapsed_seconds % 60
+
+        return int(elapsed_hours), int(remaining_minutes), int(remaining_seconds)
+
+
+    @staticmethod
+    def print_title():
+        print(
+            "  ____  _____ _______ _____ __  __             _____  _____ _____           _____  _____  ______ _____\n"  
+            " / __ \|  __ |__   __|_   _|  \/  |   /\      / ____|/ ____|  __ \    /\   |  __ \|  __ \|  ____|  __ \\\n" 
+            "| |  | | |__) | | |    | | | \  / |  /  \    | (___ | |    | |__) |  /  \  | |__) | |__) | |__  | |__) |\n"
+            "| |  | |  ___/  | |    | | | |\/| | / /\ \    \___ \| |    |  _  /  / /\ \ |  ___/|  ___/|  __| |  _  /\n" 
+            "| |__| | |      | |   _| |_| |  | |/ ____ \   ____) | |____| | \ \ / ____ \| |    | |    | |____| | \ \\\n" 
+            " \____/|_|      |_|  |_____|_|  |_/_/    \_\ |_____/ \_____|_|  \_/_/    \_|_|    |_|    |______|_|  \_\\\n")
+
+
+    @classmethod
+    def get_chosen_country_from_menu(cls, country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
+        Util.print_title()
+        # Prompt user to choose country
+        while True:
+            print("\nConfiguracion de scraping actual:\n"
+                  f"\nExtracción de URLs : {if_extract_item_links}\n"
+                  f"Extraer NOVEDADES : {if_update}\n"
+                  f"\nScrapear información productos : {if_extract_item_info}\n"
+                  f"Sólamente NOVEDADES : {if_only_new_items}\n"
+                  f"\nScrapear descargables productos : {if_dl_item_pdf}\n"
+                  f"\nExtraer campos : {if_extract_distinct_items_fields}\n")
+            chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) : ').strip().lower()
+            if chosen_country in country_scrapers:
+                if input(
+                        f'¿Está seguro de que desea hacer scraping de "{chosen_country}"? (s/n) :').strip().lower() == 's':
+                    break
+            print("País no válido, inténtelo de nuevo")
+
+        return chosen_country
+

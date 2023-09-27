@@ -13,15 +13,11 @@ from utils.util import Util
 class ScraperVtacSpain:
     COUNTRY = 'es'
 
-    # Creación del logger
-    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path, 'vtac_spain')
-    print(f'LOGGER CREATED: {logger_path}')
-
     DRIVER = None
+    logger = None
     BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES = ()
+    SPECS_SUBCATEGORIES = ()
 
     CATEGORIES_LINKS = (
         'https://v-tac.es/sistemas-solares.html',
@@ -29,6 +25,19 @@ class ScraperVtacSpain:
         'https://v-tac.es/smart-digital.html',
         'https://v-tac.es/el%C3%A9ctrico.html',
     )
+
+    PRODUCTS_INFO_PATH = 'data/vtac_es/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_es/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_es/PRODUCT_PDF'
+
+    PRODUCTS_LINKS_PATH = 'data/vtac_es/LINKS/PRODUCTS_LINKS_ES.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_es/LINKS/NEW_PRODUCTS_LINKS_ES.json'
+
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_es/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_es/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_es/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_es/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     @classmethod
     def instantiate_driver(cls):
@@ -49,7 +58,6 @@ class ScraperVtacSpain:
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
         energy_tag_xpath = "//img[@alt = 'Energy Class']"
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
-        product_desc_xpath = "//div[@class='product-description']"
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
@@ -114,8 +122,9 @@ class ScraperVtacSpain:
 
         # Extracción de la descripción del producto CON outerHTML
         try:
-            # Check if an <h4> exists to determine wether a description exists
+            # Check if an <h4> exists to determine whether a description exists
             driver.find_element(By.XPATH, "//div[@class='product-description']/h4")
+            # Removing "Contáctenos" button before saving
             item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML').replace('<div><a class="uk-button uk-button-default" href="https://v-tac.es/contáctenos">Contáctenos</a></div>', '')
 
         except NoSuchElementException:
@@ -163,7 +172,7 @@ class ScraperVtacSpain:
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = ScraperVtacSpain.PRODUCTS_LINKS_PATH
 
             if os.path.exists(links_path):
                 with open(links_path, 'r') as file:
@@ -215,7 +224,7 @@ class ScraperVtacSpain:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
+            nested_dir = f'{ScraperVtacSpain.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible

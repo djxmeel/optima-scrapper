@@ -1,390 +1,461 @@
 import copy
-from datetime import datetime
+import os.path
 from urllib.error import HTTPError
 
 import odoorpc
 import json
-import os
 import base64
 
 from odoorpc.error import RPCError
-
 from utils.util import Util
-from vtac_merged.data_merger import DataMerger
-
-logger_path = Util.ODOO_IMPORT_LOG_FILE_PATH.format(datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss"))
-logger = Util.setup_logger(logger_path, 'odoo_import')
-print(f'LOGGER CREATED: {logger_path}')
-
-odoo_host = 'trialdb.odoo.com'
-odoo_protocol = 'jsonrpc+ssl'
-odoo_port = '443'
-
-odoo_db = 'trialdb'
-odoo_login = 'itprotrial@outlook.com'
-odoo_pass = 'itprotrial'
-
-odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
-
-# Authenticate with your credentials
-odoo.login(odoo_db, odoo_login, odoo_pass)
-
-ATTRIBUTE_MODEL = odoo.env['product.attribute']
-ATTRIBUTE_VALUE_MODEL = odoo.env['product.attribute.value']
-ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
-
-MEDIA_MODEL = odoo.env['product.image']
-PRODUCT_MODEL = odoo.env['product.template']
-
-PRODUCT_INFO_DIR = 'vtac_merged/PRODUCT_INFO'
-PRODUCT_PDF_DIRS = {'es': 'vtac_spain/PRODUCT_PDF/',
-                    'uk': 'vtac_uk/PRODUCT_PDF/',
-                    'ita': 'vtac_italia/PRODUCT_PDF/'}
-
-ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
-NOT_ATTR_FIELDS = ('accesorios', 'videos', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
-ALWAYS_KEEP_FIELDS = ('sku', 'ean', 'url', 'Código de familia', 'Marca')
 
 
-def get_all_files_in_directory(directory_path):
-    all_files = []
-    for root, dirs, files in os.walk(directory_path):
-        for f in files:
-            path = os.path.join(root, f)
-            all_files.append(path)
-    return all_files
+class OdooImport:
+    logger = None
 
+    odoo_host = 'trialdb2.odoo.com'
+    odoo_protocol = 'jsonrpc+ssl'
+    odoo_port = '443'
 
-def get_nested_directories(path):
-    directories = []
-    for root, dirs, _ in os.walk(path):
-        for name in dirs:
-            directories.append(os.path.join(root, name))
-    return directories
+    odoo_db = 'trialdb2'
+    odoo_login = 'itprotrial@outlook.com'
+    odoo_pass = 'itprotrial'
 
+    odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
 
-def create_attribute(name, value):
-    attribute_vals = {
-        'name': name,
-        'create_variant': 'no_variant',  # Variants are created "always", "no_variant", or "dynamic"
-    }
+    # Authenticate with your credentials
+    odoo.login(odoo_db, odoo_login, odoo_pass)
 
-    attribute_ids = ATTRIBUTE_MODEL.search([('name', '=', name)])
+    ATTRIBUTE_MODEL = odoo.env['product.attribute']
+    ATTRIBUTE_VALUE_MODEL = odoo.env['product.attribute.value']
+    ATTRIBUTE_LINE_MODEL = odoo.env['product.template.attribute.line']
 
-    if len(attribute_ids) > 0:
-        attribute_id = attribute_ids[0]
-    else:
-        attribute_id = ATTRIBUTE_MODEL.create(attribute_vals)
-        logger.info(f'CREATED NEW ATTRIBUTE : {name}')
+    MEDIA_MODEL = odoo.env['product.image']
+    PRODUCT_MODEL = odoo.env['product.template']
 
-    # Skip empty values
-    if str(value).strip() == '':
-        return
+    PRODUCT_PDF_DIRS = {'es': 'vtac_es/PRODUCT_PDF/',
+                        'uk': 'vtac_uk/PRODUCT_PDF/',
+                        'ita': 'vtac_ita/PRODUCT_PDF/'}
 
-    # Create attribute values
-    attribute_value_vals = {
-        'name': value,
-        'attribute_id': attribute_id
-    }
-    try:
-        ATTRIBUTE_VALUE_MODEL.create(attribute_value_vals)
-    except RPCError:
-        pass
+    # Fields not to create as attributes in ODOO
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
+    # TODO store attribute ids and attr, values ids for product to then use them in assign_attribute_values instead of search() for ids
+    @classmethod
+    def create_attributes(cls, attributes):
+        attributes_list = []
+        created_attrs_ids = {}
 
-def assign_attribute_values(product_id, product, attributes):
-    for attribute in attributes:
-        attribute_id = ATTRIBUTE_MODEL.search([('name', '=', attribute)])[0]
-        attribute_value_ids = ATTRIBUTE_VALUE_MODEL.search([('name', '=', product[attribute]), ('attribute_id', '=', attribute_id)])
+        for name, value in attributes.items():
+            existing_attr_ids  = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
 
-        if len(attribute_value_ids) > 0:
-            existing_lines = ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+            # Skip empty values
+            if str(value).strip() == '':
+                continue
 
-            # Unlink existing attribute lines of a product for update
-            if len(existing_lines) > 0:
-                ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
+            # Skip if the attribute already exists
+            if existing_attr_ids:
+                created_attrs_ids[existing_attr_ids[0]] = value
+                continue
 
-            line_vals = {
-                'product_tmpl_id': product_id,
-                'attribute_id': attribute_id,
-                'value_ids': [(6, 0, attribute_value_ids)]
+            # The attr to create
+            attr = {
+                'name': name,
+                'create_variant': 'no_variant'  # Variants are created "always", "no_variant", or "dynamic"
             }
+
+            # Saving the created IDs as keys in dict with their values
+            created_attrs_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
+
+        attr_values_to_create = []
+
+        for id, value in created_attrs_ids.items():
             try:
-                ATTRIBUTE_LINE_MODEL.create(line_vals)
+                if cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value)]):
+                    raise RPCError(f'Attribute\'s value {value} already exists')
+
+                # Create attribute values
+                cls.ATTRIBUTE_VALUE_MODEL.create({
+                    'name': value,
+                    'attribute_id': id
+                })
             except RPCError:
                 pass
 
-
-def import_products():
-    file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            products = json.load(file)
-
-        product_model = PRODUCT_MODEL
-
-        for product in products:
-            product_ids = PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
-
-            created_attrs = []
-            temp_keys = list(product.keys())
-            product_copy = copy.deepcopy(product)
-
-            sku = product["sku"]
-
-            for key in temp_keys:
-                if key not in ODOO_SUPPORTED_FIELDS:
-                    if key not in NOT_ATTR_FIELDS:
-                        create_attribute(key, product[key])
-                        created_attrs.append(key)
-                    if key not in ALWAYS_KEEP_FIELDS:
-                        del product[key]
-                    else:
-                        product[Util.format_field_odoo(key)] = product[key]
-                        del product[key]
-
-            if not product_ids:
-                product_id = product_model.create(product)
-                logger.info(f'Created product {sku}')
-            else:
-                product_id = product_ids[0]
-                logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
-
-            assign_attribute_values(product_id, product_copy, created_attrs)
-
-        logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
+        return created_attrs_ids
 
 
-def import_accessories():
-    file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
+    @classmethod
+    def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
+        attr_lines = []
 
-    # Get the product template object
-    acc_model = odoo.env['x_accesorios_producto_model']
+        for attribute_id, value in attributes_ids_values.items():
+            # Only check if the attribute line already exists
+            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
-    # Delete all accessory model records
-    # acc_model.unlink(acc_model.search([]))
-
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data = json.load(file)
-
-        # Iterate over the products
-        for index, product in enumerate(json_data):
-            accessories_sku = []
-
-            if 'accesorios' in product and len(product['accesorios']) > 0:
-                for acc in product['accesorios']:
-                    accessories_sku.append(acc)
-
-            if len(accessories_sku) > 0:
-                # Search for the product template with the given name
-                main_product_id = PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
-                if len(main_product_id) > 0:
-                    main_product_id = main_product_id[0]
-                    logger.info(f'SKU : {product["sku"]} Accesorios : {len(accessories_sku)}')
+            # Skip if the attribute line already exists
+            if existing_lines:
+                if update_mode:
+                    # Delete existing lines with the same attribute but different value
+                    cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
                 else:
                     continue
 
-                for acc in accessories_sku:
-                    existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
+            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
 
-                    if len(existing_acc_ids) > 0:
-                        logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
-                        updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
+            if attribute_value_ids:
+                # Create the attribute line
+                attr_lines.append({
+                        'product_tmpl_id': product_id,
+                        'attribute_id': attribute_id,
+                        'value_ids': [(6, 0, [attribute_value_ids[0]])]
+                    })
+
+        try:
+            cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
+        except RPCError:
+            cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
+            return
+
+        cls.logger.info(f"FINISHED ASSIGNING {product['sku']} ATTRIBUTES")
+
+
+    @classmethod
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
+        counter = 0
+        for file_path in file_list:
+            with open(file_path, "r") as file:
+                products = json.load(file)
+
+            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file.name}')
+
+            product_model = cls.PRODUCT_MODEL
+
+            for product in products:
+                counter += 1
+                product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+
+                attrs_to_create = {}
+                temp_keys = list(product.keys())
+                product_copy = copy.deepcopy(product)
+
+                sku = product["sku"]
+                url = product["url"]
+
+                for key in temp_keys:
+                    if key not in Util.ODOO_SUPPORTED_FIELDS:
+                        if key not in cls.NOT_ATTR_FIELDS:
+                            attrs_to_create[key] = product[key]
+                        if key not in Util.ODOO_CUSTOM_FIELDS:
+                            del product[key]
+                        else:
+                            product[Util.format_field_odoo(key)] = product[key]
+                            del product[key]
+
+                if not product_ids:
+                    created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+
+                    product_id = product_model.create(product)
+                    cls.logger.info(f'Created product {sku} with origin URL : {url}')
+
+                    cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
+                else:
+                    product_id = product_ids[0]
+                    cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
+                    if not skip_attrs_of_existing:
+                        created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+                        cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
+
+                cls.logger.info(f"PROCESSED : {counter} products\n")
+
+            # Moving uploaded files to separate dir to persist progress
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+
+            cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
+
+        # TODO TEST
+        # Restoring target dir's original name
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+
+
+    # TODO accesories are getting squashed during merge by spain product info (always_keep?)
+    @classmethod
+    def import_accessories(cls, target_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
+
+        # Get the product template object
+        acc_model = cls.odoo.env['x_accesorios_productos']
+
+
+        # Delete all accessory model records
+        # acc_model.unlink(acc_model.search([]))
+
+        for file_path in file_list:
+            with open(file_path, "r") as file:
+                json_data = json.load(file)
+
+            # Iterate over the products
+            for index, product in enumerate(json_data):
+                accessories_sku = []
+
+                if 'accesorios' in product and product['accesorios']:
+                    for acc in product['accesorios']:
+                        accessories_sku.append(acc)
+
+                if accessories_sku:
+                    # Search for the product template with the given name
+                    main_product_id = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+                    if main_product_id:
+                        main_product_id = main_product_id[0]
+                        cls.logger.info(f'SKU : {product["sku"]} Accesorios : {len(accessories_sku)}')
                     else:
-                        new_record_data = {
-                            'x_sku': acc['sku'],
-                            'x_producto': main_product_id,
-                            'x_cantidad': acc['cantidad']
-                        }
+                        continue
 
-                        new_record_id = acc_model.create(new_record_data)
-                        logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
+                    for acc in accessories_sku:
+                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
 
+                        if existing_acc_ids:
+                            cls.logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
+                            updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
+                        else:
+                            new_record_data = {
+                                'x_sku': acc['sku'],
+                                'x_producto': main_product_id,
+                                'x_cantidad': acc['cantidad']
+                            }
 
-# TODO search for skus in ODOO and use them to browse through dirs for potential DLs
-def import_pdfs():
-    product_model = PRODUCT_MODEL
-    attachments_model = odoo.env['ir.attachment']
-
-    directory_list_es = get_nested_directories(PRODUCT_PDF_DIRS['es'])
-    sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
-
-    directory_list_uk = get_nested_directories(PRODUCT_PDF_DIRS['uk'])
-    sku_list_uk = [dirr.split('/')[2] for dirr in directory_list_uk]
-
-    directory_list_ita = get_nested_directories(PRODUCT_PDF_DIRS['ita'])
-    sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
-
-    unique_skus = DataMerger.get_unique_skus_from_merged()
-
-    for sku in unique_skus:
-        product_ids = product_model.search([('x_sku', '=', sku)])
-
-        if len(product_ids) > 0:
-            attachment_paths = []
-
-            # Remove 'VS' prefix [2:]
-            if sku[2:] in sku_list_es:
-                attachment_paths = Util.get_all_files_in_directory(directory_list_es[sku_list_es.index(sku[2:])])
-            elif sku[2:] in sku_list_uk:
-                attachment_paths = Util.get_all_files_in_directory(directory_list_uk[sku_list_uk.index(sku[2:])])
-            elif sku[2:] in sku_list_ita:
-                attachment_paths = Util.get_all_files_in_directory(directory_list_ita[sku_list_ita.index(sku[2:])])
-
-            if len(attachment_paths) > 0:
-                logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
-            for attachment_path in attachment_paths:
-                with open(attachment_path, 'rb') as file:
-                    pdf_binary_data = file.read()
-                    encoded_data = base64.b64encode(pdf_binary_data).decode()
-
-                attachment_name = Util.translate_from_to_spanish('detect', attachment_path.split('\\')[-1])
-                attachment_name = f'{sku}_{attachment_name}'
-
-                existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
-
-                if len(existing_attachment) > 0:
-                    logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
-                    continue
-
-                attachment_data = {
-                    'name': attachment_name,
-                    'datas': encoded_data,
-                    'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                    'res_id': product_ids[0],  # ID of the record of the above model you want to link the attachment to (optional)
-                    'type': 'binary',
-                }
-
-                try:
-                    attachment_id = attachments_model.create(attachment_data)
-                    logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-                except HTTPError:
-                    logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
-        else:
-            logger.warn(f'{sku} : NOT FOUND IN ODOO')
+                            new_record_id = acc_model.create(new_record_data)
+                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
 
 
-def import_imgs():
-    file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
+    @classmethod
+    def import_pdfs(cls, skus=None):
+        product_model = cls.PRODUCT_MODEL
+        attachments_model = cls.odoo.env['ir.attachment']
 
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data = json.load(file)
+        directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
+        sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
 
-        for product_data in json_data:
-            if 'imgs' in product_data:
-                logger.info(f'{product_data["sku"]}: FOUND {len(product_data["imgs"])} IMAGES')
+        directory_list_uk = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['uk'])
+        sku_list_uk = [dirr.split('/')[2] for dirr in directory_list_uk]
 
-                # Search for the product template with the given sku
-                product_ids = PRODUCT_MODEL.search([('x_sku', '=', product_data['sku'])])
+        directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
+        sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
 
-                if len(product_ids) > 0:
-                    # write/overwrite the image to the product
-                    if len(product_data['imgs']) > 0:
-                        try:
-                            PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
-                        except RPCError:
-                            pass
+        for sku in skus:
+            product_ids = product_model.search([('x_sku', '=', sku)])
 
-                        image_ids = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+            if product_ids:
+                attachment_paths = []
 
-                        # Product existing images
-                        images = MEDIA_MODEL.browse(image_ids)
-                        images = [image.image_1920 for image in images]
+                # Remove 'VS' prefix [2:]
+                if sku[2:] in sku_list_es:
+                    attachment_paths = Util.get_all_files_in_directory(
+                        directory_list_es[sku_list_es.index(sku[2:])])
+                elif sku[2:] in sku_list_uk:
+                    attachment_paths = Util.get_all_files_in_directory(
+                        directory_list_uk[sku_list_uk.index(sku[2:])])
+                elif sku[2:] in sku_list_ita:
+                    attachment_paths = Util.get_all_files_in_directory(
+                        directory_list_ita[sku_list_ita.index(sku[2:])])
 
-                        # Iterate over the products 'imgs'
-                        for extra_img in product_data['imgs'][1:]:
-                            if not images.__contains__(extra_img['img64']):
-                                name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
+                if attachment_paths:
+                    cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
+                for attachment_path in attachment_paths:
+                    with open(attachment_path, 'rb') as file:
+                        pdf_binary_data = file.read()
+                        encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                                new_image = {
-                                    'name': name,
-                                    # Replace with your image name
-                                    'image_1920': extra_img['img64'],
-                                    'product_tmpl_id': product_ids[0]
-                                }
-                                try:
-                                    # Create the new product.image record
-                                    MEDIA_MODEL.create(new_image)
-                                    logger.info(f'{product_data["sku"]}: UPLOADED IMAGE with name : {name}')
-                                except RPCError:
-                                    pass
-                            else:
-                                logger.info(f'{product_data["sku"]}: Image already exists')
+                    attachment_name = Util.translate_from_to_spanish('detect', attachment_path.split('\\')[-1])
+                    attachment_name = f'{sku}_{attachment_name}'
 
-                        videos = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
-                        videos = [video.video_url for video in videos]
+                    existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
-                        if 'videos' in product_data:
-                            # Iterate over the products 'videos'
-                            for video_url in product_data['videos']:
-                                if not videos.__contains__(video_url):
-                                    name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
+                    if existing_attachment:
+                        cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                        continue
 
-                                    new_video = {
+                    attachment_data = {
+                        'name': attachment_name,
+                        'datas': encoded_data,
+                        'res_model': 'product.template',  # Model you want to link the attachment to (optional)
+                        'res_id': product_ids[0], # ID of the record of the above model you want to link the attachment to (optional)
+                        'type': 'binary',
+                    }
+
+                    try:
+                        attachment_id = attachments_model.create(attachment_data)
+                        cls.logger.info(
+                            f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+                    except HTTPError:
+                        cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
+            else:
+                cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
+
+
+    # TODO TEST progress persistence
+    @classmethod
+    def import_imgs(cls, target_dir_path, uploaded_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
+
+        for file_path in file_list:
+            with open(file_path, "r") as file:
+                json_data = json.load(file)
+
+            for product_data in json_data:
+                if 'imgs' in product_data:
+                    cls.logger.info(f'{product_data["sku"]}: FOUND {len(product_data["imgs"])} IMAGES')
+
+                    # Search for the product template with the given sku
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product_data['sku'])])
+
+                    if product_ids:
+                        # write/overwrite the image to the product
+                        if product_data['imgs']:
+                            try:
+                                cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
+                            except RPCError:
+                                pass
+
+                            image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+
+                            # Product existing images
+                            images = cls.MEDIA_MODEL.browse(image_ids)
+                            images = [image.image_1920 for image in images]
+
+                            # Iterate over the products 'imgs'
+                            for extra_img in product_data['imgs'][1:]:
+                                if not images.__contains__(extra_img['img64']):
+                                    name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
+
+                                    new_image = {
                                         'name': name,
                                         # Replace with your image name
-                                        'video_url': video_url,
+                                        'image_1920': extra_img['img64'],
                                         'product_tmpl_id': product_ids[0]
                                     }
                                     try:
                                         # Create the new product.image record
-                                        MEDIA_MODEL.create(new_video)
-                                        logger.info(f'{product_data["sku"]}: UPLOADED VIDEO url with name : {name}')
+                                        cls.MEDIA_MODEL.create(new_image)
+                                        cls.logger.info(f'{product_data["sku"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
                                         pass
                                 else:
-                                    logger.info(f'{product_data["sku"]}: Image already exists')
-                else:
-                    logger.warn(f'{product_data["sku"]} : PRODUCT NOT FOUND IN ODOO')
+                                    cls.logger.info(f'{product_data["sku"]}: Image already exists')
 
-            else:
-                logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
+                            videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
+                            videos = [video.video_url for video in videos]
 
+                            if 'videos' in product_data:
+                                # Iterate over the products 'videos'
+                                for video_url in product_data['videos']:
+                                    if not videos.__contains__(video_url):
+                                        name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
 
-def import_icons():
-    file_list = get_all_files_in_directory(PRODUCT_INFO_DIR)
-
-    for file_path in file_list:
-        with open(file_path, "r") as file:
-            json_data = json.load(file)
-
-    for product in json_data:
-        if 'icons' in product:
-            logger.info(f'{product["sku"]} icons: {len(product["icons"])}')
-
-            # Search for the product template with the given sku
-            product_ids = PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
-
-            if product_ids:
-                image_ids = MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
-
-                # Product existing icons
-                images = MEDIA_MODEL.browse(image_ids)
-
-                images = [image.image_1920 for image in images]
-
-                # Iterate over the products
-                for icon in product['icons']:
-                    if not images.__contains__(icon):
-                        name = f'{product_ids[0]}_{product["icons"].index(icon)}'
-                        new_image = {
-                            'name': name,  # Replace with your image name
-                            'image_1920': icon,
-                            'product_tmpl_id': product_ids[0]
-                        }
-
-                        try:
-                            # Create the new product.image record
-                            MEDIA_MODEL.create(new_image)
-                            logger.info(f'{product["sku"]}: UPLOADED ICON with name : {name}')
-                        except RPCError:
-                            pass
+                                        new_video = {
+                                            'name': name,
+                                            # Replace with your image name
+                                            'video_url': video_url,
+                                            'product_tmpl_id': product_ids[0]
+                                        }
+                                        try:
+                                            # Create the new product.image record
+                                            cls.MEDIA_MODEL.create(new_video)
+                                            cls.logger.info(f'{product_data["sku"]}: UPLOADED VIDEO url with name : {name}')
+                                        except RPCError:
+                                            pass
+                                    else:
+                                        cls.logger.info(f'{product_data["sku"]}: Image already exists')
                     else:
-                        logger.info('Icon already exists')
-            else:
-                logger.warn('PRODUCT NOT FOUND IN ODOO')
+                        cls.logger.warn(f'{product_data["sku"]} : PRODUCT NOT FOUND IN ODOO')
 
-        else:
-            logger.warn(f'{product["sku"]} HAS NO ICONS!')
+                else:
+                    cls.logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
+
+            # Moving uploaded files to separate dir to persist progress
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+
+        # Restoring target dir's original name
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+
+
+    # TODO TEST progress persistence
+    @classmethod
+    def import_icons(cls, target_dir_path, uploaded_dir_path):
+        file_list = Util.get_all_files_in_directory(target_dir_path)
+
+        for file_path in file_list:
+            with open(file_path, "r") as file:
+                json_data = json.load(file)
+
+            for product in json_data:
+                if 'icons' in product:
+                    cls.logger.info(f'{product["sku"]} icons: {len(product["icons"])}')
+
+                    # Search for the product template with the given sku
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+
+                    if product_ids:
+                        image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
+
+                        # Product existing icons
+                        images = cls.MEDIA_MODEL.browse(image_ids)
+
+                        images = [image.image_1920 for image in images]
+
+                        # Iterate over the products
+                        for icon in product['icons']:
+                            if not images.__contains__(icon):
+                                name = f'{product_ids[0]}_{product["icons"].index(icon)}'
+                                new_image = {
+                                    'name': name,  # Replace with your image name
+                                    'image_1920': icon,
+                                    'product_tmpl_id': product_ids[0]
+                                }
+
+                                try:
+                                    # Create the new product.image record
+                                    cls.MEDIA_MODEL.create(new_image)
+                                    cls.logger.info(f'{product["sku"]}: UPLOADED ICON with name : {name}')
+                                except RPCError:
+                                    pass
+                            else:
+                                cls.logger.info('Icon already exists')
+                    else:
+                        cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
+
+                else:
+                    cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
+
+            # Moving uploaded files to separate dir to persist progress
+            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
+
+        # Restoring target dir's original name
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+
+
+    @classmethod
+    def import_fields(cls, fields):
+        # The 'ir.model.fields' model is used to create, read, and write fields in Odoo
+        fields_model = cls.odoo.env['ir.model.fields']
+
+        for new_field in fields:
+            if fields_model.search([('name', '=', Util.format_field_odoo(new_field)), ('model', '=', 'product.template')]):
+                cls.logger.info(f'Field {new_field} already exists in Odoo')
+                continue
+
+            # Create a dictionary for the custom field
+            custom_field_data = {
+                'name': Util.format_field_odoo(new_field),
+                'ttype': 'char',
+                'model': 'product.template',
+                'model_id': cls.odoo.env['ir.model'].search([('model', '=', 'product.template')])[0],
+                'state': 'manual',  # This field is being added manually, not through a module
+                'field_description': new_field,
+                'help': new_field
+            }
+
+            # Create the custom field in the Odoo instance
+            new_field_id = fields_model.create(custom_field_data)
+            cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")

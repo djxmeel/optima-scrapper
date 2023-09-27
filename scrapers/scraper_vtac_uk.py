@@ -14,15 +14,11 @@ from utils.util import Util
 class ScraperVtacUk:
     COUNTRY = 'uk'
 
-    # Creación del logger
-    logger_path = Util.LOG_FILE_PATH[COUNTRY].format(Util.DATETIME)
-    logger = Util.setup_logger(logger_path,'vtac_uk')
-    print(f'LOGGER CREATED: {logger_path}')
-
     DRIVER = None
+    logger = None
     BEGIN_SCRAPE_FROM = 0
 
-    SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
+    SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
     CATEGORIES_LINKS = [
         'https://www.vtacexports.com/default/digital-accessories.html',
@@ -31,6 +27,19 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/smart-products.html',
         'https://www.vtacexports.com/default/electrical.html'
     ]
+
+    PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_uk/PRODUCT_PDF'
+
+    PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json'
+
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     @classmethod
     def instantiate_driver(cls):
@@ -197,10 +206,10 @@ class ScraperVtacUk:
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
         if update:
-            links_path = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}'
+            links_path = ScraperVtacUk.PRODUCTS_LINKS_PATH
 
             if os.path.exists(links_path):
-                with open(f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCTS_LINKS_FILE[cls.COUNTRY]}', 'r') as file:
+                with open(links_path, 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     return extracted, new_links
@@ -277,7 +286,7 @@ class ScraperVtacUk:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{Util.VTAC_COUNTRY_DIR[cls.COUNTRY]}/{Util.PRODUCT_DIRS["pdf"]}/{sku}'
+            nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible
