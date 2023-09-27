@@ -440,18 +440,21 @@ class OdooImport:
     def import_fields(cls, fields):
         # The 'ir.model.fields' model is used to create, read, and write fields in Odoo
         fields_model = cls.odoo.env['ir.model.fields']
+        product_model_id = cls.odoo.env['ir.model'].search([('model', '=', 'product.template')])[0]
 
         for new_field in fields:
-            if fields_model.search([('name', '=', Util.format_field_odoo(new_field)), ('model', '=', 'product.template')]):
+            new_field_formatted = Util.format_field_odoo(new_field)
+
+            if fields_model.search([('name', '=', new_field_formatted), ('model', '=', 'product.template')]):
                 cls.logger.info(f'Field {new_field} already exists in Odoo')
                 continue
 
             # Create a dictionary for the custom field
             custom_field_data = {
-                'name': Util.format_field_odoo(new_field),
+                'name': new_field_formatted,
                 'ttype': 'char',
                 'model': 'product.template',
-                'model_id': cls.odoo.env['ir.model'].search([('model', '=', 'product.template')])[0],
+                'model_id': product_model_id,
                 'state': 'manual',  # This field is being added manually, not through a module
                 'field_description': new_field,
                 'help': new_field
