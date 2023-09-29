@@ -11,17 +11,17 @@ UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
 IF_IMPORT_FIELDS = False
 
-IF_IMPORT_PRODUCTS = False
+IF_IMPORT_PRODUCTS = True
 IF_SKIP_ATTRS_OF_EXISTING = True
 
-# TODO TEST
+# TODO REMERGE WITH NEW PRIOS THEN TEST
 IF_IMPORT_ACC = False
 # TODO TEST
 IF_IMPORT_PDFS = False
-# TODO TEST
-IF_IMPORT_IMGS = True
-# TODO TEST
-IF_IMPORT_ICONS = True
+
+IF_IMPORT_IMGS = False
+
+IF_IMPORT_ICONS = False
 
 OdooImport.logger = Loggers.setup_odoo_import_logger()
 
@@ -48,14 +48,14 @@ if IF_IMPORT_PDFS:
 
 if IF_IMPORT_IMGS:
     OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    # TODO uncomment
+    # TODO uncomment after SEPARATE MERGE
     #OdooImport.import_imgs(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.import_imgs(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:
     OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
-    # TODO uncomment
+    # TODO uncomment after SEPARATE MERGE
     #OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.import_icons(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ICONS IMPORT')
