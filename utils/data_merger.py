@@ -41,6 +41,8 @@ class DataMerger:
     # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
+        # TODO stop using ita descs?
+        'website_description': ('es', 'uk', 'ita'),
         'accesorios': ('ita', 'uk', 'es')
     }
 

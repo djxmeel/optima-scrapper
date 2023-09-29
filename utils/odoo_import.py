@@ -176,7 +176,6 @@ class OdooImport:
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
-    # TODO accesories are getting squashed during merge by spain product info (always_keep?)
     @classmethod
     def import_accessories(cls, target_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -230,7 +229,7 @@ class OdooImport:
 
 
     @classmethod
-    def import_pdfs(cls, skus=None):
+    def import_pdfs(cls, skus):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
