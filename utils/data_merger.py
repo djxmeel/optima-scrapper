@@ -13,14 +13,14 @@ class DataMerger:
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
 
-    MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
-    MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA'
-
     MERGED_PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
     MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
     MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
     MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+
+    MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
+    MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA'
 
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
@@ -41,7 +41,7 @@ class DataMerger:
     # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
-        'website_description': ('es', 'uk', 'ita')
+        'accesorios': ('ita', 'uk', 'es')
     }
 
     MEDIA_FIELDS_PRIORITIES = {
@@ -78,7 +78,8 @@ class DataMerger:
     # Fields that are always kept from a country (field must be stored as a list in json)
     # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
     COUNTRY_FIELDS_ALWAYS_KEEP = [
-        {'country': 'es', 'field': 'imgs'}
+        # All ES imgs are getting extracted, therefore we will not always keep (before: only graph_dimensions were extracted)
+        #{'country': 'es', 'field': 'imgs'}
     ]
 
     merged_data = []
@@ -234,7 +235,7 @@ class DataMerger:
 
     @classmethod
     def extract_merged_data(cls, data, is_media=False):
-        if len(data) < 1:
+        if not data:
             cls.load_all().merge_data()
             data = cls.merged_media if is_media else cls.merged_data
 
