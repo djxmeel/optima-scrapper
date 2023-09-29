@@ -188,9 +188,20 @@ class Util:
 
 
     @staticmethod
-    def move_file_or_directory(src_path, dest_path):
+    def move_file_or_directory(src_path, dest_path, move_only_content=False):
         if not os.path.exists(src_path):
             print(f"Error: Source path '{src_path}' does not exist.")
+            return
+
+        if move_only_content and os.path.isdir(src_path):
+            # Iterate over all the files and directories inside the source directory
+            for item in os.listdir(src_path):
+                src_item = os.path.join(src_path, item)
+                dst_item = os.path.join(dest_path, item)
+
+                # Move each item to the destination directory
+                shutil.move(src_item, dst_item)
+                print(f"'{item}' has been moved to '{dest_path}'.")
             return
 
         try:
