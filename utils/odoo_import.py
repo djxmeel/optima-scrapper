@@ -40,13 +40,12 @@ class OdooImport:
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
 
-    # TODO store attribute ids and attr, values ids for product to then use them in assign_attribute_values instead of search() for ids
+    # TODO TEST the use of attribute_value IDs in assign_attribute_values()
     @classmethod
-    def create_attributes(cls, attributes):
-        attributes_list = []
-        created_attrs_ids = {}
+    def create_attributes_and_values(cls, attributes_values):
+        created_attrs_values_ids = {}
 
-        for name, value in attributes.items():
+        for name, value in attributes_values.items():
             existing_attr_ids  = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
 
             # Skip empty values
@@ -55,7 +54,7 @@ class OdooImport:
 
             # Skip if the attribute already exists
             if existing_attr_ids:
-                created_attrs_ids[existing_attr_ids[0]] = value
+                created_attrs_values_ids[existing_attr_ids[0]] = value
                 continue
 
             # The attr to create
@@ -65,55 +64,55 @@ class OdooImport:
             }
 
             # Saving the created IDs as keys in dict with their values
-            created_attrs_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
+            created_attrs_values_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
 
         attr_values_to_create = []
 
-        for id, value in created_attrs_ids.items():
+        for id, value in created_attrs_values_ids.items():
             try:
-                if cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value)]):
+                attr_val_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', id)])
+
+                if attr_val_ids:
+                    created_attrs_values_ids[id] = attr_val_ids[0]
                     raise RPCError(f'Attribute\'s value {value} already exists')
 
-                # Create attribute values
-                cls.ATTRIBUTE_VALUE_MODEL.create({
+                # Create attribute value and store value ID
+                created_attrs_values_ids[id] = cls.ATTRIBUTE_VALUE_MODEL.create({
                     'name': value,
                     'attribute_id': id
                 })
             except RPCError:
                 pass
 
-        return created_attrs_ids
+        return created_attrs_values_ids
 
 
     @classmethod
     def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
         attr_lines = []
 
-        for attribute_id, value in attributes_ids_values.items():
+        for attribute_id, value_id in attributes_ids_values.items():
             # Only check if the attribute line already exists
             existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
             # Skip if the attribute line already exists
             if existing_lines:
                 if update_mode:
-                    # Delete existing lines with the same attribute but different value
+                    # Delete existing lines with the same attribute and product
                     cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
                 else:
                     continue
 
-            attribute_value_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attribute_id)])
-
-            if attribute_value_ids:
-                # Create the attribute line
-                attr_lines.append({
-                        'product_tmpl_id': product_id,
-                        'attribute_id': attribute_id,
-                        'value_ids': [(6, 0, [attribute_value_ids[0]])]
-                    })
+            # Create the attribute line
+            attr_lines.append({
+                    'product_tmpl_id': product_id,
+                    'attribute_id': attribute_id,
+                    'value_ids': [(6, 0, [value_id])]
+                })
 
         try:
             cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
-        except RPCError:
+        except TypeError:
             cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
             return
 
@@ -124,11 +123,10 @@ class OdooImport:
     def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
-        for file_path in file_list:
-            with open(file_path, "r") as file:
-                products = json.load(file)
+        for file_path in sorted(file_list):
+            products = Util.load_json_data(file_path)
 
-            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file.name}')
+            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file_path}')
 
             product_model = cls.PRODUCT_MODEL
 
@@ -154,7 +152,7 @@ class OdooImport:
                             del product[key]
 
                 if not product_ids:
-                    created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+                    created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
                     product_id = product_model.create(product)
                     cls.logger.info(f'Created product {sku} with origin URL : {url}')
@@ -164,7 +162,7 @@ class OdooImport:
                     product_id = product_ids[0]
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
                     if not skip_attrs_of_existing:
-                        created_attrs_ids_values = cls.create_attributes(attrs_to_create)
+                        created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
                         cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
 
                 cls.logger.info(f"PROCESSED : {counter} products\n")
@@ -172,11 +170,10 @@ class OdooImport:
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
-            cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file.name}')
+            cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file_path}')
 
-        # TODO TEST
         # Restoring target dir's original name
-        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
     # TODO accesories are getting squashed during merge by spain product info (always_keep?)
@@ -191,13 +188,16 @@ class OdooImport:
         # Delete all accessory model records
         # acc_model.unlink(acc_model.search([]))
 
-        for file_path in file_list:
-            with open(file_path, "r") as file:
-                json_data = json.load(file)
+        for file_path in sorted(file_list):
+            products = Util.load_json_data(file_path)
 
             # Iterate over the products
-            for index, product in enumerate(json_data):
+            for product in products:
                 accessories_sku = []
+
+                if 'accesorios' in product:
+                    if len(product['accesorios']) > 0:
+                        print(len(product['accesorios']))
 
                 if 'accesorios' in product and product['accesorios']:
                     for acc in product['accesorios']:
@@ -294,27 +294,25 @@ class OdooImport:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
 
-    # TODO TEST progress persistence
     @classmethod
     def import_imgs(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
-        for file_path in file_list:
-            with open(file_path, "r") as file:
-                json_data = json.load(file)
+        for file_path in sorted(file_list):
+            products = Util.load_json_data(file_path)
 
-            for product_data in json_data:
-                if 'imgs' in product_data:
-                    cls.logger.info(f'{product_data["sku"]}: FOUND {len(product_data["imgs"])} IMAGES')
+            for product in products:
+                if 'imgs' in product:
+                    cls.logger.info(f'{product["sku"]}: FOUND {len(product["imgs"])} IMAGES')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product_data['sku'])])
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
 
                     if product_ids:
                         # write/overwrite the image to the product
-                        if product_data['imgs']:
+                        if product['imgs']:
                             try:
-                                cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product_data['imgs'][0]['img64']})
+                                cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][0]['img64']})
                             except RPCError:
                                 pass
 
@@ -325,9 +323,9 @@ class OdooImport:
                             images = [image.image_1920 for image in images]
 
                             # Iterate over the products 'imgs'
-                            for extra_img in product_data['imgs'][1:]:
+                            for extra_img in product['imgs'][1:]:
                                 if not images.__contains__(extra_img['img64']):
-                                    name = f'{product_ids[0]}_{product_data["imgs"].index(extra_img)}'
+                                    name = f'{product_ids[0]}_{product["imgs"].index(extra_img)}'
 
                                     new_image = {
                                         'name': name,
@@ -337,22 +335,23 @@ class OdooImport:
                                     try:
                                         # Create the new product.image record
                                         cls.MEDIA_MODEL.create(new_image)
+                                        cls.logger.info(f'{product["sku"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
-                                        pass
+                                        cls.logger.info(f'{product["sku"]}: ERROR UPLOADING IMAGE with name : {name} *{RPCError}*')
                                 else:
-                                    cls.logger.info(f'{product_data["sku"]}: Image already exists')
+                                    cls.logger.info(f'{product["sku"]}: Image already exists')
 
-                            cls.logger.info(f"{product_data['sku']}:FINISHED UPLOADING IMAGES")
+                            cls.logger.info(f"{product['sku']}:FINISHED UPLOADING IMAGES")
 
                             videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
                             videos = cls.MEDIA_MODEL.browse(videos)
                             videos = [video.video_url for video in videos]
 
-                            if 'videos' in product_data:
+                            if 'videos' in product:
                                 # Iterate over the products 'videos'
-                                for video_url in product_data['videos']:
+                                for video_url in product['videos']:
                                     if not videos.__contains__(video_url):
-                                        name = f'{product_ids[0]}_video_{product_data["videos"].index(video_url)}'
+                                        name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
 
                                         new_video = {
                                             'name': name,
@@ -365,32 +364,30 @@ class OdooImport:
                                         except RPCError:
                                             pass
                                     else:
-                                        cls.logger.info(f'{product_data["sku"]}: Video already exists')
+                                        cls.logger.info(f'{product["sku"]}: Video already exists')
 
-                                cls.logger.info(f"{product_data['sku']}:FINISHED UPLOADING VIDEOS")
+                                cls.logger.info(f"{product['sku']}:FINISHED UPLOADING VIDEOS")
                     else:
-                        cls.logger.warn(f'{product_data["sku"]} : PRODUCT NOT FOUND IN ODOO')
+                        cls.logger.warn(f'{product["sku"]} : PRODUCT NOT FOUND IN ODOO')
 
                 else:
-                    cls.logger.warn(f'{product_data["sku"]} HAS NO IMAGES!')
+                    cls.logger.warn(f'{product["sku"]} HAS NO IMAGES!')
 
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
-        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
-    # TODO TEST progress persistence
     @classmethod
     def import_icons(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
-        for file_path in file_list:
-            with open(file_path, "r") as file:
-                json_data = json.load(file)
+        for file_path in sorted(file_list):
+            products = Util.load_json_data(file_path)
 
-            for product in json_data:
+            for product in products:
                 if 'icons' in product:
                     cls.logger.info(f'{product["sku"]} icons: {len(product["icons"])}')
 
@@ -433,7 +430,7 @@ class OdooImport:
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
-        Util.move_file_or_directory(uploaded_dir_path, target_dir_path)
+        Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
     @classmethod
