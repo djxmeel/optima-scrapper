@@ -33,9 +33,9 @@ class OdooImport:
     MEDIA_MODEL = odoo.env['product.image']
     PRODUCT_MODEL = odoo.env['product.template']
 
-    PRODUCT_PDF_DIRS = {'es': 'vtac_es/PRODUCT_PDF/',
-                        'uk': 'vtac_uk/PRODUCT_PDF/',
-                        'ita': 'vtac_ita/PRODUCT_PDF/'}
+    PRODUCT_PDF_DIRS = {'es': 'data/vtac_spain/PRODUCT_PDF/',
+                        'uk': 'data/vtac_uk/PRODUCT_PDF/',
+                        'ita': 'data/vtac_italia/PRODUCT_PDF/'}
 
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url', 'SKU')
@@ -234,13 +234,13 @@ class OdooImport:
         attachments_model = cls.odoo.env['ir.attachment']
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
-        sku_list_es = [dirr.split('/')[2] for dirr in directory_list_es]
+        sku_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
 
         directory_list_uk = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['uk'])
-        sku_list_uk = [dirr.split('/')[2] for dirr in directory_list_uk]
+        sku_list_uk = [dirr.split('/')[3] for dirr in directory_list_uk]
 
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
-        sku_list_ita = [dirr.split('/')[2] for dirr in directory_list_ita]
+        sku_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
 
         for sku in skus:
             product_ids = product_model.search([('x_sku', '=', sku)])
@@ -249,6 +249,7 @@ class OdooImport:
                 attachment_paths = []
 
                 # Remove 'VS' prefix [2:]
+                # TODO removing prefix 'VS' with [2:] deprecated in next scrape
                 if sku[2:] in sku_list_es:
                     attachment_paths = Util.get_all_files_in_directory(
                         directory_list_es[sku_list_es.index(sku[2:])])
@@ -266,7 +267,13 @@ class OdooImport:
                             pdf_binary_data = file.read()
                             encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                        attachment_name = Util.translate_from_to_spanish('detect', attachment_path.split('\\')[-1])
+                        attachment_name = attachment_path.split('\\')[-1]
+
+                        try:
+                            attachment_name = Util.translate_from_to_spanish('detect', attachment_name)
+                        except:
+                            pass
+
                         attachment_name = f'{sku}_{attachment_name}'
 
                         existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])

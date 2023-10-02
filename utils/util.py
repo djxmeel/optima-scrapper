@@ -101,8 +101,8 @@ class Util:
             if detected_language == _from or _from == 'detect':
                 translation = translator.translate(text, src=detected_language, dest='es')
                 return translation.text
-        except:
-            print('ERROR TRANSLATING TEXT. Retrying...')
+        except TimeoutException:
+            print('TRANSLATION TIMED OUT. Retrying...')
             time.sleep(3)
             return Util.translate_from_to_spanish(_from, text)
 
@@ -161,6 +161,7 @@ class Util:
             ScraperVtacSpain.logger.error("ERROR getting SKU. Retrying...")
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
+
 
     @staticmethod
     def get_internal_ref_from_sku(sku):
@@ -239,7 +240,8 @@ class Util:
 
     @staticmethod
     def get_unique_skus_from_dir(directory):
-        return set(product['SKU'] for product in Util.load_data_in_dir(directory))
+        # TODO change to 'SKU' after next scrape
+         return set(product['sku'] for product in Util.load_data_in_dir(directory))
 
 
     @staticmethod
