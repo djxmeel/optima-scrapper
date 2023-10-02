@@ -100,7 +100,7 @@ class ScraperVtacUk:
                 value = Util.translate_from_to_spanish('en', key_value_spans[1].text)
 
                 # Guardado de campos y valor en la estructura de datos
-                item[key] = value
+                item[str(key).capitalize()] = value
             except NoSuchElementException:
                 pass
 
@@ -115,9 +115,14 @@ class ScraperVtacUk:
 
         # Extracción del SKU
         try:
-            item['sku'] = f'VS{Util.get_sku_from_link_uk(driver)}'
+            item['SKU'] = f'{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
             cls.logger.warning('SKU NO ENCONTRADO')
+
+        try:
+            item['default_code'] = Util.get_internal_ref_from_sku(item['SKU'])
+        except:
+            return None
 
         # Extracción del precio
         try:
@@ -134,7 +139,7 @@ class ScraperVtacUk:
                                                                           '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{item["sku"]}] {item["name"]}'
+        item['name'] = f'[{item["SKU"]}] {item["name"]}'
 
         # Extracción de imágenes
         try:

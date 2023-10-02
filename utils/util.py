@@ -30,9 +30,9 @@ class Util:
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('sku', 'EAN', 'url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('SKU', 'EAN', 'url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
-    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description')
+    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code')
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
@@ -67,8 +67,8 @@ class Util:
         for product in products_data:
             product_media = {}
             # Get product SKU
-            if 'sku' in product:
-                product_media['sku'] = product['sku']
+            if 'SKU' in product:
+                product_media['SKU'] = product['SKU']
 
             for field in Util.MEDIA_FIELDS:
                 if field in product:
@@ -162,6 +162,10 @@ class Util:
             time.sleep(5)
             return Util.get_sku_from_link(driver, driver.current_url, 'ES')
 
+    @staticmethod
+    def get_internal_ref_from_sku(sku):
+        return f'VS{int(sku) * 2}'
+
 
     @staticmethod
     def load_json_data(file_path):
@@ -235,12 +239,12 @@ class Util:
 
     @staticmethod
     def get_unique_skus_from_dir(directory):
-        return set(product['sku'] for product in Util.load_data_in_dir(directory))
+        return set(product['SKU'] for product in Util.load_data_in_dir(directory))
 
 
     @staticmethod
     def get_unique_skus_from_dictionary(dictionary):
-        return set(product['sku'] for product in dictionary)
+        return set(product['SKU'] for product in dictionary)
 
 
     @staticmethod
@@ -285,7 +289,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 fields.add(field)
-                ejemplos[field] = f'{product["sku"]} -> {product[field]}'
+                ejemplos[field] = f'{product["SKU"]} -> {product[field]}'
                 urls[field] = product["url"]
 
         excel_dicts = []
@@ -404,8 +408,13 @@ class Util:
 
         try:
             for link in links[start_from:]:
-                products_data.append(
-                    scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES))
+                product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES)
+
+                # If product is None, it's SKU contains letters (Not V-TAC)
+                if not product:
+                    continue
+
+                products_data.append(product)
                 counter += 1
                 logger.info(f'{counter}/{len(links)}\n')
 

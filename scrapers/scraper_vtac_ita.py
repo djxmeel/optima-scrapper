@@ -81,7 +81,7 @@ class ScraperVtacItalia:
                 kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
                 kit_info = {'link': anchor.get_attribute('href'),
-                            'sku': f"VS{kit_span.find_element(By.TAG_NAME, 'span').text}",
+                            'sku': f"{kit_span.find_element(By.TAG_NAME, 'span').text}",
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
@@ -99,7 +99,7 @@ class ScraperVtacItalia:
                 acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
                 acces_info = {'link': acces_anchor.get_attribute('href'),
-                              'sku': f"VS{acces_anchor.find_element(By.TAG_NAME, 'b').text}",
+                              'referencia': Util.get_internal_ref_from_sku(acces_anchor.find_element(By.TAG_NAME, 'b').text),
                               'cantidad': acces_cantidad.text.split('x')[0]
                               }
 
@@ -150,6 +150,9 @@ class ScraperVtacItalia:
             for field in fields:
                 key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
 
+                if key != 'SKU':
+                    key = str(key).capitalize()
+
                 item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
             # Uso de los campos de ODOO para el volumen y el peso si están disponibles
@@ -159,9 +162,11 @@ class ScraperVtacItalia:
             if 'Peso' in item:
                 item['weight'] = float(item['Peso'].lower().replace(',', '.').replace('kg', ''))
                 del item['Peso']
-            if 'SKU' in item:
-                item['sku'] = item['SKU']
-                del item['SKU']
+
+        try:
+            item['default_code'] = Util.get_internal_ref_from_sku(item['SKU'])
+        except:
+            return None
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',
@@ -189,11 +194,9 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Formateo del SKU
-        item['sku'] = f'VS{item["sku"]}'
 
         # Formateo del titulo
-        item['name'] = f'[{item["sku"]}] {item["name"]}'
+        item['name'] = f'[{item["default_code"]}] {item["name"]}'
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

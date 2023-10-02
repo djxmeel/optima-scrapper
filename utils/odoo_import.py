@@ -38,7 +38,7 @@ class OdooImport:
                         'ita': 'vtac_ita/PRODUCT_PDF/'}
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'EAN', 'Código de familia', 'url', 'SKU')
 
     # TODO TEST the use of attribute_value IDs in assign_attribute_values()
     @classmethod
@@ -116,7 +116,7 @@ class OdooImport:
             cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
             return
 
-        cls.logger.info(f"FINISHED ASSIGNING {product['sku']} ATTRIBUTES")
+        cls.logger.info(f"FINISHED ASSIGNING {product['SKU']} ATTRIBUTES")
 
 
     @classmethod
@@ -132,13 +132,13 @@ class OdooImport:
 
             for product in products:
                 counter += 1
-                product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+                product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['SKU'])])
 
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
                 product_copy = copy.deepcopy(product)
 
-                sku = product["sku"]
+                sku = product["SKU"]
                 url = product["url"]
 
                 for key in temp_keys:
@@ -204,28 +204,28 @@ class OdooImport:
 
                 if accessories_sku:
                     # Search for the product template with the given name
-                    main_product_id = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+                    main_product_id = cls.PRODUCT_MODEL.search([('x_sku', '=', product['SKU'])])
                     if main_product_id:
                         main_product_id = main_product_id[0]
-                        cls.logger.info(f'SKU : {product["sku"]} Accesorios : {len(accessories_sku)}')
+                        cls.logger.info(f'SKU : {product["SKU"]} Accesorios : {len(accessories_sku)}')
                     else:
                         continue
 
                     for acc in accessories_sku:
-                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
+                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['SKU'])])
 
                         if existing_acc_ids:
-                            cls.logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
+                            cls.logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
                             updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
                         else:
                             new_record_data = {
-                                'x_sku': acc['sku'],
+                                'x_referencia': acc['referencia'],
                                 'x_producto': main_product_id,
                                 'x_cantidad': acc['cantidad']
                             }
 
                             new_record_id = acc_model.create(new_record_data)
-                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["sku"]} ID {main_product_id}')
+                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["SKU"]} ID {main_product_id}')
 
 
     @classmethod
@@ -261,34 +261,34 @@ class OdooImport:
 
                 if attachment_paths:
                     cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
-                for attachment_path in attachment_paths:
-                    with open(attachment_path, 'rb') as file:
-                        pdf_binary_data = file.read()
-                        encoded_data = base64.b64encode(pdf_binary_data).decode()
+                    for attachment_path in attachment_paths:
+                        with open(attachment_path, 'rb') as file:
+                            pdf_binary_data = file.read()
+                            encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                    attachment_name = Util.translate_from_to_spanish('detect', attachment_path.split('\\')[-1])
-                    attachment_name = f'{sku}_{attachment_name}'
+                        attachment_name = Util.translate_from_to_spanish('detect', attachment_path.split('\\')[-1])
+                        attachment_name = f'{sku}_{attachment_name}'
 
-                    existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
+                        existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
-                    if existing_attachment:
-                        cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
-                        continue
+                        if existing_attachment:
+                            cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                            continue
 
-                    attachment_data = {
-                        'name': attachment_name,
-                        'datas': encoded_data,
-                        'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                        'res_id': product_ids[0], # ID of the record of the above model you want to link the attachment to (optional)
-                        'type': 'binary',
-                    }
+                        attachment_data = {
+                            'name': attachment_name,
+                            'datas': encoded_data,
+                            'res_model': 'product.template',  # Model you want to link the attachment to (optional)
+                            'res_id': product_ids[0], # ID of the record of the above model you want to link the attachment to (optional)
+                            'type': 'binary',
+                        }
 
-                    try:
-                        attachment_id = attachments_model.create(attachment_data)
-                        cls.logger.info(
-                            f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-                    except HTTPError:
-                        cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
+                        try:
+                            attachment_id = attachments_model.create(attachment_data)
+                            cls.logger.info(
+                                f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+                        except HTTPError:
+                            cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
@@ -302,10 +302,10 @@ class OdooImport:
 
             for product in products:
                 if 'imgs' in product:
-                    cls.logger.info(f'{product["sku"]}: FOUND {len(product["imgs"])} IMAGES')
+                    cls.logger.info(f'{product["SKU"]}: FOUND {len(product["imgs"])} IMAGES')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['SKU'])])
 
                     if product_ids:
                         # write/overwrite the image to the product
@@ -334,13 +334,13 @@ class OdooImport:
                                     try:
                                         # Create the new product.image record
                                         cls.MEDIA_MODEL.create(new_image)
-                                        cls.logger.info(f'{product["sku"]}: UPLOADED IMAGE with name : {name}')
+                                        cls.logger.info(f'{product["SKU"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
-                                        cls.logger.info(f'{product["sku"]}: ERROR UPLOADING IMAGE with name : {name} *{RPCError}*')
+                                        cls.logger.info(f'{product["SKU"]}: ERROR UPLOADING IMAGE with name : {name} *{RPCError}*')
                                 else:
-                                    cls.logger.info(f'{product["sku"]}: Image already exists')
+                                    cls.logger.info(f'{product["SKU"]}: Image already exists')
 
-                            cls.logger.info(f"{product['sku']}:FINISHED UPLOADING IMAGES")
+                            cls.logger.info(f"{product['SKU']}:FINISHED UPLOADING IMAGES")
 
                             videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
                             videos = cls.MEDIA_MODEL.browse(videos)
@@ -363,14 +363,14 @@ class OdooImport:
                                         except RPCError:
                                             pass
                                     else:
-                                        cls.logger.info(f'{product["sku"]}: Video already exists')
+                                        cls.logger.info(f'{product["SKU"]}: Video already exists')
 
-                                cls.logger.info(f"{product['sku']}:FINISHED UPLOADING VIDEOS")
+                                cls.logger.info(f"{product['SKU']}:FINISHED UPLOADING VIDEOS")
                     else:
-                        cls.logger.warn(f'{product["sku"]} : PRODUCT NOT FOUND IN ODOO')
+                        cls.logger.warn(f'{product["SKU"]} : PRODUCT NOT FOUND IN ODOO')
 
                 else:
-                    cls.logger.warn(f'{product["sku"]} HAS NO IMAGES!')
+                    cls.logger.warn(f'{product["SKU"]} HAS NO IMAGES!')
 
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
@@ -388,10 +388,10 @@ class OdooImport:
 
             for product in products:
                 if 'icons' in product:
-                    cls.logger.info(f'{product["sku"]} icons: {len(product["icons"])}')
+                    cls.logger.info(f'{product["SKU"]} icons: {len(product["icons"])}')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['sku'])])
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['SKU'])])
 
                     if product_ids:
                         image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
@@ -414,7 +414,7 @@ class OdooImport:
                                 try:
                                     # Create the new product.image record
                                     cls.MEDIA_MODEL.create(new_image)
-                                    cls.logger.info(f'{product["sku"]}: UPLOADED ICON with name : {name}')
+                                    cls.logger.info(f'{product["SKU"]}: UPLOADED ICON with name : {name}')
                                 except RPCError:
                                     pass
                             else:
@@ -423,7 +423,7 @@ class OdooImport:
                         cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
 
                 else:
-                    cls.logger.warn(f'{product["sku"]} HAS NO ICONS!')
+                    cls.logger.warn(f'{product["SKU"]} HAS NO ICONS!')
 
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
