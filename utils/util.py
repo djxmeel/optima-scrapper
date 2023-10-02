@@ -30,7 +30,7 @@ class Util:
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('SKU', 'EAN', 'url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('Sku', 'EAN', 'url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
     ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code')
     # Media fields
@@ -67,8 +67,8 @@ class Util:
         for product in products_data:
             product_media = {}
             # Get product SKU
-            if 'SKU' in product:
-                product_media['SKU'] = product['SKU']
+            if 'Sku' in product:
+                product_media['Sku'] = product['Sku']
 
             for field in Util.MEDIA_FIELDS:
                 if field in product:
@@ -240,13 +240,12 @@ class Util:
 
     @staticmethod
     def get_unique_skus_from_dir(directory):
-        # TODO change to 'SKU' after next scrape
-         return set(product['sku'] for product in Util.load_data_in_dir(directory))
+         return set(product['Sku'] for product in Util.load_data_in_dir(directory))
 
 
     @staticmethod
     def get_unique_skus_from_dictionary(dictionary):
-        return set(product['SKU'] for product in dictionary)
+        return set(product['Sku'] for product in dictionary)
 
 
     @staticmethod
@@ -291,7 +290,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 fields.add(field)
-                ejemplos[field] = f'{product["SKU"]} -> {product[field]}'
+                ejemplos[field] = f'{product["Sku"]} -> {product[field]}'
                 urls[field] = product["url"]
 
         excel_dicts = []

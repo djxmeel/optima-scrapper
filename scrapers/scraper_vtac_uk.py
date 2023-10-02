@@ -115,12 +115,12 @@ class ScraperVtacUk:
 
         # Extracción del SKU
         try:
-            item['SKU'] = f'{Util.get_sku_from_link_uk(driver)}'
+            item['Sku'] = f'{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
             cls.logger.warning('SKU NO ENCONTRADO')
 
         try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['SKU'])
+            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
         except:
             return None
 
@@ -139,7 +139,7 @@ class ScraperVtacUk:
                                                                           '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{item["SKU"]}] {item["name"]}'
+        item['name'] = f'[{item["Sku"]}] {item["name"]}'
 
         # Extracción de imágenes
         try:

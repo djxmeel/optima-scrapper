@@ -150,10 +150,7 @@ class ScraperVtacItalia:
             for field in fields:
                 key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
 
-                if key != 'SKU':
-                    key = str(key).capitalize()
-
-                item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
+                item[str(key).capitalize()] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
             # Uso de los campos de ODOO para el volumen y el peso si están disponibles
             if 'Volume' in item:
@@ -164,7 +161,7 @@ class ScraperVtacItalia:
                 del item['Peso']
 
         try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['SKU'])
+            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
         except:
             return None
 

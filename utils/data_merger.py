@@ -41,8 +41,7 @@ class DataMerger:
     # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
-        # TODO stop using ita descs?
-        'website_description': ('es', 'uk', 'ita'),
+        'website_description': ('es', 'uk'),
         'accesorios': ('ita', 'uk', 'es')
     }
 
@@ -54,9 +53,9 @@ class DataMerger:
 
     # Fields to rename for common naming between data sources
     FIELDS_RENAMES = {
-        "Código EAN": "EAN",
-        'EAN Código': 'EAN',
-        'ean': 'EAN',
+        "Código EAN": "Ean",
+        'EAN Código': 'Ean',
+        'ean': 'Ean',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la Familia": "Código de familia",
         "Modelo": "Código de familia",
@@ -74,7 +73,8 @@ class DataMerger:
         'Código de producto': 'Código de familia',
         'Las condiciones de trabajo': 'Temperaturas de trabajo',
         'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
-        'sku': 'SKU',
+        'sku': 'Sku',
+        'SKU': 'Sku',
         'kit': 'accesorios',
         'Larga vida': 'Vida útil'
     }
@@ -155,7 +155,7 @@ class DataMerger:
             data = cls.country_media[country]
 
         for product in data:
-            if product["SKU"] == sku:
+            if product["Sku"] == sku:
                 return product
         return None
 
@@ -188,7 +188,7 @@ class DataMerger:
             cls.logger.info(f'\n{sku} : ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
 
             merged_product = {}
-            merged_media = {"SKU": sku}
+            merged_media = {"Sku": sku}
 
             # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:

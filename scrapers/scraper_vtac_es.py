@@ -80,13 +80,13 @@ class ScraperVtacSpain:
 
         # Extracción y formateo del SKU
         if 'Código de orden' in item.keys():
-            item['SKU'] = f'{item["Código de orden"]}'
+            item['Sku'] = f'{item["Código de orden"]}'
             del item['Código de orden']
         else:
-            item['SKU'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
+            item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
         try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['SKU'])
+            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
         except:
             return None
 
@@ -136,7 +136,7 @@ class ScraperVtacSpain:
             pass
 
         # Extracción del título
-        item['name'] = f'[{item["SKU"]}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{item["Sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
