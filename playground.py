@@ -35,7 +35,7 @@ def rename_key_in_json_file(file_path, old_key, new_key):
     with open(file_path, 'w') as f:
         json.dump(data, f)
 
-
+# TODO rename to "Sku" and "Ean" in merged data (David's workstation)
 def process_files(directory, old_key, new_key):
     """
     Processes all JSON files in the specified directory and renames the old_key to new_key.
