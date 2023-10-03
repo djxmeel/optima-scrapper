@@ -299,10 +299,13 @@ class OdooImport:
                             attachment_id = attachments_model.create(attachment_data)
                             cls.logger.info(
                                 f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-                        except HTTPError or TimeoutError:
-                            cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
-                            time.sleep(2)
-                            cls.import_pdfs(skus[index:])
+                        except TimeoutError:
+                            cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
+                            time.sleep(10)
+                            cls.import_pdfs(list(skus[index:]))
+                        except HTTPError:
+                            cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
+                            continue
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
