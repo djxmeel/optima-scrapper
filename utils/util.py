@@ -30,7 +30,7 @@ class Util:
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('Sku', 'EAN', 'url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('Sku', 'Ean', 'url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
     ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code')
     # Media fields
@@ -240,7 +240,7 @@ class Util:
 
     @staticmethod
     def get_unique_skus_from_dir(directory):
-         return set(product['Sku'] for product in Util.load_data_in_dir(directory))
+         return set(product['Sku'][2:] for product in Util.load_data_in_dir(directory))
 
 
     @staticmethod
