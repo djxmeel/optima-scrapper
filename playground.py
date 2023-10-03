@@ -35,7 +35,7 @@ def rename_key_in_json_file(file_path, old_key, new_key):
     with open(file_path, 'w') as f:
         json.dump(data, f)
 
-# TODO rename to "Sku" and "Ean" in merged data (David's workstation)
+
 def process_files(directory, old_key, new_key):
     """
     Processes all JSON files in the specified directory and renames the old_key to new_key.
@@ -50,7 +50,7 @@ def process_files(directory, old_key, new_key):
 def field_update():
     product_ids = product_model.search([])
 
-    for i, product_id in enumerate(product_ids[4000:]):
+    for i, product_id in enumerate(product_ids):
         product_obj = product_model.browse(product_id)
         sku = product_obj.x_sku
         name = product_obj.name
@@ -70,10 +70,11 @@ def field_update():
                 'name': name
             })
 
-            print(f"{i}/{len(product_ids[4000:])} NEW NAME : {name}")
+            print(f"{i}/{len(product_ids)} NEW NAME : {name}")
 
-    print(f"Updated {len(product_ids[4000:])} products.")
+    print(f"Updated {len(product_ids)} products.")
 
 
 process_files(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, 'sku', 'Sku')
 process_files(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, 'EAN', 'Ean')
+process_files(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, 'Modelo', 'Código de familia')
