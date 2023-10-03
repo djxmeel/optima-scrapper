@@ -39,7 +39,7 @@ class OdooImport:
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'Sku')
 
-    # TODO TEST the use of attribute_value IDs in assign_attribute_values()
+
     @classmethod
     def create_attributes_and_values(cls, attributes_values):
         created_attrs_values_ids = {}
@@ -174,14 +174,14 @@ class OdooImport:
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
-
+    # TODO TEST accessory appearance in desc
     @classmethod
     def import_accessories(cls, target_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         # Get the product template object
         acc_model = cls.odoo.env['x_accesorios_productos']
-
+        desc_extension = '<h2>Accesorios incluidos</h2><ul>'
 
         # Delete all accessory model records
         # acc_model.unlink(acc_model.search([]))
@@ -193,10 +193,6 @@ class OdooImport:
             for product in products:
                 accessories_sku = []
 
-                if 'accesorios' in product:
-                    if len(product['accesorios']) > 0:
-                        print(len(product['accesorios']))
-
                 if 'accesorios' in product and product['accesorios']:
                     for acc in product['accesorios']:
                         accessories_sku.append(acc)
@@ -206,25 +202,35 @@ class OdooImport:
                     main_product_id = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
                     if main_product_id:
                         main_product_id = main_product_id[0]
-                        cls.logger.info(f'SKU : {product["Sku"]} Accesorios : {len(accessories_sku)}')
+                        cls.logger.info(f'SKU: {product["Sku"]} Accesorios : {len(accessories_sku)}')
                     else:
+                        cls.logger.info(f'SKU: {product["Sku"]} NOT FOUND IN ODOO')
                         continue
 
                     for acc in accessories_sku:
                         existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['Sku'])])
 
-                        if existing_acc_ids:
-                            cls.logger.info(f'UPDATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
-                            updated_record_id = acc_model.write(existing_acc_ids[0], {'x_cantidad': acc['cantidad']})
-                        else:
+                        if not existing_acc_ids:
                             new_record_data = {
                                 'x_referencia': acc['referencia'],
                                 'x_producto': main_product_id,
                                 'x_cantidad': acc['cantidad']
                             }
 
-                            new_record_id = acc_model.create(new_record_data)
-                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
+                            try:
+                                new_record_id = acc_model.create(new_record_data)
+                                cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
+
+                                desc_extension += f'<li>Referencia: {new_record_data["x_referencia"]}  Cantidad: {new_record_data["x_cantidad"]}</li>'
+
+                            except RPCError:
+                                cls.logger.info(f'{product["Sku"]} ERROR CREATING ACCESORIO')
+
+                    desc_extension += '</ul>'
+
+                    current_desc = cls.PRODUCT_MODEL.browse(main_product_id).website_description
+                    cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
+
 
 
     @classmethod
@@ -241,7 +247,8 @@ class OdooImport:
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
         sku_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
 
-        for sku in skus:
+        for index, sku in enumerate(skus):
+            print(f'{index+1} / {len(skus)}')
             product_ids = product_model.search([('x_sku', '=', sku)])
 
             if product_ids:
