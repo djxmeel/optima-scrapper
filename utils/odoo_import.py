@@ -291,7 +291,7 @@ class OdooImport:
                             attachment_id = attachments_model.create(attachment_data)
                             cls.logger.info(
                                 f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-                        except HTTPError:
+                        except HTTPError or RPCError:
                             cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
