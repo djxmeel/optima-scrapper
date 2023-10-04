@@ -49,14 +49,10 @@ if IF_IMPORT_PDFS:
 
 if IF_IMPORT_IMGS:
     OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    # TODO uncomment after SEPARATE MERGE
-    #OdooImport.import_imgs(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
-    OdooImport.import_imgs(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH)
+    OdooImport.import_imgs(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:
     OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
-    # TODO uncomment after SEPARATE MERGE
-    #OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
-    OdooImport.import_icons(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH)
+    OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ICONS IMPORT')
