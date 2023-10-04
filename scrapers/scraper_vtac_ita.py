@@ -81,7 +81,7 @@ class ScraperVtacItalia:
                 kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
                 kit_info = {'link': anchor.get_attribute('href'),
-                            'sku': f"{kit_span.find_element(By.TAG_NAME, 'span').text}",
+                            'default_code': Util.get_internal_ref_from_sku(kit_span.find_element(By.TAG_NAME, 'span').text),
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
@@ -99,7 +99,7 @@ class ScraperVtacItalia:
                 acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
                 acces_info = {'link': acces_anchor.get_attribute('href'),
-                              'referencia': Util.get_internal_ref_from_sku(acces_anchor.find_element(By.TAG_NAME, 'b').text),
+                              'default_code': Util.get_internal_ref_from_sku(acces_anchor.find_element(By.TAG_NAME, 'b').text),
                               'cantidad': acces_cantidad.text.split('x')[0]
                               }
 
