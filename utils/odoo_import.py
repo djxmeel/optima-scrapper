@@ -230,7 +230,7 @@ class OdooImport:
                         continue
 
                     for acc in accessories_sku:
-                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['Sku'])])
+                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
 
                         if not existing_acc_ids:
                             new_record_data = {
