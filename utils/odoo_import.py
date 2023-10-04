@@ -1,5 +1,6 @@
 import copy
 import os.path
+import time
 from urllib.error import HTTPError
 
 import odoorpc
@@ -278,7 +279,7 @@ class OdooImport:
                         except:
                             pass
 
-                        attachment_name = f'{sku}_{attachment_name}'
+                        attachment_name = f'VS{int(sku)*2}_{attachment_name}'
 
                         existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
@@ -298,8 +299,13 @@ class OdooImport:
                             attachment_id = attachments_model.create(attachment_data)
                             cls.logger.info(
                                 f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-                        except HTTPError or RPCError:
-                            cls.logger.error(f"ERROR UPLOADING {attachment_name} FOR PRODUCT {sku}")
+                        except TimeoutError:
+                            cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
+                            time.sleep(10)
+                            cls.import_pdfs(list(skus[index:]))
+                        except HTTPError:
+                            cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
+                            continue
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
