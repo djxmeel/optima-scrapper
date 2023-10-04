@@ -235,7 +235,7 @@ class OdooImport:
 
 
     @classmethod
-    def import_pdfs(cls, skus):
+    def import_pdfs(cls, skus, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
@@ -251,6 +251,13 @@ class OdooImport:
         for index, sku in enumerate(skus):
             print(f'{index+1} / {len(skus)}')
             product_ids = product_model.search([('x_sku', '=', sku)])
+
+            if skip_products_w_attachments and product_ids:
+                product_uploaded_attachments = attachments_model.search([('res_id', '=', product_ids[0])])
+
+                if product_uploaded_attachments:
+                    cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
+                    continue
 
             if product_ids:
                 attachment_paths = []
@@ -302,7 +309,7 @@ class OdooImport:
                         except TimeoutError:
                             cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
                             time.sleep(10)
-                            cls.import_pdfs(list(skus[index:]))
+                            cls.import_pdfs(list(skus[index:]), skip_products_w_attachments)
                         except HTTPError:
                             cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                             continue
