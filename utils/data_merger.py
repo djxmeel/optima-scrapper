@@ -271,6 +271,8 @@ class DataMerger:
 
     @classmethod
     def extract_merged_data(cls, data, is_media=False):
+        path = cls.MEDIA_DUMP_PATH_TEMPLATE if is_media else cls.DATA_DUMP_PATH_TEMPLATE
+
         if not data:
             cls.load_all().merge_data()
             data = cls.merged_media if is_media else cls.merged_data
@@ -281,4 +283,4 @@ class DataMerger:
             if index + cls.JSON_DUMP_FREQUENCY > len(data):
                 counter = len(data)
 
-            Util.dump_to_json(data[index:counter], cls.DATA_DUMP_PATH_TEMPLATE.format(counter))
+            Util.dump_to_json(data[index:counter], path.format(counter))
