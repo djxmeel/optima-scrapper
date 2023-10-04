@@ -53,9 +53,9 @@ class DataMerger:
 
     # Fields to rename for common naming between data sources
     FIELDS_RENAMES = {
-        "Código EAN": "Ean",
-        'EAN Código': 'Ean',
-        'ean': 'Ean',
+        "Código EAN": "barcode",
+        'EAN Código': 'barcode',
+        'ean': 'barcode',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la Familia": "Código de familia",
         "Modelo": "Código de familia",

@@ -9,7 +9,6 @@ import base64
 from odoorpc.error import RPCError
 from utils.util import Util
 
-
 class OdooImport:
     logger = None
 
@@ -40,6 +39,16 @@ class OdooImport:
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'Sku')
 
+    # Invoice policy (delivery ; order)
+    CURRENT_INVOICE_POLICY = 'delivery'
+
+    # Product type (consu ; service ; product)
+    PRODUCT_DETAILED_TYPE = 'product'
+
+    # Product category (not eshop)
+    PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
+
+    PRODUCT_INTERNAL_CATEGORY_ID = odoo.env['product.category'].search([('name', '=', PRODUCT_INTERNAL_CATEGORY)])
 
     @classmethod
     def create_attributes_and_values(cls, attributes_values):
@@ -133,6 +142,18 @@ class OdooImport:
             for product in products:
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
+
+                # Invoicing policy (always the same)
+                product['invoice_policy'] = cls.CURRENT_INVOICE_POLICY
+
+                # Product type (always the same)
+                product['detailed_type'] = cls.PRODUCT_DETAILED_TYPE
+
+                if cls.PRODUCT_INTERNAL_CATEGORY_ID:
+                    product['categ_id'] = cls.PRODUCT_INTERNAL_CATEGORY
+                else:
+                    cls.logger.warn("CATEGORY NOT FOUND IN ODOO")
+
 
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
