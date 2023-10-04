@@ -32,12 +32,15 @@ class OdooImport:
     MEDIA_MODEL = odoo.env['product.image']
     PRODUCT_MODEL = odoo.env['product.template']
 
+    PRODUCT_PUBLIC_CATEGORIES_MODEL = odoo.env['product.public.category']
+    PRODUCT_INTERNAL_CATEGORY_MODEL = odoo.env['product.category']
+
     PRODUCT_PDF_DIRS = {'es': 'data/vtac_spain/PRODUCT_PDF/',
                         'uk': 'data/vtac_uk/PRODUCT_PDF/',
                         'ita': 'data/vtac_italia/PRODUCT_PDF/'}
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'Sku')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'Sku', 'public_categories')
 
     # Invoice policy (delivery ; order)
     CURRENT_INVOICE_POLICY = 'delivery'
@@ -47,8 +50,6 @@ class OdooImport:
 
     # Product category (not eshop)
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
-
-    PRODUCT_INTERNAL_CATEGORY_ID = odoo.env['product.category'].search([('name', '=', PRODUCT_INTERNAL_CATEGORY)])
 
     @classmethod
     def create_attributes_and_values(cls, attributes_values):
@@ -132,12 +133,12 @@ class OdooImport:
     def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
+        product_internal_category_id = cls.PRODUCT_INTERNAL_CATEGORY_MODEL.search([('name', '=', cls.PRODUCT_INTERNAL_CATEGORY)])
+
         for file_path in sorted(file_list):
             products = Util.load_json_data(file_path)
 
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file_path}')
-
-            product_model = cls.PRODUCT_MODEL
 
             for product in products:
                 counter += 1
@@ -149,8 +150,8 @@ class OdooImport:
                 # Product type (always the same)
                 product['detailed_type'] = cls.PRODUCT_DETAILED_TYPE
 
-                if cls.PRODUCT_INTERNAL_CATEGORY_ID:
-                    product['categ_id'] = cls.PRODUCT_INTERNAL_CATEGORY
+                if product_internal_category_id:
+                    product['categ_id'] = product_internal_category_id[0]
                 else:
                     cls.logger.warn("CATEGORY NOT FOUND IN ODOO")
 
@@ -175,7 +176,7 @@ class OdooImport:
                 if not product_ids:
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
-                    product_id = product_model.create(product)
+                    product_id = cls.PRODUCT_MODEL.create(product)
                     cls.logger.info(f'Created product {sku} with origin URL : {url}')
 
                     cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
@@ -196,6 +197,26 @@ class OdooImport:
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
+
+    @classmethod
+    def import_public_categories(cls, target_dir_path):
+        # TODO TEST public categories
+        file_list = Util.get_all_files_in_directory(target_dir_path)
+
+        for file_path in sorted(file_list):
+            products = Util.load_json_data(file_path)
+
+            # Iterate over the products
+            for product in products:
+                public_categ_ids = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', product['public_categories'])])
+                product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
+
+                if product_ids and public_categ_ids:
+                    cls.PRODUCT_MODEL.write(product_ids, {'public_categ_ids': public_categ_ids})
+                    cls.logger.info(F"{product['default_code']} : ASSIGNED CATEGORY {product['public_categories']}")
+                else:
+                    cls.logger.warn(F"{product['default_code']} OR CATEGORY {product['public_categories']} NOT FOUND IN ODOO")
+
     # TODO TEST accessory appearance in desc
     @classmethod
     def import_accessories(cls, target_dir_path):
@@ -203,7 +224,6 @@ class OdooImport:
 
         # Get the product template object
         acc_model = cls.odoo.env['x_accesorios_productos']
-        desc_extension = '<h2>Accesorios incluidos</h2><ul>'
 
         # Delete all accessory model records
         # acc_model.unlink(acc_model.search([]))
@@ -213,6 +233,7 @@ class OdooImport:
 
             # Iterate over the products
             for product in products:
+                desc_extension = '<h2>Accesorios incluidos</h2><ul>'
                 accessories_sku = []
 
                 if 'accesorios' in product and product['accesorios']:
@@ -229,12 +250,13 @@ class OdooImport:
                         cls.logger.info(f'SKU: {product["Sku"]} NOT FOUND IN ODOO')
                         continue
 
+                    # TODO adapt accessorios model in ODOO to take in default_code
                     for acc in accessories_sku:
-                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_sku', '=', acc['sku'])])
+                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_default_code', '=', acc['default_code'])])
 
                         if not existing_acc_ids:
                             new_record_data = {
-                                'x_referencia': acc['referencia'],
+                                'x_default_code': acc['default_code'],
                                 'x_producto': main_product_id,
                                 'x_cantidad': acc['cantidad']
                             }
@@ -243,7 +265,7 @@ class OdooImport:
                                 new_record_id = acc_model.create(new_record_data)
                                 cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
 
-                                desc_extension += f'<li>Referencia: {new_record_data["x_referencia"]}  Cantidad: {new_record_data["x_cantidad"]}</li>'
+                                desc_extension += f'<li>Referencia: {new_record_data["x_default_code"]}  Cantidad: {new_record_data["x_cantidad"]}</li>'
 
                             except RPCError:
                                 cls.logger.info(f'{product["Sku"]} ERROR CREATING ACCESORIO')
