@@ -14,6 +14,8 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_PRODUCTS = False
 IF_SKIP_ATTRS_OF_EXISTING = False
 
+IF_IMPORT_PUBLIC_CATEGORIES = False
+
 # TODO REMERGE WITH NEW PRIOS THEN TEST
 IF_IMPORT_ACC = False
 
@@ -35,6 +37,11 @@ if IF_IMPORT_FIELDS:
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
     OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, skip_attrs_of_existing=IF_SKIP_ATTRS_OF_EXISTING)
+    OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
+
+if IF_IMPORT_PUBLIC_CATEGORIES:
+    OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
+    OdooImport.import_public_categories(TARGET_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
