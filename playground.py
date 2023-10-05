@@ -5,11 +5,11 @@ import odoorpc
 
 from utils.data_merger import DataMerger
 
-odoo_host = 'trialdb2.odoo.com'
+odoo_host = 'trialdb-final.odoo.com'
 odoo_protocol = 'jsonrpc+ssl'
 odoo_port = '443'
 
-odoo_db = 'trialdb2'
+odoo_db = 'trialdb-final'
 odoo_login = 'itprotrial@outlook.com'
 odoo_pass = 'itprotrial'
 
@@ -74,7 +74,3 @@ def field_update():
 
     print(f"Updated {len(product_ids)} products.")
 
-
-process_files(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, 'sku', 'Sku')
-process_files(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, 'EAN', 'Ean')
-process_files(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH, 'Modelo', 'Código de familia')
