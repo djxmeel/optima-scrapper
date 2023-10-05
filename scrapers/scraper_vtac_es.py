@@ -86,10 +86,8 @@ class ScraperVtacSpain:
         else:
             item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
-        except:
-            return None
+        item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
+
 
         # Extracción de la etiqueta energética
         # try:
