@@ -14,17 +14,15 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_PRODUCTS = False
 IF_SKIP_ATTRS_OF_EXISTING = False
 
-IF_IMPORT_PUBLIC_CATEGORIES = False
-
 # TODO REMERGE WITH NEW PRIOS THEN TEST
 IF_IMPORT_ACC = False
 
-IF_IMPORT_PDFS = True
-SKIP_PRODUCTS_W_ATTACHMENTS = True
+IF_IMPORT_PDFS = False
+SKIP_PRODUCTS_W_ATTACHMENTS = False
 
-IF_IMPORT_IMGS = False
+IF_IMPORT_IMGS = True
 
-IF_IMPORT_ICONS = False
+IF_IMPORT_ICONS = True
 
 OdooImport.logger = Loggers.setup_odoo_import_logger()
 
@@ -39,11 +37,6 @@ if IF_IMPORT_PRODUCTS:
     OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, skip_attrs_of_existing=IF_SKIP_ATTRS_OF_EXISTING)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
-if IF_IMPORT_PUBLIC_CATEGORIES:
-    OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    OdooImport.import_public_categories(TARGET_DATA_DIR_PATH)
-    OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
-
 if IF_IMPORT_ACC:
     OdooImport.logger.info(f'BEGINNING ACCESSORIES IMPORT')
     OdooImport.import_accessories(TARGET_DATA_DIR_PATH)
@@ -56,7 +49,7 @@ if IF_IMPORT_PDFS:
 
 if IF_IMPORT_IMGS:
     OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    OdooImport.import_imgs(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
+    OdooImport.import_imgs_videos(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED IMGS IMPORT')
 
 if IF_IMPORT_ICONS:

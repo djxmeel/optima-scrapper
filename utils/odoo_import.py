@@ -274,25 +274,6 @@ class OdooImport:
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
-    @classmethod
-    def import_public_categories(cls, target_dir_path):
-        # TODO TEST public categories
-        file_list = Util.get_all_files_in_directory(target_dir_path)
-
-        for file_path in sorted(file_list):
-            products = Util.load_json_data(file_path)
-
-            # Iterate over the products
-            for product in products:
-                public_categ_ids = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', product['public_categories'])])
-                product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
-
-                if product_ids and public_categ_ids:
-                    cls.PRODUCT_MODEL.write(product_ids, {'public_categ_ids': public_categ_ids})
-                    cls.logger.info(F"{product['default_code']} : ASSIGNED CATEGORY {product['public_categories']}")
-                else:
-                    cls.logger.warn(F"{product['default_code']} OR CATEGORY {product['public_categories']} NOT FOUND IN ODOO")
-
     # TODO TEST accessory appearance in desc
     @classmethod
     def import_accessories(cls, target_dir_path):
@@ -326,7 +307,6 @@ class OdooImport:
                         cls.logger.info(f'SKU: {product["Sku"]} NOT FOUND IN ODOO')
                         continue
 
-                    # TODO adapt accessorios model in ODOO to take in default_code
                     for acc in accessories_sku:
                         existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_default_code', '=', acc['default_code'])])
 
@@ -435,9 +415,9 @@ class OdooImport:
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
-
+    # TODO use default_code after rescraping for imgs & icons
     @classmethod
-    def import_imgs(cls, target_dir_path, uploaded_dir_path):
+    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
@@ -448,7 +428,7 @@ class OdooImport:
                     cls.logger.info(f'{product["Sku"]}: FOUND {len(product["imgs"])} IMAGES')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'][2:])])
 
                     if product_ids:
                         # write/overwrite the image to the product
@@ -534,7 +514,7 @@ class OdooImport:
                     cls.logger.info(f'{product["Sku"]} icons: {len(product["icons"])}')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
+                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'][2:])])
 
                     if product_ids:
                         image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])

@@ -21,7 +21,7 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 5
+    JSON_DUMP_FREQUENCY = 10
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
@@ -60,7 +60,7 @@ class Util:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
 
-
+    # TODO use default_code instead of sku
     @staticmethod
     def get_products_media(products_data, scraper):
         products_media = []
