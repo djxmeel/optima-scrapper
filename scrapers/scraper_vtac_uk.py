@@ -139,7 +139,7 @@ class ScraperVtacUk:
                                                                           '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{item["Sku"]}] {item["name"]}'
+        item['name'] = f'[{item["default_code"]}] {item["name"]}'
 
         # Extracción de imágenes
         try:
