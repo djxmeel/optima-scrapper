@@ -41,7 +41,8 @@ class DataMerger:
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
         'website_description': ('es', 'uk'),
-        'accesorios': ('ita')
+        'accesorios': ('ita'),
+        'public_categories': ('es')
     }
 
     MEDIA_FIELDS_PRIORITIES = {
