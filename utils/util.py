@@ -179,7 +179,7 @@ class Util:
         Returns:
         list: A list of data loaded from the JSON file.
         """
-        with open(file_path) as file:
+        with open(file_path, encoding='utf-8') as file:
             return json.load(file)
 
 
