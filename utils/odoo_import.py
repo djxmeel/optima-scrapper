@@ -62,32 +62,40 @@ class OdooImport:
         except RPCError:
             return None
 
-    @classmethod
-    def assign_invoice_policy(cls, product_id, invoice_policy):
-        try:
-            cls.PRODUCT_MODEL.write(product_id, {'invoice_policy': invoice_policy})
-        except RPCError:
-            cls.logger.warn("INVOICE POLICY WAS NOT UPDATED TO 'Delivered quantities'")
 
+    # Currently done with EXCEL file
     @classmethod
-    def assign_detailed_type(cls, product_id, detailed_type):
-        try:
-            cls.PRODUCT_MODEL.write(product_id, {'detailed_type': detailed_type})
-        except RPCError:
-            cls.logger.warn("DETAILED TYPE WAS NOT UPDATED TO 'Storable product'")
-
+    def create_public_categories(cls, public_categories):
+        pass
 
     @classmethod
-    def assign_internal_category(cls, product_id, product_internal_category):
-        product_internal_category_id = cls.PRODUCT_INTERNAL_CATEGORY_MODEL.search([('name', '=', product_internal_category)])
+    def assign_public_categories(cls, product_id, product):
+        if 'public_categories' in product:
+            # CATEGORY TREE FORMAT "PARENT1 / PARENT2 / CATEG"
+            categ_ids = []
 
-        if not product_internal_category_id:
-            cls.logger.warn("INTERNAL CATEGORY NOT FOUND IN ODOO")
-            product_internal_category_id = [cls.create_internal_category(product_internal_category)]
-            cls.logger.info(f"CREATED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
+            for category_tree in product['public_categories']:
+                categories = [cat.strip() for cat in category_tree.split("/")]
+                categ_name = categories[-1]
 
-        cls.PRODUCT_MODEL.write(product_id, {'categ_id': product_internal_category_id[0]})
-        cls.logger.info(f"ASSIGNED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
+                if len(categories) > 1:
+                    parent_categ = categories[-2]
+                    parent_categ_ids = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', parent_categ)])
+                    if parent_categ_ids:
+                        categ_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', categ_name), ('parent_id', '=', parent_categ_ids[0])])
+                        if categ_id:
+                            categ_ids.append(categ_id[0])
+                else:
+                    categ_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', categ_name)])
+                    if categ_id:
+                        categ_ids.append(categ_id[0])
+
+            try:
+                if categ_ids:
+                    cls.PRODUCT_MODEL.write(product_id, {'public_categ_ids': categ_ids})
+                    cls.logger.info(f"ASSIGNED Public categories {categ_ids} to product {product['name']}")
+            except RPCError:
+                cls.logger.warn(f"Public categories {categ_ids} not assigned to product {product['name']}")
 
 
     @classmethod
@@ -95,7 +103,7 @@ class OdooImport:
         created_attrs_values_ids = {}
 
         for name, value in attributes_values.items():
-            existing_attr_ids  = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
+            existing_attr_ids = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
 
             # Skip empty values
             if str(value).strip() == '':
@@ -137,6 +145,34 @@ class OdooImport:
 
 
     @classmethod
+    def assign_invoice_policy(cls, product_id, invoice_policy):
+        try:
+            cls.PRODUCT_MODEL.write(product_id, {'invoice_policy': invoice_policy})
+        except RPCError:
+            cls.logger.warn("INVOICE POLICY WAS NOT UPDATED TO 'Delivered quantities'")
+
+    @classmethod
+    def assign_detailed_type(cls, product_id, detailed_type):
+        try:
+            cls.PRODUCT_MODEL.write(product_id, {'detailed_type': detailed_type})
+        except RPCError:
+            cls.logger.warn("DETAILED TYPE WAS NOT UPDATED TO 'Storable product'")
+
+
+    @classmethod
+    def assign_internal_category(cls, product_id, product_internal_category):
+        product_internal_category_id = cls.PRODUCT_INTERNAL_CATEGORY_MODEL.search([('name', '=', product_internal_category)])
+
+        if not product_internal_category_id:
+            cls.logger.warn("INTERNAL CATEGORY NOT FOUND IN ODOO")
+            product_internal_category_id = [cls.create_internal_category(product_internal_category)]
+            cls.logger.info(f"CREATED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
+
+        cls.PRODUCT_MODEL.write(product_id, {'categ_id': product_internal_category_id[0]})
+        cls.logger.info(f"ASSIGNED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
+
+
+    @classmethod
     def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
         attr_lines = []
 
@@ -170,7 +206,7 @@ class OdooImport:
 
     # TODO get internal refs without necessarily rescraping
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -182,9 +218,6 @@ class OdooImport:
             for product in products:
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
-
-                # Product type (always the same)
-                product['detailed_type'] = cls.PRODUCT_DETAILED_TYPE
 
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
@@ -213,6 +246,7 @@ class OdooImport:
                     cls.assign_invoice_policy(product_id,cls.CURRENT_INVOICE_POLICY)
                     cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
                     cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
+                    cls.assign_public_categories(product_id, product_copy)
                 else:
                     product_id = product_ids[0]
                     cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
@@ -226,6 +260,8 @@ class OdooImport:
                         cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
                     if update_detailed_type:
                         cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
+                    if update_public_categories:
+                        cls.assign_public_categories(product_id, product_copy)
 
                 cls.logger.info(f"PROCESSED : {counter} products\n")
 
