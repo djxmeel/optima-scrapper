@@ -26,18 +26,18 @@ class ScraperVtacSpain:
         'https://v-tac.es/el%C3%A9ctrico.html',
     )
 
-    PRODUCTS_INFO_PATH = 'data/vtac_es/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_es/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_es/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_spain/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_spain/PRODUCT_PDF'
 
-    PRODUCTS_LINKS_PATH = 'data/vtac_es/LINKS/PRODUCTS_LINKS_ES.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_es/LINKS/NEW_PRODUCTS_LINKS_ES.json'
+    PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_es/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_es/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_es/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_es/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     @classmethod
     def instantiate_driver(cls):
@@ -64,6 +64,16 @@ class ScraperVtacSpain:
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'public_categories': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
+
+        # Extracción de las categorías del producto
+        categories_crumbs = driver.find_elements(By.CLASS_NAME, "breadcrumb-item")
+        categories = ""
+
+        # Ignore last crumb (product name)
+        for crumb in categories_crumbs[:-1]:
+            categories += f'{crumb.text} / '
+
+        item["public_categories"].append(categories[:-3])
 
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
@@ -135,7 +145,7 @@ class ScraperVtacSpain:
             pass
 
         # Extracción del título
-        item['name'] = f'[{item["Sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{item["default_code"]}] {driver.find_element(By.XPATH, name_xpath).text}'
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():

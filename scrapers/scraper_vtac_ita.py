@@ -25,19 +25,19 @@ class ScraperVtacItalia:
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     )
 
-    PRODUCTS_INFO_PATH = 'data/vtac_ita/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_ita/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_ita/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_italia/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_italia/PRODUCT_PDF'
 
-    PRODUCTS_LINKS_PATH = 'data/vtac_ita/LINKS/PRODUCTS_LINKS_ITA.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_ita/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
+    PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
 
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_ita/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_ita/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_ita/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_ita/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
 
     @classmethod
