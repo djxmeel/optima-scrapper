@@ -237,7 +237,6 @@ class Util:
 
         return loaded_data
 
-
     @staticmethod
     def get_unique_skus_from_dir(directory):
          return set(product['Sku'] for product in Util.load_data_in_dir(directory))
@@ -245,7 +244,6 @@ class Util:
     @staticmethod
     def get_unique_refs_from_dir(directory):
         return set(product['default_code'] for product in Util.load_data_in_dir(directory))
-
 
     @staticmethod
     def get_unique_refs_from_dictionary(dictionary):

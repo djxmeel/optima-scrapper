@@ -14,9 +14,10 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_PRODUCTS = False
 IF_SKIP_ATTRS_OF_EXISTING = False
 
-IF_IMPORT_ACC = True
+IF_IMPORT_ACC = False
 
-IF_IMPORT_PDFS = False
+# TODO TEST
+IF_IMPORT_PDFS = True
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_IMGS = False
@@ -43,7 +44,7 @@ if IF_IMPORT_ACC:
 
 if IF_IMPORT_PDFS:
     OdooImport.logger.info(f'BEGINNING PDFS IMPORT')
-    OdooImport.import_pdfs(Util.get_unique_refs_from_dir(TARGET_DATA_DIR_PATH), SKIP_PRODUCTS_W_ATTACHMENTS)
+    OdooImport.import_pdfs(SKIP_PRODUCTS_W_ATTACHMENTS)
     OdooImport.logger.info(f'FINISHED PDFS IMPORT')
 
 if IF_IMPORT_IMGS:

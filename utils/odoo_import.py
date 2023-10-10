@@ -330,9 +330,11 @@ class OdooImport:
 
 
     @classmethod
-    def import_pdfs(cls, refs, skip_products_w_attachments=False):
+    def import_pdfs(cls, start_from=0, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
+
+        refs_in_odoo = [p.default_code for p in product_model.browse(product_model.search([]))]
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         ref_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
@@ -348,73 +350,69 @@ class OdooImport:
         ref_list_uk = [f'VS{int(sku) * 2}' for sku in ref_list_uk]
         ref_list_ita = [f'VS{int(sku) * 2}' for sku in ref_list_ita]
 
-        for index, ref in enumerate(refs):
-            print(f'{index+1} / {len(refs)}')
-            product_ids = product_model.search([('default_code', '=', ref)])
+        for index, ref in enumerate(refs_in_odoo[start_from:]):
+            print(f'{index+1} / {len(refs_in_odoo[start_from:])}')
 
-            if skip_products_w_attachments and product_ids:
-                product_uploaded_attachments = attachments_model.search([('res_id', '=', product_ids[0])])
+            if skip_products_w_attachments:
+                product_uploaded_attachments = attachments_model.search([('res_id', '=', ref)])
 
                 if product_uploaded_attachments:
                     cls.logger.warn(f"SKIPPING {ref} BECAUSE IT HAS ATTACHMENTS UPLOADED")
                     continue
 
-            if product_ids:
-                attachment_paths = []
+            attachment_paths = []
 
-                if ref in ref_list_es:
-                    attachment_paths = Util.get_all_files_in_directory(
-                        directory_list_es[ref_list_es.index(ref)])
-                elif ref in ref_list_uk:
-                    attachment_paths = Util.get_all_files_in_directory(
-                        directory_list_uk[ref_list_uk.index(ref)])
-                elif ref in ref_list_ita:
-                    attachment_paths = Util.get_all_files_in_directory(
-                        directory_list_ita[ref_list_ita.index(ref)])
+            if ref in ref_list_es:
+                attachment_paths = Util.get_all_files_in_directory(
+                    directory_list_es[ref_list_es.index(ref)])
+            elif ref in ref_list_uk:
+                attachment_paths = Util.get_all_files_in_directory(
+                    directory_list_uk[ref_list_uk.index(ref)])
+            elif ref in ref_list_ita:
+                attachment_paths = Util.get_all_files_in_directory(
+                    directory_list_ita[ref_list_ita.index(ref)])
 
-                if attachment_paths:
-                    cls.logger.info(f"{ref}: UPLOADING {len(attachment_paths)} FILES")
-                    for attachment_path in attachment_paths:
-                        with open(attachment_path, 'rb') as file:
-                            pdf_binary_data = file.read()
-                            encoded_data = base64.b64encode(pdf_binary_data).decode()
+            if attachment_paths:
+                cls.logger.info(f"{ref}: UPLOADING {len(attachment_paths)} FILES")
+                for attachment_path in attachment_paths:
+                    with open(attachment_path, 'rb') as file:
+                        pdf_binary_data = file.read()
+                        encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                        attachment_name = attachment_path.split('\\')[-1]
+                    attachment_name = attachment_path.split('\\')[-1]
 
-                        try:
-                            attachment_name = Util.translate_from_to_spanish('detect', attachment_name)
-                        except:
-                            pass
+                    try:
+                        attachment_name = Util.translate_from_to_spanish('detect', attachment_name)
+                    except:
+                        pass
 
-                        attachment_name = f'{ref}_{attachment_name}'
+                    attachment_name = f'{ref}_{attachment_name}'
 
-                        existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
+                    existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', ref)])
 
-                        if existing_attachment:
-                            cls.logger.info(f'{ref}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
-                            continue
+                    if existing_attachment:
+                        cls.logger.info(f'{ref}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                        continue
 
-                        attachment_data = {
-                            'name': attachment_name,
-                            'datas': encoded_data,
-                            'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                            'res_id': product_ids[0], # ID of the record of the above model you want to link the attachment to (optional)
-                            'type': 'binary',
-                        }
+                    attachment_data = {
+                        'name': attachment_name,
+                        'datas': encoded_data,
+                        'res_model': 'product.template',  # Model you want to link the attachment to (optional)
+                        'res_id': ref, # ID of the record of the above model you want to link the attachment to (optional)
+                        'type': 'binary',
+                    }
 
-                        try:
-                            attachment_id = attachments_model.create(attachment_data)
-                            cls.logger.info(
-                                f'{ref}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-                        except TimeoutError:
-                            cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {ref}")
-                            time.sleep(10)
-                            cls.import_pdfs(list(refs[index:]), skip_products_w_attachments)
-                        except HTTPError:
-                            cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
-                            continue
-            else:
-                cls.logger.warn(f'{ref} : NOT FOUND IN ODOO')
+                    try:
+                        attachment_id = attachments_model.create(attachment_data)
+                        cls.logger.info(
+                            f'{ref}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+                    except TimeoutError:
+                        cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {ref}")
+                        time.sleep(10)
+                        cls.import_pdfs(start_from, skip_products_w_attachments)
+                    except HTTPError:
+                        cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
+                        continue
 
 
     @classmethod
