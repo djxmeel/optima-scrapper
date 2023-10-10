@@ -3,6 +3,9 @@ import os
 
 import odoorpc
 
+from scrapers.scraper_vtac_es import ScraperVtacSpain
+from scrapers.scraper_vtac_ita import ScraperVtacItalia
+from scrapers.scraper_vtac_uk import ScraperVtacUk
 from utils.data_merger import DataMerger
 
 odoo_host = 'trialdb-final.odoo.com'
@@ -47,6 +50,37 @@ def process_files(directory, old_key, new_key):
             print(f"Processed {file_path}")
 
 
+def process_sku_to_ref(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith('.json'):
+            file_path = os.path.join(directory, filename)
+
+            with open(file_path, 'r') as f:
+                print(f"OPENING {file_path}")
+                data = json.load(f)
+
+            # Check if the old key exists and rename it
+            for product in data:
+                if 'Sku' in product:
+                    try:
+                        if not product["Sku"].__contains("VS"):
+                            new_sku = int(product["Sku"])
+                        else:
+                            new_sku = int(product["Sku"][2:])
+                    except ValueError:
+                        product['default_code'] = f'VS{product["Sku"]}'
+                        continue
+
+                    product['default_code'] = f'VS{new_sku * 2}'
+                    product['Sku'] = str(new_sku)
+                else:
+                    product["Sku"] = str(product["Sku"])
+
+            with open(file_path, 'w') as f:
+                json.dump(data, f)
+
+            print(f"Processed {file_path}")
+
 def field_update():
     product_ids = product_model.search([])
 
@@ -74,3 +108,11 @@ def field_update():
 
     print(f"Updated {len(product_ids)} products.")
 
+# process_sku_to_ref(ScraperVtacSpain.PRODUCTS_INFO_PATH)
+process_sku_to_ref(ScraperVtacSpain.PRODUCTS_MEDIA_PATH)
+
+# process_sku_to_ref(ScraperVtacUk.PRODUCTS_INFO_PATH)
+# process_sku_to_ref(ScraperVtacUk.PRODUCTS_MEDIA_PATH)
+#
+# process_sku_to_ref(ScraperVtacItalia.PRODUCTS_INFO_PATH)
+# process_sku_to_ref(ScraperVtacItalia.PRODUCTS_MEDIA_PATH)
