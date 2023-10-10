@@ -201,10 +201,9 @@ class OdooImport:
             cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
             return
 
-        cls.logger.info(f"FINISHED ASSIGNING {product['Sku']} ATTRIBUTES")
+        cls.logger.info(f"FINISHED ASSIGNING {product['default_code']} ATTRIBUTES")
 
 
-    # TODO get internal refs without necessarily rescraping
     @classmethod
     def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -217,13 +216,12 @@ class OdooImport:
 
             for product in products:
                 counter += 1
-                product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
+                product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
 
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
                 product_copy = copy.deepcopy(product)
 
-                sku = product["Sku"]
                 url = product["url"]
 
                 for key in temp_keys:
@@ -240,7 +238,7 @@ class OdooImport:
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
                     product_id = cls.PRODUCT_MODEL.create(product)
-                    cls.logger.info(f'Created product {sku} with origin URL : {url}')
+                    cls.logger.info(f'Created product {product["default_code"]} with origin URL : {url}')
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_invoice_policy(product_id,cls.CURRENT_INVOICE_POLICY)
@@ -249,7 +247,7 @@ class OdooImport:
                     cls.assign_public_categories(product_id, product_copy)
                 else:
                     product_id = product_ids[0]
-                    cls.logger.info(f'Product {sku} already exists in Odoo with id {product_ids[0]}')
+                    cls.logger.info(f'Product {product["default_code"]} already exists in Odoo with id {product_ids[0]}')
 
                     if not skip_attrs_of_existing:
                         created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
@@ -332,7 +330,7 @@ class OdooImport:
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
 
 
-
+    #TODO default_code for pdfs instead of sku
     @classmethod
     def import_pdfs(cls, skus, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
@@ -415,7 +413,7 @@ class OdooImport:
             else:
                 cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
 
-    # TODO use default_code after rescraping for imgs & icons
+
     @classmethod
     def import_imgs_videos(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -425,10 +423,10 @@ class OdooImport:
 
             for product in products:
                 if 'imgs' in product:
-                    cls.logger.info(f'{product["Sku"]}: FOUND {len(product["imgs"])} IMAGES')
+                    cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'][2:])])
+                    product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
 
                     if product_ids:
                         # write/overwrite the image to the product
@@ -457,13 +455,13 @@ class OdooImport:
                                     try:
                                         # Create the new product.image record
                                         cls.MEDIA_MODEL.create(new_image)
-                                        cls.logger.info(f'{product["Sku"]}: UPLOADED IMAGE with name : {name}')
+                                        cls.logger.info(f'{product["default_code"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
-                                        cls.logger.info(f'{product["Sku"]}: ERROR UPLOADING IMAGE with name : {name} *{RPCError}*')
+                                        cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name} *{RPCError}*')
                                 else:
-                                    cls.logger.info(f'{product["Sku"]}: Image already exists')
+                                    cls.logger.info(f'{product["default_code"]}: Image already exists')
 
-                            cls.logger.info(f"{product['Sku']}:FINISHED UPLOADING IMAGES")
+                            cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING IMAGES")
 
                             videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
                             videos = cls.MEDIA_MODEL.browse(videos)
@@ -486,14 +484,14 @@ class OdooImport:
                                         except RPCError:
                                             pass
                                     else:
-                                        cls.logger.info(f'{product["Sku"]}: Video already exists')
+                                        cls.logger.info(f'{product["default_code"]}: Video already exists')
 
-                                cls.logger.info(f"{product['Sku']}:FINISHED UPLOADING VIDEOS")
+                                cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
                     else:
-                        cls.logger.warn(f'{product["Sku"]} : PRODUCT NOT FOUND IN ODOO')
+                        cls.logger.warn(f'{product["default_code"]} : PRODUCT NOT FOUND IN ODOO')
 
                 else:
-                    cls.logger.warn(f'{product["Sku"]} HAS NO IMAGES!')
+                    cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
@@ -511,10 +509,10 @@ class OdooImport:
 
             for product in products:
                 if 'icons' in product:
-                    cls.logger.info(f'{product["Sku"]} icons: {len(product["icons"])}')
+                    cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
 
                     # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'][2:])])
+                    product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
 
                     if product_ids:
                         image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
@@ -537,7 +535,7 @@ class OdooImport:
                                 try:
                                     # Create the new product.image record
                                     cls.MEDIA_MODEL.create(new_image)
-                                    cls.logger.info(f'{product["Sku"]}: UPLOADED ICON with name : {name}')
+                                    cls.logger.info(f'{product["default_code"]}: UPLOADED ICON with name : {name}')
                                 except RPCError:
                                     pass
                             else:
@@ -546,7 +544,7 @@ class OdooImport:
                         cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
 
                 else:
-                    cls.logger.warn(f'{product["Sku"]} HAS NO ICONS!')
+                    cls.logger.warn(f'{product["default_code"]} HAS NO ICONS!')
 
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
