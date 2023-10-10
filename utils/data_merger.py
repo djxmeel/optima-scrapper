@@ -7,7 +7,7 @@ from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 class DataMerger:
     logger = None
-    # TODO SAMSUNG categories malfunc
+
     JSON_DUMP_FREQUENCY = 10
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'

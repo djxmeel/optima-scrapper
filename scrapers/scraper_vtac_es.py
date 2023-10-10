@@ -44,7 +44,7 @@ class ScraperVtacSpain:
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None):
+    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -64,17 +64,9 @@ class ScraperVtacSpain:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        # Extracción de las categorías del producto
-        categories_crumbs = driver.find_elements(By.CLASS_NAME, "breadcrumb-item")
-        categories = ""
+        item["public_categories"] = public_categories
 
-        # Ignore last crumb (product name)
-        for crumb in categories_crumbs[:-1]:
-            categories += f'{crumb.text} / '
-
-        item["public_categories"].append(categories[:-3])
-
-        print(f"CATEG: {item["public_categories"]}")
+        print(f"CATEG: {item['public_categories']}")
 
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
@@ -256,3 +248,16 @@ class ScraperVtacSpain:
                 file.write(response.content)
 
         return len(pdf_elements)
+
+    @classmethod
+    def get_internal_category(cls, link):
+        # Extracción de las categorías del producto
+        cls.DRIVER.get(link)
+        categories_crumbs = cls.DRIVER.find_elements(By.CLASS_NAME, "breadcrumb-item")
+        categories = ""
+
+        # Ignore last crumb (product name)
+        for crumb in categories_crumbs[:-1]:
+            categories += f'{crumb.text} / '
+
+        return categories[:-2].strip()
