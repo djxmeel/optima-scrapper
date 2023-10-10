@@ -7,7 +7,7 @@ from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 class DataMerger:
     logger = None
-
+    # TODO SAMSUNG categories malfunc
     JSON_DUMP_FREQUENCY = 10
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
@@ -53,28 +53,28 @@ class DataMerger:
 
     # Fields to rename for common naming between data sources
     FIELDS_RENAMES = {
-        "Código EAN": "barcode",
-        'EAN Código': 'barcode',
+        "Código ean": "barcode",
+        'Ean código': 'barcode',
         'ean': 'barcode',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
-        "Código de la Familia": "Código de familia",
+        "Código de la familia": "Código de familia",
         "Modelo": "Código de familia",
-        "Eficacia luminosa (lm/W)": "Eficacia luminosa",
-        "Factor de potencia (FP)": "Factor de potencia",
-        "FP": "Factor de potencia",
+        "Eficacia luminosa (lm/w)": "Eficacia luminosa",
+        "Factor de potencia (fp)": "Factor de potencia",
+        "Fp": "Factor de potencia",
         "Flujo luminoso (lm)": "Flujo luminoso",
         "Flujo luminoso/m": "Flujo luminoso",
         "Lúmenes": "Flujo luminoso",
         "Garanzia": "Garantía",
         "Dimensión": "Dimensiones",
-        "Dimensioni (AxLxP)": "Dimensiones",
+        "Dimensioni (axlxp)": "Dimensiones",
         "Nombre de la marca": "Marca",
         'Ángulo de haz°': 'Ángulo de apertura',
         'Ángulo de haz': 'Ángulo de apertura',
         'Haz de luz': 'Ángulo de apertura',
         'Código de producto': 'Código de familia',
         'Las condiciones de trabajo': 'Temperaturas de trabajo',
-        'temperatura de operacion': 'Temperaturas de trabajo',
+        'Temperatura de operacion': 'Temperaturas de trabajo',
         'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
         'sku': 'Sku',
         'SKU': 'Sku',
@@ -82,21 +82,21 @@ class DataMerger:
         'Larga vida': 'Vida útil',
         'Durata': 'Vida útil',
         'Grado de protección': 'Protección IP',
-        'Clasificación del IP': 'Protección IP',
+        'Clasificación del ip': 'Protección IP',
         'Fuerza': 'Potencia',
-        'IK Rating': 'Grado de protección IK',
+        'Ik rating': 'Grado de protección IK',
         'Tamaño de la batería': 'Batería',
         'Capacidad de la batería': 'Tipo de batería',
         'Capacidad': 'Tipo de batería',
-        'Tipo de chip LED': 'Tipo LED',
-        'Chip LED': 'Tipo LED',
+        'Tipo de chip led': 'Tipo LED',
+        'Chip led': 'Tipo LED',
         'Clase de eficiencia': 'Clase de eficiencia energética',
         'Etiqueta de calificación energética': 'Clase de eficiencia energética',
         'Casquillo': 'Tipo casquillo',
         'Base': 'Tipo casquillo',
         'Ataque': 'Tipo casquillo',
         'Marca del conductor': 'Marca del Driver',
-        'Temperatura de color (CTI)': 'Temperatura del color',
+        'Temperatura de color (cti)': 'Temperatura del color',
         'Temperatura de color': 'Temperatura del color',
         'Color de la unidad': 'Color',
         'Color del cuerpo': 'Color',
@@ -182,13 +182,13 @@ class DataMerger:
         return cls.load_data_for_country(country)
 
     @classmethod
-    def get_product_data_from_country_sku(cls, sku, country, only_media= False):
+    def get_product_data_from_country_ref(cls, ref, country, only_media= False):
         data = cls.country_data[country]
         if only_media:
             data = cls.country_media[country]
 
         for product in data:
-            if product["Sku"] == sku:
+            if product["default_code"] == ref:
                 return product
         return None
 
@@ -204,31 +204,31 @@ class DataMerger:
 
     @classmethod
     def merge_data(cls):
-        unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
+        unique_product_refs = Util.get_unique_refs_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
 
-        for sku in unique_product_skus:
-            product_data = {'es': cls.get_product_data_from_country_sku(sku, 'es'),
-                       'uk': cls.get_product_data_from_country_sku(sku, 'uk'),
-                       'ita': cls.get_product_data_from_country_sku(sku, 'ita')}
+        for ref in unique_product_refs:
+            product_data = {'es': cls.get_product_data_from_country_ref(ref, 'es'),
+                       'uk': cls.get_product_data_from_country_ref(ref, 'uk'),
+                       'ita': cls.get_product_data_from_country_ref(ref, 'ita')}
 
-            product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
-                            'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
-                            'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
+            product_media = {'es': cls.get_product_data_from_country_ref(ref, 'es', True),
+                            'uk': cls.get_product_data_from_country_ref(ref, 'uk', True),
+                            'ita': cls.get_product_data_from_country_ref(ref, 'ita', True)}
 
-            # Add empty spaces to SKU to make it 8 characters long for better readability
-            sku += ' ' * (8 - len(sku))
+            # Add empty spaces to ref to make it 8 characters long for better readability
+            ref += ' ' * (8 - len(ref))
 
-            cls.logger.info(f'\n{sku} : ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
+            cls.logger.info(f'\n{ref} : ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
 
             merged_product = {}
-            merged_media = {"Sku": sku}
+            merged_media = {"default_code": ref}
 
             # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:
                 # Stop at first found in priority order
                 if product_data[country] is not None:
                     merged_product = copy.deepcopy(product_data[country])
-                    cls.logger.info(f'{sku}: DEFAULT -> {country}')
+                    cls.logger.info(f'{ref}: DEFAULT -> {country}')
                     break
 
             # Then, merge fields from other countries in priority order
@@ -239,10 +239,10 @@ class DataMerger:
                     if product_data.get(country) and product_data[country].get(field) and product_data[country][field]:
                         if type(product_data[country][field]) is list:
                             merged_product[field] = copy.deepcopy(product_data[country][field])
-                            cls.logger.info(f'{sku}: MERGE {country} -> {field}')
+                            cls.logger.info(f'{ref}: MERGE {country} -> {field}')
                             break
                         merged_product[field] = product_data[country][field]
-                        cls.logger.info(f'{sku}: MERGE {country} -> {field}')
+                        cls.logger.info(f'{ref}: MERGE {country} -> {field}')
                         break
 
             # Then, merge MEDIA fields in priority order
@@ -251,10 +251,10 @@ class DataMerger:
                     if product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
                         if type(product_media[country][field]) is list:
                             merged_media[field] = copy.deepcopy(product_media[country][field])
-                            cls.logger.info(f'{sku}: MERGE {country} -> {field}')
+                            cls.logger.info(f'{ref}: MERGE {country} -> {field}')
                             break
                         merged_media[field] = product_media[country][field]
-                        cls.logger.info(f'{sku}: MERGE {country} -> {field}')
+                        cls.logger.info(f'{ref}: MERGE {country} -> {field}')
                         break
 
             for field_country in cls.COUNTRY_FIELDS_ALWAYS_KEEP:
@@ -263,7 +263,7 @@ class DataMerger:
                         field_to_keep = product_data[field_country['country']][field_country['field']]
                         if field_to_keep and merged_product[field_country['field']] is not field_to_keep:
                             merged_product[field_country['field']] += field_to_keep
-                            cls.logger.info(f'{sku}: KEEP {field_country["country"]} -> {field_country["field"]}')
+                            cls.logger.info(f'{ref}: KEEP {field_country["country"]} -> {field_country["field"]}')
                 except KeyError:
                     pass
 
