@@ -74,6 +74,8 @@ class ScraperVtacSpain:
 
         item["public_categories"].append(categories[:-3])
 
+        print(f"CATEG: {item["public_categories"]}")
+
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
 
