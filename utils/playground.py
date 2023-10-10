@@ -78,7 +78,7 @@ def process_sku_to_ref(directory):
 
             print(f"Processed {file_path}")
 
-# TODO check acc extraction (sku or ref?)
+
 def process_sku_to_ref_acc(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.json'):
