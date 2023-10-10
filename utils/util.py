@@ -453,7 +453,7 @@ class Util:
             time.sleep(2)
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
-                                             counter - counter % Util.JSON_DUMP_FREQUENCY)
+                                             counter - counter % Util.JSON_DUMP_FREQUENCY, do_extract_public_categories)
 
 
     # Replace <use> tags with the referenced element for cairosvg to work
