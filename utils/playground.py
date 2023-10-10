@@ -63,7 +63,7 @@ def process_sku_to_ref(directory):
             for product in data:
                 if 'Sku' in product:
                     try:
-                        if not product["Sku"].__contains("VS"):
+                        if not product["Sku"].__contains__("VS"):
                             new_sku = int(product["Sku"])
                         else:
                             new_sku = int(product["Sku"][2:])
@@ -73,13 +73,35 @@ def process_sku_to_ref(directory):
 
                     product['default_code'] = f'VS{new_sku * 2}'
                     product['Sku'] = str(new_sku)
-                else:
-                    product["Sku"] = str(product["Sku"])
+            with open(file_path, 'w') as f:
+                json.dump(data, f)
+
+            print(f"Processed {file_path}")
+
+# TODO check acc extraction (sku or ref?)
+def process_sku_to_ref_acc(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith('.json'):
+            file_path = os.path.join(directory, filename)
+
+            with open(file_path, 'r') as f:
+                print(f"OPENING {file_path}")
+                data = json.load(f)
+
+            # Check if the old key exists and rename it
+            for product in data:
+                if 'accesorios' in product:
+                    for acc in product['accesorios']:
+                        new_sku = int(acc["sku"][2:])
+
+                        acc['default_code'] = f'VS{new_sku * 2}'
+                        del acc['sku']
 
             with open(file_path, 'w') as f:
                 json.dump(data, f)
 
             print(f"Processed {file_path}")
+
 
 def field_update():
     product_ids = product_model.search([])
@@ -109,10 +131,12 @@ def field_update():
     print(f"Updated {len(product_ids)} products.")
 
 # process_sku_to_ref(ScraperVtacSpain.PRODUCTS_INFO_PATH)
-process_sku_to_ref(ScraperVtacSpain.PRODUCTS_MEDIA_PATH)
+# process_sku_to_ref(ScraperVtacSpain.PRODUCTS_MEDIA_PATH)
 
 # process_sku_to_ref(ScraperVtacUk.PRODUCTS_INFO_PATH)
 # process_sku_to_ref(ScraperVtacUk.PRODUCTS_MEDIA_PATH)
 #
 # process_sku_to_ref(ScraperVtacItalia.PRODUCTS_INFO_PATH)
 # process_sku_to_ref(ScraperVtacItalia.PRODUCTS_MEDIA_PATH)
+
+process_sku_to_ref_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
