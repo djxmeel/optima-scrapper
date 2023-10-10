@@ -272,7 +272,7 @@ class OdooImport:
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
-    # TODO TEST accessory appearance in desc
+    # TODO TEST accessory appearance in desc after remerge with new prios
     @classmethod
     def import_accessories(cls, target_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -281,14 +281,14 @@ class OdooImport:
         acc_model = cls.odoo.env['x_accesorios_productos']
 
         # Delete all accessory model records
-        # acc_model.unlink(acc_model.search([]))
+        acc_model.unlink(acc_model.search([]))
 
         for file_path in sorted(file_list):
             products = Util.load_json_data(file_path)
 
             # Iterate over the products
             for product in products:
-                desc_extension = '<h2>Accesorios incluidos</h2><ul>'
+                desc_extension = '<h3>Accesorios incluidos</h3><ul>'
                 accessories_sku = []
 
                 if 'accesorios' in product and product['accesorios']:
@@ -306,71 +306,74 @@ class OdooImport:
                         continue
 
                     for acc in accessories_sku:
-                        existing_acc_ids = acc_model.search([('x_producto', '=', main_product_id), ('x_default_code', '=', acc['default_code'])])
+                        new_record_data = {
+                            'x_default_code': acc['default_code'],
+                            'x_producto': main_product_id,
+                            'x_cantidad': acc['cantidad']
+                        }
 
-                        if not existing_acc_ids:
-                            new_record_data = {
-                                'x_default_code': acc['default_code'],
-                                'x_producto': main_product_id,
-                                'x_cantidad': acc['cantidad']
-                            }
+                        try:
+                            new_record_id = acc_model.create(new_record_data)
+                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
 
-                            try:
-                                new_record_id = acc_model.create(new_record_data)
-                                cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
+                            desc_extension += f'<li><b>Referencia:</b> {new_record_data["x_default_code"]}  <b>Cantidad:</b> {new_record_data["x_cantidad"]}</li>'
 
-                                desc_extension += f'<li>Referencia: {new_record_data["x_default_code"]}  Cantidad: {new_record_data["x_cantidad"]}</li>'
-
-                            except RPCError:
-                                cls.logger.info(f'{product["Sku"]} ERROR CREATING ACCESORIO')
+                        except RPCError:
+                            cls.logger.info(f'{product["Sku"]} ERROR CREATING ACCESORIO')
 
                     desc_extension += '</ul>'
 
                     current_desc = cls.PRODUCT_MODEL.browse(main_product_id).website_description
+                    current_desc = current_desc.split("<h3>Accesorios")[0]
+
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
 
 
-    #TODO default_code for pdfs instead of sku
     @classmethod
-    def import_pdfs(cls, skus, skip_products_w_attachments=False):
+    def import_pdfs(cls, refs, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
-        sku_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
+        ref_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
 
         directory_list_uk = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['uk'])
-        sku_list_uk = [dirr.split('/')[3] for dirr in directory_list_uk]
+        ref_list_uk = [dirr.split('/')[3] for dirr in directory_list_uk]
 
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
-        sku_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
+        ref_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
 
-        for index, sku in enumerate(skus):
-            print(f'{index+1} / {len(skus)}')
-            product_ids = product_model.search([('x_sku', '=', sku)])
+        # TODO REMOVE after re-DL pdfs using internal refs as directories
+        ref_list_es = [f'VS{int(sku) * 2}' for sku in ref_list_es]
+        ref_list_uk = [f'VS{int(sku) * 2}' for sku in ref_list_uk]
+        ref_list_ita = [f'VS{int(sku) * 2}' for sku in ref_list_ita]
+
+        for index, ref in enumerate(refs):
+            print(f'{index+1} / {len(refs)}')
+            product_ids = product_model.search([('default_code', '=', ref)])
 
             if skip_products_w_attachments and product_ids:
                 product_uploaded_attachments = attachments_model.search([('res_id', '=', product_ids[0])])
 
                 if product_uploaded_attachments:
-                    cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
+                    cls.logger.warn(f"SKIPPING {ref} BECAUSE IT HAS ATTACHMENTS UPLOADED")
                     continue
 
             if product_ids:
                 attachment_paths = []
 
-                if sku in sku_list_es:
+                if ref in ref_list_es:
                     attachment_paths = Util.get_all_files_in_directory(
-                        directory_list_es[sku_list_es.index(sku)])
-                elif sku in sku_list_uk:
+                        directory_list_es[ref_list_es.index(ref)])
+                elif ref in ref_list_uk:
                     attachment_paths = Util.get_all_files_in_directory(
-                        directory_list_uk[sku_list_uk.index(sku)])
-                elif sku in sku_list_ita:
+                        directory_list_uk[ref_list_uk.index(ref)])
+                elif ref in ref_list_ita:
                     attachment_paths = Util.get_all_files_in_directory(
-                        directory_list_ita[sku_list_ita.index(sku)])
+                        directory_list_ita[ref_list_ita.index(ref)])
 
                 if attachment_paths:
-                    cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
+                    cls.logger.info(f"{ref}: UPLOADING {len(attachment_paths)} FILES")
                     for attachment_path in attachment_paths:
                         with open(attachment_path, 'rb') as file:
                             pdf_binary_data = file.read()
@@ -383,12 +386,12 @@ class OdooImport:
                         except:
                             pass
 
-                        attachment_name = f'VS{int(sku)*2}_{attachment_name}'
+                        attachment_name = f'{ref}_{attachment_name}'
 
                         existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', product_ids[0])])
 
                         if existing_attachment:
-                            cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                            cls.logger.info(f'{ref}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
                             continue
 
                         attachment_data = {
@@ -402,16 +405,16 @@ class OdooImport:
                         try:
                             attachment_id = attachments_model.create(attachment_data)
                             cls.logger.info(
-                                f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+                                f'{ref}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
                         except TimeoutError:
-                            cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
+                            cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {ref}")
                             time.sleep(10)
-                            cls.import_pdfs(list(skus[index:]), skip_products_w_attachments)
+                            cls.import_pdfs(list(refs[index:]), skip_products_w_attachments)
                         except HTTPError:
                             cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                             continue
             else:
-                cls.logger.warn(f'{sku} : NOT FOUND IN ODOO')
+                cls.logger.warn(f'{ref} : NOT FOUND IN ODOO')
 
 
     @classmethod
