@@ -60,15 +60,15 @@ class Util:
             json.dump(dump, file)
             print(f'Items extracted to JSON successfully: {filename}\n')
 
-    # TODO use default_code instead of sku
+
     @staticmethod
     def get_products_media(products_data, scraper):
         products_media = []
         for product in products_data:
             product_media = {}
             # Get product SKU
-            if 'Sku' in product:
-                product_media['Sku'] = product['Sku']
+            if 'default_code' in product:
+                product_media['default_code'] = product['default_code']
 
             for field in Util.MEDIA_FIELDS:
                 if field in product:
@@ -244,8 +244,8 @@ class Util:
 
 
     @staticmethod
-    def get_unique_skus_from_dictionary(dictionary):
-        return set(product['Sku'] for product in dictionary)
+    def get_unique_refs_from_dictionary(dictionary):
+        return set(product['default_code'] for product in dictionary)
 
 
     @staticmethod
