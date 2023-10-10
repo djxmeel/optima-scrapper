@@ -21,10 +21,10 @@ def renamer(filename):
 
 # Example usage
 directory_paths = [
-    "../vtac_ita/PRODUCT_INFO",
-    "../vtac_ita/PRODUCT_MEDIA",
-    "../vtac_es/PRODUCT_INFO",
-    "../vtac_es/PRODUCT_MEDIA",
+    "../vtac_italia/PRODUCT_INFO",
+    "../vtac_italia/PRODUCT_MEDIA",
+    "../vtac_spain/PRODUCT_INFO",
+    "../vtac_spain/PRODUCT_MEDIA",
     "../vtac_uk/PRODUCT_INFO",
     "../vtac_uk/PRODUCT_MEDIA"
 ]
