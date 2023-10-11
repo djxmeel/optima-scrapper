@@ -79,6 +79,25 @@ def process_sku_to_ref(directory):
             print(f"Processed {file_path}")
 
 
+def process_names_to_ref(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith('.json'):
+            file_path = os.path.join(directory, filename)
+
+            with open(file_path, 'r') as f:
+                print(f"OPENING {file_path}")
+                data = json.load(f)
+
+            # Check if the old key exists and rename it
+            for product in data:
+                if 'name' in product:
+                    product['name'] = f'[{product["default_code"]}] {product["name"].split("] ")[1]}'
+            with open(file_path, 'w') as f:
+                json.dump(data, f)
+
+            print(f"Processed {file_path}")
+
+
 def process_sku_to_ref_acc(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.json'):
@@ -129,14 +148,3 @@ def field_update():
             print(f"{i}/{len(product_ids)} NEW NAME : {name}")
 
     print(f"Updated {len(product_ids)} products.")
-
-# process_sku_to_ref(ScraperVtacSpain.PRODUCTS_INFO_PATH)
-# process_sku_to_ref(ScraperVtacSpain.PRODUCTS_MEDIA_PATH)
-
-# process_sku_to_ref(ScraperVtacUk.PRODUCTS_INFO_PATH)
-# process_sku_to_ref(ScraperVtacUk.PRODUCTS_MEDIA_PATH)
-#
-# process_sku_to_ref(ScraperVtacItalia.PRODUCTS_INFO_PATH)
-# process_sku_to_ref(ScraperVtacItalia.PRODUCTS_MEDIA_PATH)
-
-process_sku_to_ref_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
