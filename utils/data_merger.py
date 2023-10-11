@@ -51,11 +51,15 @@ class DataMerger:
         'videos': ('uk', 'ita', 'es')
     }
 
+    # TODO remove !capitalized keys after new ita & uk scrape
     # Fields to rename for common naming between data sources
     FIELDS_RENAMES = {
         "Código ean": "barcode",
+        "Código EAN": "barcode",
         'Ean código': 'barcode',
-        'ean': 'barcode',
+        'Ean Código': 'barcode',
+        'Ean': 'barcode',
+        'EAN': 'barcode',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la familia": "Código de familia",
         "Modelo": "Código de familia",
