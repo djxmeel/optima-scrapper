@@ -8,7 +8,8 @@ from utils.util import Util
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 # VTAC SCRAPER
-# TODO reextract ITA & UK links to get categories (all uk products have just one categ.?)
+# TODO reextract ITA & UK links to get categories (all UK products have just one categ.?)
+# TODO do equivalency for categorization from UK & ITA to ES
 country_scrapers = {
     'es': ScraperVtacSpain,
     'uk': ScraperVtacUk,
