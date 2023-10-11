@@ -396,7 +396,7 @@ class Util:
 
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0, do_extract_public_categories=False):
+    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
         """
         Begins item info extraction.
 
@@ -416,7 +416,7 @@ class Util:
             for link in links[start_from:]:
                 public_categories = []
 
-                if do_extract_public_categories:
+                if scraper.COUNTRY == 'es':
                     if link in duplicate_links:
                         continue
 
@@ -519,7 +519,7 @@ class Util:
 
 
     @classmethod
-    def get_chosen_country_from_menu(cls, country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields, do_extract_public_categories):
+    def get_chosen_country_from_menu(cls, country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
         Util.print_title()
         # Prompt user to choose country
         while True:
@@ -527,7 +527,6 @@ class Util:
                   f"\nExtracción de URLs : {if_extract_item_links}\n"
                   f"Extraer NOVEDADES : {if_update}\n"
                   f"\nScrapear información productos : {if_extract_item_info}\n"
-                  f"\nScrapear categorías públicas productos (SOLAMENTE ESPAÑA) : {do_extract_public_categories}\n"
                   f"Sólamente NOVEDADES : {if_only_new_items}\n"
                   f"\nScrapear descargables productos : {if_dl_item_pdf}\n"
                   f"\nExtraer campos : {if_extract_distinct_items_fields}\n")

@@ -272,7 +272,6 @@ class OdooImport:
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
-    # TODO TEST accessory appearance in desc after remerge with new prios
     @classmethod
     def import_accessories(cls, target_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
