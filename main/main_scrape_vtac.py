@@ -41,7 +41,6 @@ if IF_EXTRACT_ITEM_LINKS:
 
     scraper.logger.info(f'BEGINNING LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH}')
 
-
     # EXTRACT LINKS TO A set()
     extracted_links, links_new = scraper.extract_all_links(scraper.DRIVER, scraper.CATEGORIES_LINKS, IF_UPDATE)
 

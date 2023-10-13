@@ -88,7 +88,6 @@ class ScraperEfectoLed:
         else:
             item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-
         # Extracción de imágenes
         try:
             # Find the image elements and extract their data

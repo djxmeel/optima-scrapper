@@ -5,6 +5,7 @@ from scrapers.scraper_vtac_es import ScraperVtacSpain
 from scrapers.scraper_vtac_ita import ScraperVtacItalia
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
+
 class DataMerger:
     logger = None
 
@@ -23,7 +24,6 @@ class DataMerger:
 
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
-
 
     COUNTRY_PRODUCT_INFO_DIR_PATHS = {
         'es': ScraperVtacSpain.PRODUCTS_INFO_PATH,
@@ -62,6 +62,7 @@ class DataMerger:
         'EAN': 'barcode',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la familia": "Código de familia",
+        "Código de la Familia": "Código de familia",
         "Modelo": "Código de familia",
         "Eficacia luminosa (lm/w)": "Eficacia luminosa",
         "Factor de potencia (fp)": "Factor de potencia",
@@ -120,7 +121,7 @@ class DataMerger:
     # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
     COUNTRY_FIELDS_ALWAYS_KEEP = [
         # All ES imgs are getting extracted, therefore we will not always keep (before: only graph_dimensions were extracted)
-        #{'country': 'es', 'field': 'imgs'}
+        # {'country': 'es', 'field': 'imgs'}
     ]
 
     merged_data = []
@@ -139,7 +140,7 @@ class DataMerger:
     }
 
     @classmethod
-    def load_data_for_country(cls, country, only_media= False):
+    def load_data_for_country(cls, country, only_media=False):
         directory_path = cls.COUNTRY_PRODUCT_INFO_DIR_PATHS[country]
         data = []
 
@@ -159,7 +160,6 @@ class DataMerger:
             cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
         return data
-
 
     @classmethod
     def load_all(cls):
@@ -186,7 +186,7 @@ class DataMerger:
         return cls.load_data_for_country(country)
 
     @classmethod
-    def get_product_data_from_country_ref(cls, ref, country, only_media= False):
+    def get_product_data_from_country_ref(cls, ref, country, only_media=False):
         data = cls.country_data[country]
         if only_media:
             data = cls.country_media[country]
@@ -196,7 +196,6 @@ class DataMerger:
                 return product
         return None
 
-
     @classmethod
     def rename_product_fields(cls, product, fields_to_rename):
         for key, value in fields_to_rename.items():
@@ -205,24 +204,23 @@ class DataMerger:
                 del product[key]
         return product
 
-
     @classmethod
     def merge_data(cls):
         unique_product_refs = Util.get_unique_refs_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
 
         for ref in unique_product_refs:
             product_data = {'es': cls.get_product_data_from_country_ref(ref, 'es'),
-                       'uk': cls.get_product_data_from_country_ref(ref, 'uk'),
-                       'ita': cls.get_product_data_from_country_ref(ref, 'ita')}
+                            'uk': cls.get_product_data_from_country_ref(ref, 'uk'),
+                            'ita': cls.get_product_data_from_country_ref(ref, 'ita')}
 
             product_media = {'es': cls.get_product_data_from_country_ref(ref, 'es', True),
-                            'uk': cls.get_product_data_from_country_ref(ref, 'uk', True),
-                            'ita': cls.get_product_data_from_country_ref(ref, 'ita', True)}
+                                'uk': cls.get_product_data_from_country_ref(ref, 'uk', True),
+                                'ita': cls.get_product_data_from_country_ref(ref, 'ita', True)}
 
             # Add empty spaces to ref to make it 8 characters long for better readability
             ref += ' ' * (8 - len(ref))
 
-            cls.logger.info(f'\n{ref} : ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
+            cls.logger.info(f'\n{ref}: ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
 
             merged_product = {}
             merged_media = {"default_code": ref}

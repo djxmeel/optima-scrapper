@@ -96,7 +96,6 @@ class ScraperVtacSpain:
         except:
             return None
 
-
         # Extracción de la etiqueta energética
         # try:
         #     energy_tag_src = driver.find_element(By.XPATH, energy_tag_xpath).get_attribute('src')

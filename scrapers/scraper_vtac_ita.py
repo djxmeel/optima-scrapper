@@ -34,13 +34,11 @@ class ScraperVtacItalia:
     PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
 
-
     PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS.json'
     PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
     PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
     PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
 
     @classmethod
     def instantiate_driver(cls):
@@ -135,7 +133,7 @@ class ScraperVtacItalia:
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
             desc_outer_html = driver.find_element(By.XPATH,
-                                                 f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
+                                                    f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
                 'outerHTML')
 
             item['website_description'] = Util.translate_from_to_spanish('it', desc_outer_html)
@@ -192,7 +190,6 @@ class ScraperVtacItalia:
                 item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
-
 
         # Formateo del titulo
         item['name'] = f'[{item["default_code"]}] {item["name"]}'
