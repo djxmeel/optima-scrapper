@@ -18,11 +18,9 @@ class ScraperVtacUk:
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
-    SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
-
-    # Product links and categories {'link': 'category string'}
-    PRODUCT_LINKS_CATEGORIES = {}
     PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/vtac_uk/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+
+    SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
     CATEGORIES_LINKS = [
         'https://www.vtacexports.com/default/led-lighting/led-bulbs.html',
@@ -86,7 +84,7 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/electrical/switches-dimmer.html',
         'https://www.vtacexports.com/default/electrical/cable-tie.html',
         'https://www.vtacexports.com/default/electrical/vacuum-cleaner-0.html',
-        'https://www.vtacexports.com/default/electrical/led-screen-1.html',
+        'https://www.vtacexports.com/default/electrical/led-screen-1.html'
 
     ]
 
@@ -241,6 +239,8 @@ class ScraperVtacUk:
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
         extracted = set()
+        # Product links and categories {'link': 'category string'}
+        product_links_categories = {}
 
         for cat in categories:
             try:
@@ -285,10 +285,10 @@ class ScraperVtacUk:
                 for link in links:
                     href = link.get_attribute('href')
                     extracted.add(href)
-                    if href in cls.PRODUCT_LINKS_CATEGORIES:
-                        cls.PRODUCT_LINKS_CATEGORIES[href].append(category_string)
+                    if href in product_links_categories:
+                        product_links_categories[href].append(category_string)
                     else:
-                        cls.PRODUCT_LINKS_CATEGORIES[href] = [category_string]
+                        product_links_categories[href] = [category_string]
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
@@ -302,7 +302,7 @@ class ScraperVtacUk:
                     return extracted, new_links
 
         # TODO use this json to save public_categories in PRODUCT_INFO jsons when scraping
-        Util.dump_to_json(cls.PRODUCT_LINKS_CATEGORIES, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         return extracted, None
 

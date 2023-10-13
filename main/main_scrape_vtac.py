@@ -73,7 +73,7 @@ if IF_EXTRACT_ITEM_INFO:
         scraper.PRODUCTS_INFO_PATH,
         scraper.PRODUCTS_MEDIA_PATH,
         scraper.logger,
-        scraper.BEGIN_SCRAPE_FROM,
+        scraper.BEGIN_SCRAPE_FROM
     )
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())

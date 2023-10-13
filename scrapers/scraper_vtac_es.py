@@ -17,6 +17,8 @@ class ScraperVtacSpain:
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
+    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/vtac_spain/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+
     SPECS_SUBCATEGORIES = ()
 
     CATEGORIES_LINKS = (
@@ -89,7 +91,10 @@ class ScraperVtacSpain:
         else:
             item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
+        try:
+            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
+        except:
+            return None
 
 
         # Extracción de la etiqueta energética
@@ -261,3 +266,20 @@ class ScraperVtacSpain:
             categories += f'{crumb.text} / '
 
         return categories[:-2].strip()
+
+    @classmethod
+    def get_same_product_links(cls, file_path, base_link):
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        substring = base_link.split('/')[-1]
+
+        links = []
+        print(f"LOOKING FOR {base_link} DUPLICATES")
+
+        for link in data:
+            if substring in link:
+                print('FOUND ->', link)
+                links.append(link)
+
+        return links

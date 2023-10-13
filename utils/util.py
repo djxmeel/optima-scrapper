@@ -422,7 +422,7 @@ class Util:
 
                     from scrapers.scraper_vtac_es import ScraperVtacSpain
 
-                    for dup in Util.get_same_product_links(ScraperVtacSpain.PRODUCTS_LINKS_PATH, link):
+                    for dup in scraper.get_same_product_links(ScraperVtacSpain.PRODUCTS_LINKS_PATH, link):
                         public_categories.append(ScraperVtacSpain.get_internal_category(dup))
                         duplicate_links.append(dup)
 
@@ -453,7 +453,7 @@ class Util:
             time.sleep(2)
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
-                                             counter - counter % Util.JSON_DUMP_FREQUENCY, do_extract_public_categories)
+                                             counter - counter % Util.JSON_DUMP_FREQUENCY)
 
 
     # Replace <use> tags with the referenced element for cairosvg to work
@@ -538,20 +538,3 @@ class Util:
             print("País no válido, inténtelo de nuevo")
 
         return chosen_country
-
-    @classmethod
-    def get_same_product_links(cls, file_path, base_link):
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-
-        substring = base_link.split('/')[-1]
-
-        links = []
-        print(f"LOOKING FOR {base_link} DUPLICATES")
-
-        for link in data:
-            if substring in link:
-                print('FOUND ->', link)
-                links.append(link)
-
-        return links
