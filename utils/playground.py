@@ -1,5 +1,6 @@
 import json
 import os
+from pprint import pprint
 
 import odoorpc
 
@@ -7,6 +8,7 @@ from scrapers.scraper_vtac_es import ScraperVtacSpain
 from scrapers.scraper_vtac_ita import ScraperVtacItalia
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 from utils.data_merger import DataMerger
+from utils.util import Util
 
 odoo_host = 'trialdb-final.odoo.com'
 odoo_protocol = 'jsonrpc+ssl'
@@ -121,7 +123,6 @@ def process_sku_to_ref_acc(directory):
 
             print(f"Processed {file_path}")
 
-
 def field_update():
     product_ids = product_model.search([])
 
@@ -148,3 +149,22 @@ def field_update():
             print(f"{i}/{len(product_ids)} NEW NAME: {name}")
 
     print(f"Updated {len(product_ids)} products.")
+
+def get_distinct_categs():
+    categs = list(Util.load_json_data('data/vtac_italia/LINKS/PRODUCT_LINKS_CATEGORIES.json').values())
+    categs += list(Util.load_json_data('data/vtac_uk/LINKS/PRODUCT_LINKS_CATEGORIES.json').values())
+
+    distinct_categs = set()
+
+    for categ_list in categs:
+        for categ in categ_list:
+            distinct_categs.add(categ)
+
+    empty_translation_dict = {}
+
+    for categ in sorted(list(distinct_categs)):
+        empty_translation_dict[categ] = ''
+
+    return empty_translation_dict
+
+Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
