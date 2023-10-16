@@ -342,7 +342,7 @@ class OdooImport:
 
             products = product_model.browse(product_ids)
             refs_in_odoo.extend([p.default_code for p in products])
-            print(f'FETCHING PRODUCTS REFS : {len(refs_in_odoo)}')
+            print(f'FETCHING ALL PRODUCTS REFS : {len(refs_in_odoo)}')
 
             offset += batch_size
 
