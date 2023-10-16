@@ -197,7 +197,7 @@ class OdooImport:
 
         try:
             cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
-        except TypeError:
+        except TypeError or RPCError:
             cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
             return
 
@@ -236,9 +236,13 @@ class OdooImport:
 
                 if not product_ids:
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
+                    try:
+                        product_id = cls.PRODUCT_MODEL.create(product)
+                        cls.logger.info(f'Created product {product["default_code"]} with origin URL : {url}')
+                    except RPCError:
+                        cls.logger.info(f'Product {product["default_code"]} with origin URL : {url} NOT CREATED')
+                        continue
 
-                    product_id = cls.PRODUCT_MODEL.create(product)
-                    cls.logger.info(f'Created product {product["default_code"]} with origin URL : {url}')
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_invoice_policy(product_id,cls.CURRENT_INVOICE_POLICY)
@@ -334,7 +338,9 @@ class OdooImport:
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
-        refs_in_odoo = [p.default_code for p in product_model.browse(product_model.search([]))]
+        # TODO CHECK
+        refs_in_odoo = product_model.browse(product_model.search([]))
+        refs_in_odoo = [p.default_code for p in refs_in_odoo]
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         ref_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
