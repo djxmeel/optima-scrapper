@@ -17,7 +17,7 @@ IF_SKIP_ATTRS_OF_EXISTING = False
 # TODO default_code KeyError
 IF_IMPORT_ACC = False
 
-# TODO TEST
+# TODO TEST in main workstation
 IF_IMPORT_PDFS = True
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 

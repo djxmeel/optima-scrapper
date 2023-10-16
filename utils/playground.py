@@ -145,6 +145,6 @@ def field_update():
                 'name': name
             })
 
-            print(f"{i}/{len(product_ids)} NEW NAME : {name}")
+            print(f"{i}/{len(product_ids)} NEW NAME: {name}")
 
     print(f"Updated {len(product_ids)} products.")

@@ -18,14 +18,74 @@ class ScraperVtacUk:
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
+    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/vtac_uk/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+
     SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
     CATEGORIES_LINKS = [
-        'https://www.vtacexports.com/default/digital-accessories.html',
-        'https://www.vtacexports.com/default/led-lighting.html',
-        'https://www.vtacexports.com/default/decorative-lighting.html',
-        'https://www.vtacexports.com/default/smart-products.html',
-        'https://www.vtacexports.com/default/electrical.html'
+        'https://www.vtacexports.com/default/led-lighting/led-bulbs.html',
+        'https://www.vtacexports.com/default/led-lighting/led-spotlights.html',
+        'https://www.vtacexports.com/default/led-lighting/led-tubes.html',
+        'https://www.vtacexports.com/default/led-lighting/led-mini-panels.html',
+        'https://www.vtacexports.com/default/led-lighting/led-panels-0.html',
+        'https://www.vtacexports.com/default/led-lighting/led-downlights.html',
+        'https://www.vtacexports.com/default/led-lighting/led-dome-lights.html',
+        'https://www.vtacexports.com/default/led-lighting/led-strip-lights.html',
+        'https://www.vtacexports.com/default/led-lighting/led-tracklights.html',
+        'https://www.vtacexports.com/default/led-lighting/linear-lights-0.html',
+        'https://www.vtacexports.com/default/led-lighting/led-floodlights.html',
+        'https://www.vtacexports.com/default/led-lighting/led-highbays.html',
+        'https://www.vtacexports.com/default/led-lighting/led-streetlights.html',
+        'https://www.vtacexports.com/default/led-lighting/led-wall-lights.html',
+        'https://www.vtacexports.com/default/led-lighting/emergency-lights.html',
+        'https://www.vtacexports.com/default/led-lighting/outdoor-lighting.html',
+        'https://www.vtacexports.com/default/led-lighting/solar-lights.html',
+        'https://www.vtacexports.com/default/led-lighting/floor-lamps-0.html',
+        'https://www.vtacexports.com/default/led-lighting/table-lamps-0.html',
+        'https://www.vtacexports.com/default/led-lighting/motion-sensors.html',
+        'https://www.vtacexports.com/default/led-lighting/led-batten-fittings-1.html',
+        'https://www.vtacexports.com/default/catalog/category/view/s/led-ring-lights/id/5056/',
+        'https://www.vtacexports.com/default/decorative-lighting/pendant-holders.html',
+        'https://www.vtacexports.com/default/decorative-lighting/chandeliers.html',
+        'https://www.vtacexports.com/default/decorative-lighting/designer-ceiling-lights.html',
+        'https://www.vtacexports.com/default/decorative-lighting/designer-soft-lights.html',
+        'https://www.vtacexports.com/default/decorative-lighting/led-pendant-lights.html',
+        'https://www.vtacexports.com/default/decorative-lighting/mirror-lights.html',
+        'https://www.vtacexports.com/default/decorative-lighting/designer-garden-lights.html',
+        'https://www.vtacexports.com/default/decorative-lighting/bamboo-lights.html',
+        'https://www.vtacexports.com/default/decorative-lighting/designer-lamps.html',
+        'https://www.vtacexports.com/default/decorative-lighting/string-lights-1.html',
+        'https://www.vtacexports.com/default/decorative-lighting/pendant-fittings.html',
+        'https://www.vtacexports.com/default/catalog/category/view/s/accessories/id/5048/',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/sockets-0.html',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/plugs-0.html',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/doorbells.html',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/outdoor-cameras.html',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/temperature-sensor-0.html',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/remote-controls.html',
+        'https://www.vtacexports.com/default/smart-products/smart-electronics/robot-vacuums.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/led-downlights-1.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/lamp-holders-0.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/led-tracklights-0.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/strip-kits-0.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/led-floodlights-1.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/bulbs-1.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/spotlights-1.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/panels-2.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/designer-dome-lights.html',
+        'https://www.vtacexports.com/default/smart-products/smart-led-lights/ambiance-lamp.html',
+        'https://www.vtacexports.com/default/digital-accessories/charger.html',
+        'https://www.vtacexports.com/default/digital-accessories/speakers.html',
+        'https://www.vtacexports.com/default/digital-accessories/power-bank.html',
+        'https://www.vtacexports.com/default/digital-accessories/usb-cable.html',
+        'https://www.vtacexports.com/default/digital-accessories/headphones.html',
+        'https://www.vtacexports.com/default/electrical/adapters-sockets.html',
+        'https://www.vtacexports.com/default/electrical/fan.html',
+        'https://www.vtacexports.com/default/electrical/switches-dimmer.html',
+        'https://www.vtacexports.com/default/electrical/cable-tie.html',
+        'https://www.vtacexports.com/default/electrical/vacuum-cleaner-0.html',
+        'https://www.vtacexports.com/default/electrical/led-screen-1.html'
+
     ]
 
     PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
@@ -46,7 +106,7 @@ class ScraperVtacUk:
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None):
+    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -109,7 +169,7 @@ class ScraperVtacUk:
             # Se hace click() sobre el botón de Features para acceder al texto
             driver.find_element(By.ID, 'tab-label-features').click()
             outer_html = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
-            item['website_description'] = f'{Util.translate_from_to_spanish("en",outer_html)}\n'
+            item['website_description'] = f'{Util.translate_from_to_spanish("en", outer_html)}\n'
         except NoSuchElementException:
             pass
 
@@ -179,6 +239,8 @@ class ScraperVtacUk:
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
         extracted = set()
+        # Product links and categories {'link': 'category string'}
+        product_links_categories = {}
 
         for cat in categories:
             try:
@@ -189,8 +251,12 @@ class ScraperVtacUk:
                 return
 
             # Número total de productos por categoría
-            product_count = int(
-                driver.find_element(By.XPATH, '//*[@id="maincontent"]/div[4]/div[1]/h5').text.split(' ')[0])
+            try:
+                product_count = int(
+                    driver.find_element(By.XPATH, '//*[@id="maincontent"]/div[4]/div[1]/h5').text.split(' ')[0])
+            except NoSuchElementException:
+                product_count = int(
+                    driver.find_element(By.XPATH, '//main/div[3]/div[1]/h5').text.split(' ')[0])
 
             # Número de páginas (Total / 16)
             page_count = math.ceil(product_count / 16)
@@ -200,13 +266,28 @@ class ScraperVtacUk:
 
                 time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
 
-                links = driver.find_elements(By.XPATH,
-                                             '/html/body/div[3]/main/div[4]/div[2]/section/div[2]/div//form/a')
+                links = driver.find_elements(By.XPATH, '/html/body/div[3]/main/div[4]/div[2]/section/div[2]/div//form/a')
+
+                if len(links) < 1:
+                    links = driver.find_elements(By.XPATH, '//main//form/a')
 
                 before = len(extracted)
 
+                current_categs = [c.text for c in driver.find_elements(By.XPATH, '/html/body/div[3]/section[1]/div/div/div[1]/div/div/nav/ol//a')[1:]]
+                category_string = ''
+
+                for categ in current_categs:
+                    category_string += f'{categ} / '
+
+                category_string = category_string[:-3]
+
                 for link in links:
-                    extracted.add(link.get_attribute('href'))
+                    href = link.get_attribute('href')
+                    extracted.add(href)
+                    if href in product_links_categories:
+                        product_links_categories[href].append(category_string)
+                    else:
+                        product_links_categories[href] = [category_string]
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
@@ -218,6 +299,9 @@ class ScraperVtacUk:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     return extracted, new_links
+
+        # TODO use this json to save public_categories in PRODUCT_INFO jsons when scraping
+        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         return extracted, None
 

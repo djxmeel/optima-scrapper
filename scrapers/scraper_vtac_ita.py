@@ -17,6 +17,8 @@ class ScraperVtacItalia:
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
+    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/vtac_italia/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+
     SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
 
     CATEGORIES_LINKS = (
@@ -32,20 +34,18 @@ class ScraperVtacItalia:
     PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
 
-
     PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS.json'
     PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
     PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
     PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
-
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None):
+    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -133,7 +133,7 @@ class ScraperVtacItalia:
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
             desc_outer_html = driver.find_element(By.XPATH,
-                                                 f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
+                                                    f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
                 'outerHTML')
 
             item['website_description'] = Util.translate_from_to_spanish('it', desc_outer_html)
@@ -191,7 +191,6 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-
         # Formateo del titulo
         item['name'] = f'[{item["default_code"]}] {item["name"]}'
 
@@ -202,6 +201,9 @@ class ScraperVtacItalia:
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
         extracted = set()
+        # Product links and categories {'link': 'category string'}
+        product_links_categories = {}
+
         for cat in categories:
             try:
                 driver.get(cat)
@@ -210,18 +212,25 @@ class ScraperVtacItalia:
                 ScraperVtacItalia.extract_all_links(driver, categories)
                 return
 
-            item_subcats = [link.get_attribute('href') for link in
-                            driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/a')]
+            item_subcats = driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/a')
 
-            for item_subcat in item_subcats:
+            item_subcats_links = [link.get_attribute('href') for link in item_subcats]
+
+            item_subcats_strings = [element.find_element(By.XPATH, 'div[2]').text for element in item_subcats]
+
+            main_category = f'{driver.find_element(By.XPATH, "//main//h1").text} / '
+
+            for subcat_link, subcat_string in zip(item_subcats_links, item_subcats_strings):
+                category_string = main_category + subcat_string
+
                 current_page = 0
                 do_page_exist = True
 
                 while do_page_exist:
-                    if item_subcat.__contains__('?sub'):
-                        driver.get(f'{item_subcat}&page={current_page}')
+                    if subcat_link.__contains__('?sub'):
+                        driver.get(f'{subcat_link}&page={current_page}')
                     else:
-                        driver.get(f'{item_subcat}?page={current_page}')
+                        driver.get(f'{subcat_link}?page={current_page}')
 
                     time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
                     articles_in_page = driver.find_elements(By.XPATH,
@@ -231,7 +240,12 @@ class ScraperVtacItalia:
 
                     if articles_in_page:
                         for article in articles_in_page:
-                            extracted.add(article.get_attribute('href').split('?asq=')[0])
+                            article_href = article.get_attribute('href').split('?asq=')[0]
+                            extracted.add(article_href)
+                            if article_href in product_links_categories:
+                                product_links_categories[article_href].append(category_string)
+                            else:
+                                product_links_categories[article_href] = [category_string]
                     else:
                         do_page_exist = False
 
@@ -247,6 +261,9 @@ class ScraperVtacItalia:
                     new_links = extracted - old_links
                     cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
                     return extracted, new_links
+
+        # TODO use this json to save public_categories in PRODUCT_INFO jsons when scraping
+        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         return extracted, None
 

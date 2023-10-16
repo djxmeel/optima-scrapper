@@ -49,7 +49,7 @@ class ScraperEfectoLed:
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None):
+    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -87,7 +87,6 @@ class ScraperEfectoLed:
             del item['Código de orden']
         else:
             item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
-
 
         # Extracción de imágenes
         try:

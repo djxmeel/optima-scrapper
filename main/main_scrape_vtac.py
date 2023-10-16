@@ -8,7 +8,8 @@ from utils.util import Util
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 # VTAC SCRAPER
-
+# TODO reextract ITA & UK links to get categories (all UK products have just one categ.?)
+# TODO do equivalency for categorization from UK & ITA to ES
 country_scrapers = {
     'es': ScraperVtacSpain,
     'uk': ScraperVtacUk,
@@ -16,22 +17,20 @@ country_scrapers = {
 }
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = True, False
-# ONLY FOR SPAIN
-DO_EXTRACT_PUBLIC_CATEGORIES = True
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = False, False
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, False
 
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 # If False : only extracts CUSTOM fields present in ODOO
 IF_ALL_FIELDS = False
 
-chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS, DO_EXTRACT_PUBLIC_CATEGORIES)
+chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
 scraper = country_scrapers[chosen_country]
 scraper.logger = Loggers.setup_vtac_logger(chosen_country)
 
@@ -41,7 +40,6 @@ if IF_EXTRACT_ITEM_LINKS:
     start_time = time.time()
 
     scraper.logger.info(f'BEGINNING LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH}')
-
 
     # EXTRACT LINKS TO A set()
     extracted_links, links_new = scraper.extract_all_links(scraper.DRIVER, scraper.CATEGORIES_LINKS, IF_UPDATE)
@@ -74,8 +72,7 @@ if IF_EXTRACT_ITEM_INFO:
         scraper.PRODUCTS_INFO_PATH,
         scraper.PRODUCTS_MEDIA_PATH,
         scraper.logger,
-        scraper.BEGIN_SCRAPE_FROM,
-        DO_EXTRACT_PUBLIC_CATEGORIES
+        scraper.BEGIN_SCRAPE_FROM
     )
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())

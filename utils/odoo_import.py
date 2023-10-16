@@ -62,7 +62,6 @@ class OdooImport:
         except RPCError:
             return None
 
-
     # Currently done with EXCEL file
     @classmethod
     def create_public_categories(cls, public_categories):
@@ -96,7 +95,6 @@ class OdooImport:
                     cls.logger.info(f"ASSIGNED Public categories {categ_ids} to product {product['name']}")
             except RPCError:
                 cls.logger.warn(f"Public categories {categ_ids} not assigned to product {product['name']}")
-
 
     @classmethod
     def create_attributes_and_values(cls, attributes_values):
@@ -143,7 +141,6 @@ class OdooImport:
 
         return created_attrs_values_ids
 
-
     @classmethod
     def assign_invoice_policy(cls, product_id, invoice_policy):
         try:
@@ -158,7 +155,6 @@ class OdooImport:
         except RPCError:
             cls.logger.warn("DETAILED TYPE WAS NOT UPDATED TO 'Storable product'")
 
-
     @classmethod
     def assign_internal_category(cls, product_id, product_internal_category):
         product_internal_category_id = cls.PRODUCT_INTERNAL_CATEGORY_MODEL.search([('name', '=', product_internal_category)])
@@ -170,7 +166,6 @@ class OdooImport:
 
         cls.PRODUCT_MODEL.write(product_id, {'categ_id': product_internal_category_id[0]})
         cls.logger.info(f"ASSIGNED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
-
 
     @classmethod
     def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
@@ -203,7 +198,6 @@ class OdooImport:
 
         cls.logger.info(f"FINISHED ASSIGNING {product['default_code']} ATTRIBUTES")
 
-
     @classmethod
     def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -212,7 +206,7 @@ class OdooImport:
         for file_path in sorted(file_list):
             products = Util.load_json_data(file_path)
 
-            cls.logger.info(f'IMPORTING PRODUCTS OF FILE : {file_path}')
+            cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
             for product in products:
                 counter += 1
@@ -245,7 +239,7 @@ class OdooImport:
 
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_invoice_policy(product_id,cls.CURRENT_INVOICE_POLICY)
+                    cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
                     cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
                     cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
                     cls.assign_public_categories(product_id, product_copy)
@@ -265,18 +259,16 @@ class OdooImport:
                     if update_public_categories:
                         cls.assign_public_categories(product_id, product_copy)
 
-                cls.logger.info(f"PROCESSED : {counter} products\n")
+                cls.logger.info(f"PROCESSED: {counter} products\n")
 
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
-            cls.logger.info(f'IMPORTED PRODUCTS OF FILE : {file_path}')
+            cls.logger.info(f'IMPORTED PRODUCTS OF FILE: {file_path}')
 
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
-
-    # TODO TEST accessory appearance in desc after remerge with new prios
     @classmethod
     def import_accessories(cls, target_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -304,7 +296,7 @@ class OdooImport:
                     main_product_id = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
                     if main_product_id:
                         main_product_id = main_product_id[0]
-                        cls.logger.info(f'SKU: {product["Sku"]} Accesorios : {len(accessories_sku)}')
+                        cls.logger.info(f'SKU: {product["Sku"]} Accesorios: {len(accessories_sku)}')
                     else:
                         cls.logger.info(f'SKU: {product["Sku"]} NOT FOUND IN ODOO')
                         continue
@@ -320,7 +312,7 @@ class OdooImport:
                             new_record_id = acc_model.create(new_record_data)
                             cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
 
-                            desc_extension += f'<li><b>Referencia:</b> {new_record_data["x_default_code"]}  <b>Cantidad:</b> {new_record_data["x_cantidad"]}</li>'
+                            desc_extension += f'<li><b>Referencia: </b>{new_record_data["x_default_code"]}  <b>Cantidad: </b>{new_record_data["x_cantidad"]}</li>'
 
                         except RPCError:
                             cls.logger.info(f'{product["Sku"]} ERROR CREATING ACCESORIO')
@@ -331,7 +323,6 @@ class OdooImport:
                     current_desc = current_desc.split("<h3>Accesorios")[0]
 
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
-
 
     @classmethod
     def import_pdfs(cls, start_from=0, skip_products_w_attachments=False):
@@ -404,7 +395,7 @@ class OdooImport:
                         'name': attachment_name,
                         'datas': encoded_data,
                         'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                        'res_id': ref, # ID of the record of the above model you want to link the attachment to (optional)
+                        'res_id': ref,  # ID of the record of the above model you want to link the attachment to (optional)
                         'type': 'binary',
                     }
 
@@ -417,9 +408,8 @@ class OdooImport:
                         time.sleep(10)
                         cls.import_pdfs(start_from, skip_products_w_attachments)
                     except HTTPError:
-                        cls.logger.error(f"HTTP ERROR : FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
+                        cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
-
 
     @classmethod
     def import_imgs_videos(cls, target_dir_path, uploaded_dir_path):
@@ -506,7 +496,6 @@ class OdooImport:
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
-
     @classmethod
     def import_icons(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -558,7 +547,6 @@ class OdooImport:
 
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
-
 
     @classmethod
     def import_fields(cls, fields):
