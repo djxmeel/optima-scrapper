@@ -3,7 +3,7 @@ from utils.loggers import Loggers
 from utils.util import Util
 
 
-IF_MERGE = False
+IF_MERGE = True
 IF_EXTRACT_FIELDS = False
 # If False : only extracts CUSTOM fields present in ODOO
 IF_ALL_FIELDS = False

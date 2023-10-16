@@ -14,6 +14,7 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_PRODUCTS = False
 IF_SKIP_ATTRS_OF_EXISTING = False
 
+# TODO default_code KeyError
 IF_IMPORT_ACC = False
 
 # TODO TEST

@@ -72,6 +72,7 @@ class DataMerger:
         "Garanzia": "Garantía",
         "Dimensión": "Dimensiones",
         "Dimensioni (axlxp)": "Dimensiones",
+        "Dimensioni (AxLxP)": "Dimensiones",
         "Nombre de la marca": "Marca",
         'Ángulo de haz°': 'Ángulo de apertura',
         'Ángulo de haz': 'Ángulo de apertura',
