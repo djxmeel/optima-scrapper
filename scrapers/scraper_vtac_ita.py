@@ -67,6 +67,9 @@ class ScraperVtacItalia:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
+        # Asignación de categoría pública
+        item['public_categories'] = public_categories
+
         # Extracción de los enlaces de videos
         iframes = driver.find_elements(By.XPATH, '//main//iframe')
 

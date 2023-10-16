@@ -29,6 +29,9 @@ class Util:
     PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
+    # TODO do the categories translations
+    PUBLIC_CATEGORIES_TRANSLATION_PATH = 'data/vtac_merged/FIELDS/PUBLIC_CATEGORIES_TRANSLATIONS.json'
+
     # The fields kept in ODOO as custom fields
     ODOO_CUSTOM_FIELDS = ('Sku', 'url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
@@ -405,6 +408,8 @@ class Util:
                     for dup in scraper.get_same_product_links(ScraperVtacSpain.PRODUCTS_LINKS_PATH, link):
                         public_categories.append(ScraperVtacSpain.get_internal_category(dup))
                         duplicate_links.append(dup)
+                else:
+                    public_categories = Util.get_public_categories_ita_uk(link, scraper)
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES, public_categories)
 
@@ -492,8 +497,8 @@ class Util:
             "| |__| | |      | |   _| |_| |  | |/ ____ \   ____) | |____| | \ \ / ____ \| |    | |    | |____| | \ \\\n" 
             " \____/|_|      |_|  |_____|_|  |_/_/    \_\ |_____/ \_____|_|  \_/_/    \_|_|    |_|    |______|_|  \_\\\n")
 
-    @classmethod
-    def get_chosen_country_from_menu(cls, country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
+    @staticmethod
+    def get_chosen_country_from_menu(country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
         Util.print_title()
         # Prompt user to choose country
         while True:
@@ -512,3 +517,24 @@ class Util:
             print("País no válido, inténtelo de nuevo")
 
         return chosen_country
+
+
+    @staticmethod
+    def get_public_categories_ita_uk(link, scraper):
+        links_categories = Util.load_json_data(scraper.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+
+        if link in links_categories:
+            return Util.convert_to_translated_categories(links_categories[link])
+
+        return []
+
+    @staticmethod
+    def convert_to_translated_categories(public_categories):
+        categories_translations = Util.load_json_data(Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
+        translated = []
+
+        for categ in public_categories:
+            if categ in categories_translations:
+                translated.append(categories_translations[categ])
+
+        return translated

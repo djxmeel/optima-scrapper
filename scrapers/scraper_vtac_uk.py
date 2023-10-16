@@ -138,6 +138,9 @@ class ScraperVtacUk:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
+        # Asignación de categoría pública
+        item['public_categories'] = public_categories
+
         # Para cada subcategoria, extraemos sus campos
         for subcat_li in subcategories_li_elements:
             try:
