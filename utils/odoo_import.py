@@ -1,6 +1,7 @@
 import copy
 import os.path
 import time
+from pprint import pprint
 from urllib.error import HTTPError
 
 import odoorpc
@@ -329,9 +330,23 @@ class OdooImport:
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
-        # TODO CHECK
-        refs_in_odoo = product_model.browse(product_model.search([]))
-        refs_in_odoo = [p.default_code for p in refs_in_odoo]
+        # Fetch records in batches to avoid RPCerror
+        batch_size = 100
+        offset = 0
+        refs_in_odoo = []
+
+        while True:
+            product_ids = product_model.search([], offset=offset, limit=batch_size)
+            if not product_ids:  # Exit the loop when no more records are found
+                break
+
+            products = product_model.browse(product_ids)
+            refs_in_odoo.extend([p.default_code for p in products])
+            print(f'FETCHING PRODUCTS REFS : {len(refs_in_odoo)}')
+
+            offset += batch_size
+
+        pprint(refs_in_odoo)
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         ref_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
