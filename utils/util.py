@@ -7,6 +7,7 @@ import time
 import shutil
 from datetime import datetime
 
+import openpyxl
 import pandas as pd
 import requests
 from googletrans import Translator
@@ -539,3 +540,17 @@ class Util:
                 translated.append(categories_translations[categ])
 
         return translated
+
+    @classmethod
+    def get_skus_excel_filter(cls, file_path, column_letter, sheet_name=None):
+        workbook = openpyxl.load_workbook(file_path)
+
+        # If sheet_name is not specified, use the active sheet. Otherwise, use the specified sheet.
+        sheet = workbook[sheet_name] if sheet_name else workbook.active
+
+        # Extract data from the desired column
+        data = [cell.value for cell in sheet[column_letter] if cell.value is not None]
+
+        # Close the workbook and return the data
+        workbook.close()
+        return data

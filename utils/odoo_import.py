@@ -14,13 +14,24 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    odoo_host = 'trialdb-final.odoo.com'
+    # FIXME credentials not working ( host's ports closed )
+    odoo_host = 'optimaluz.soluntec.net'
     odoo_protocol = 'jsonrpc+ssl'
-    odoo_port = '443'
+    odoo_port = '8069'
 
-    odoo_db = 'trialdb-final'
-    odoo_login = 'itprotrial@outlook.com'
-    odoo_pass = 'itprotrial'
+    odoo_db = 'pruebas'
+    odoo_login = 'productos@optimaluz.com'
+    odoo_pass = 'uBnkfbE85xdi'
+
+
+    #odoo_host = 'trialdb-final.odoo.com'
+    #odoo_protocol = 'jsonrpc+ssl'
+    #odoo_port = '443'
+
+    #odoo_db = 'trialdb-final'
+    #odoo_login = 'itprotrial@outlook.com'
+    #odoo_pass = 'itprotrial'
+
 
     odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
 
@@ -52,6 +63,9 @@ class OdooImport:
 
     # Product category (not eshop)
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
+
+    # USE TO ONLY UPLOAD CERTAIN PRODUCTS
+    FILTER_SKUS_EXCEL_TO_IMPORT = Util.get_skus_excel_filter('data/misc/Comprado_Vendido_VTAC.xlsx', 'A')
 
     @classmethod
     def create_internal_category(cls, internal_category):
@@ -200,7 +214,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False, use_excel_filter=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -210,6 +224,9 @@ class OdooImport:
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
             for product in products:
+                if use_excel_filter and str(product['Sku']) not in cls.FILTER_SKUS_EXCEL_TO_IMPORT:
+                    continue
+
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
 
