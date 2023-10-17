@@ -331,7 +331,7 @@ class OdooImport:
         attachments_model = cls.odoo.env['ir.attachment']
 
         # Fetch records in batches to avoid RPCerror
-        batch_size = 100
+        batch_size = 200
         offset = 0
         refs_in_odoo = []
 
@@ -346,21 +346,14 @@ class OdooImport:
 
             offset += batch_size
 
-        pprint(refs_in_odoo)
-
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
-        ref_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
+        sku_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
 
         directory_list_uk = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['uk'])
-        ref_list_uk = [dirr.split('/')[3] for dirr in directory_list_uk]
+        sku_list_uk = [dirr.split('/')[3] for dirr in directory_list_uk]
 
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
-        ref_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
-
-        # TODO REMOVE after re-DL pdfs using internal refs as directories
-        ref_list_es = [f'VS{int(sku) * 2}' for sku in ref_list_es]
-        ref_list_uk = [f'VS{int(sku) * 2}' for sku in ref_list_uk]
-        ref_list_ita = [f'VS{int(sku) * 2}' for sku in ref_list_ita]
+        sku_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
 
         for index, ref in enumerate(refs_in_odoo[start_from:]):
             print(f'{index+1} / {len(refs_in_odoo[start_from:])}')
@@ -374,15 +367,22 @@ class OdooImport:
 
             attachment_paths = []
 
-            if ref in ref_list_es:
+            # TODO REMOVE after re-DL pdfs using internal refs as directories
+            try:
+                sku = str(int(int(ref[2:]) / 2))
+            except TypeError:
+                cls.logger.warn(f"SKIPPED SKU {ref} BECAUSE IT IS NOT CONVERTABLE TO INT")
+                continue
+
+            if sku in sku_list_es:
                 attachment_paths = Util.get_all_files_in_directory(
-                    directory_list_es[ref_list_es.index(ref)])
-            elif ref in ref_list_uk:
+                    directory_list_es[sku_list_es.index(sku)])
+            elif sku in sku_list_uk:
                 attachment_paths = Util.get_all_files_in_directory(
-                    directory_list_uk[ref_list_uk.index(ref)])
-            elif ref in ref_list_ita:
+                    directory_list_uk[sku_list_uk.index(sku)])
+            elif sku in sku_list_ita:
                 attachment_paths = Util.get_all_files_in_directory(
-                    directory_list_ita[ref_list_ita.index(ref)])
+                    directory_list_ita[sku_list_ita.index(sku)])
 
             if attachment_paths:
                 cls.logger.info(f"{ref}: UPLOADING {len(attachment_paths)} FILES")
@@ -400,7 +400,9 @@ class OdooImport:
 
                     attachment_name = f'{ref}_{attachment_name}'
 
-                    existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', ref)])
+                    res_id = product_model.search([('default_code', '=', ref)])[0]
+
+                    existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', res_id)])
 
                     if existing_attachment:
                         cls.logger.info(f'{ref}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
@@ -410,7 +412,7 @@ class OdooImport:
                         'name': attachment_name,
                         'datas': encoded_data,
                         'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                        'res_id': ref,  # ID of the record of the above model you want to link the attachment to (optional)
+                        'res_id': res_id,  # ID of the record of the above model you want to link the attachment to (optional)
                         'type': 'binary',
                     }
 
