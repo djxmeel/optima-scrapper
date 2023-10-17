@@ -14,11 +14,9 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_PRODUCTS = False
 IF_SKIP_ATTRS_OF_EXISTING = False
 
-# TODO default_code KeyError
-IF_IMPORT_ACC = False
+IF_IMPORT_ACC = True
 
-# TODO TEST in main workstation
-IF_IMPORT_PDFS = True
+IF_IMPORT_PDFS = False
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_IMGS = False

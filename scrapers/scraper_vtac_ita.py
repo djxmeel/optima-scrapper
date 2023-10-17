@@ -265,7 +265,6 @@ class ScraperVtacItalia:
                     cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
                     return extracted, new_links
 
-        # TODO use this json to save public_categories in PRODUCT_INFO jsons when scraping
         Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         return extracted, None

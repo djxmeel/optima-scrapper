@@ -409,6 +409,7 @@ class Util:
                         public_categories.append(ScraperVtacSpain.get_internal_category(dup))
                         duplicate_links.append(dup)
                 else:
+                    # TODO TEST after finishing categs. translations json
                     public_categories = Util.get_public_categories_ita_uk(link, scraper)
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES, public_categories)
