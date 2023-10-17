@@ -1,6 +1,8 @@
 import json
 import os
-from pprint import pprint
+import base64
+from PIL import Image
+from io import BytesIO
 
 import odoorpc
 
@@ -10,19 +12,32 @@ from scrapers.scraper_vtac_uk import ScraperVtacUk
 from utils.data_merger import DataMerger
 from utils.util import Util
 
-odoo_host = 'trialdb-final.odoo.com'
-odoo_protocol = 'jsonrpc+ssl'
-odoo_port = '443'
 
-odoo_db = 'trialdb-final'
-odoo_login = 'itprotrial@outlook.com'
-odoo_pass = 'itprotrial'
+def login_odoo():
+    odoo_host = 'trialdb-final.odoo.com'
+    odoo_protocol = 'jsonrpc+ssl'
+    odoo_port = '443'
 
-odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
-# Authenticate with your credentials
-odoo.login(odoo_db, odoo_login, odoo_pass)
+    odoo_db = 'trialdb-final'
+    odoo_login = 'itprotrial@outlook.com'
+    odoo_pass = 'itprotrial'
+
+    odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
+    # Authenticate with your credentials
+    odoo.login(odoo_db, odoo_login, odoo_pass)
+
+    return odoo
+
+
+odoo = login_odoo()
 
 product_model = odoo.env['product.template']
+product_attributes_model = odoo.env['product.attribute']
+
+
+# TODO hide filters
+def ecommerce_filter_visibility_modifier(is_visible):
+    pass
 
 
 def rename_key_in_json_file(file_path, old_key, new_key):
@@ -167,4 +182,47 @@ def get_distinct_categs():
 
     return empty_translation_dict
 
-Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
+
+def decode_and_save_b64_image(b64_string, output_folder, image_name):
+    """Decode base64 string to image and save it"""
+    image_data = base64.b64decode(b64_string)
+    image = Image.open(BytesIO(image_data))
+    image.save(os.path.join(output_folder, image_name))
+
+
+def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
+    """Process a JSON file with base64 encoded images and save DISTINCT images to a folder"""
+    # Ensure output folder exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    files_paths = Util.get_all_files_in_directory(dir_path)
+    b64_strings = []
+
+    for file_path in files_paths:
+        # Load the JSON data
+        with open(file_path, 'r') as f:
+            products_media = json.load(f)
+
+        for product in products_media:
+            if field not in product:
+                continue
+
+            # Get distinct base64 strings
+            b64_strings.extend(product[field])
+            print(len(b64_strings))
+
+    distinct_b64_strings = list(set(b64_strings))
+    print(len(distinct_b64_strings))
+
+    # Decode and save each distinct image
+    for index, b64_string in enumerate(distinct_b64_strings, 1):
+        image_name = f'image_{index}.png'
+        decode_and_save_b64_image(b64_string, output_folder, image_name)
+
+
+
+get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
+
+
+# Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
