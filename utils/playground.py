@@ -35,9 +35,10 @@ product_model = odoo.env['product.template']
 product_attributes_model = odoo.env['product.attribute']
 
 
-# TODO hide filters
 def ecommerce_filter_visibility_modifier(is_visible):
-    pass
+    attributes_ids = product_attributes_model.search([])
+
+    product_attributes_model.write(attributes_ids, {'visibility': is_visible})
 
 
 def rename_key_in_json_file(file_path, old_key, new_key):
@@ -222,7 +223,7 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 
 
 
-get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
-
-
+#get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
 # Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
+
+#ecommerce_filter_visibility_modifier('hidden')
