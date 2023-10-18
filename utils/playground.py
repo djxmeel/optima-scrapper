@@ -57,7 +57,7 @@ def rename_key_in_json_file(file_path, old_key, new_key):
         json.dump(data, f)
 
 
-def process_files(directory, old_key, new_key):
+def rename_key_in_directory_jsons(directory, old_key, new_key):
     """
     Processes all JSON files in the specified directory and renames the old_key to new_key.
     """

@@ -1,7 +1,6 @@
 import copy
 import os.path
 import time
-from pprint import pprint
 from urllib.error import HTTPError
 
 import odoorpc
@@ -14,29 +13,29 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    # FIXME credentials not working ( host's ports closed )
+    # FIXME credentials not working ( host's ports closed? )
     odoo_host = 'optimaluz.soluntec.net'
     odoo_protocol = 'jsonrpc+ssl'
-    odoo_port = '8069'
+    odoo_port = '443'
 
-    odoo_db = 'pruebas'
+    odoo_db = 'Pruebas'
     odoo_login = 'productos@optimaluz.com'
-    odoo_pass = 'uBnkfbE85xdi'
-
+    odoo_pass = '96c04503fc98aa4ffd90a9cf72ceb2d90d709b01'
 
     #odoo_host = 'trialdb-final.odoo.com'
-    #odoo_protocol = 'jsonrpc+ssl'
-    #odoo_port = '443'
 
     #odoo_db = 'trialdb-final'
     #odoo_login = 'itprotrial@outlook.com'
     #odoo_pass = 'itprotrial'
 
 
+    #odoo = odoorpc.ODOO(odoo_host, port=odoo_port)
     odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
+    print("CONNECTED TO ODOO")
 
     # Authenticate with your credentials
     odoo.login(odoo_db, odoo_login, odoo_pass)
+    print("LOGGED IN ODOO")
 
     ATTRIBUTE_MODEL = odoo.env['product.attribute']
     ATTRIBUTE_VALUE_MODEL = odoo.env['product.attribute.value']
@@ -65,7 +64,7 @@ class OdooImport:
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
 
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
-    FILTER_SKUS_EXCEL_TO_IMPORT = Util.get_skus_excel_filter('data/misc/Comprado_Vendido_VTAC.xlsx', 'A')
+    FILTER_SKUS_EXCEL_TO_IMPORT = Util.get_skus_excel_filter('data/misc/Productos Comprados o Vendidos VTAC.xlsx', 'A')
 
     @classmethod
     def create_internal_category(cls, internal_category):
