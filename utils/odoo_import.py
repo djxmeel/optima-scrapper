@@ -608,3 +608,21 @@ class OdooImport:
             # Create the custom field in the Odoo instance
             new_field_id = fields_model.create(custom_field_data)
             cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")
+
+    @classmethod
+    def import_public_categories(cls, public_categories_json_path):
+        public_categories = Util.load_json_data(public_categories_json_path)
+        public_categories_model = cls.odoo.env['product.public.category']
+
+        for category in public_categories:
+            if public_categories_model.search([('name', '=', category["Display Name"]), ('sequence', '=', category["Sequence"])]):
+                cls.logger.info(f'Category {category["Display Name"]} already exists in Odoo')
+                continue
+
+            public_categories_model.create({
+                'name': category["Display Name"],
+                'parent_id': public_categories_model.search([('name', '=', category["Parent Category"])])[0] if category["Parent Category"] else '',
+                'sequence': category["Sequence"]
+            })
+
+            cls.logger.info("CREATED CATEGORY: " + category["Display Name"])
