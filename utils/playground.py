@@ -3,6 +3,7 @@ import os
 import base64
 from PIL import Image
 from io import BytesIO
+import pandas as pd
 
 import odoorpc
 
@@ -184,6 +185,20 @@ def get_distinct_categs():
     return empty_translation_dict
 
 
+def convert_xlsx_to_json(excel_file_path, json_file_path):
+    # Load the XLSX file into a pandas DataFrame
+    df = pd.read_excel(excel_file_path)
+
+    # Convert the DataFrame to JSON
+    json_data = df.to_json(orient='records', date_format='iso')
+
+    # If you want to write the JSON data to a file, you could do so like this:
+    with open(json_file_path, 'w') as json_file:
+        json_file.write(json_data)
+
+    return json_data
+
+
 def decode_and_save_b64_image(b64_string, output_folder, image_name):
     """Decode base64 string to image and save it"""
     image_data = base64.b64decode(b64_string)
@@ -227,3 +242,5 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 # Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
 
 #ecommerce_filter_visibility_modifier('hidden')
+
+#convert_xlsx_to_json('data/misc/VTAC_ES_PUBLIC_CATEGORIES.xlsx', 'data/misc/PUBLIC_CATEGORIES.json')
