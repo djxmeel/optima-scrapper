@@ -13,7 +13,7 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    # FIXME credentials not working ( host's ports closed? )
+    # odoo_host = 'trialdb-final.odoo.com'
     odoo_host = 'optimaluz.soluntec.net'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
@@ -22,11 +22,9 @@ class OdooImport:
     odoo_login = 'productos@optimaluz.com'
     odoo_pass = '96c04503fc98aa4ffd90a9cf72ceb2d90d709b01'
 
-    #odoo_host = 'trialdb-final.odoo.com'
-
-    #odoo_db = 'trialdb-final'
-    #odoo_login = 'itprotrial@outlook.com'
-    #odoo_pass = 'itprotrial'
+    # odoo_db = 'trialdb-final'
+    # odoo_login = 'itprotrial@outlook.com'
+    # odoo_pass = 'itprotrial'
 
 
     #odoo = odoorpc.ODOO(odoo_host, port=odoo_port)
@@ -362,6 +360,7 @@ class OdooImport:
             print(f'FETCHING ALL PRODUCTS REFS : {len(refs_in_odoo)}')
 
             offset += batch_size
+            break
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         sku_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
@@ -386,8 +385,10 @@ class OdooImport:
 
             # TODO REMOVE after re-DL pdfs using internal refs as directories
             try:
+                if type(ref) is not str:
+                    continue
                 sku = str(int(int(ref[2:]) / 2))
-            except TypeError:
+            except TypeError and ValueError:
                 cls.logger.warn(f"SKIPPED SKU {ref} BECAUSE IT IS NOT CONVERTABLE TO INT")
                 continue
 
