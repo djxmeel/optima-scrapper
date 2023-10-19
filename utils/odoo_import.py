@@ -446,17 +446,13 @@ class OdooImport:
                         continue
 
     @classmethod
-    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path, use_excel_filter=False):
+    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
             products = Util.load_json_data(file_path)
 
             for product in products:
-                if use_excel_filter and str(product['Sku']) not in cls.FILTER_SKUS_EXCEL_TO_IMPORT:
-                    cls.logger.info(f"SKIPPING SKU {product['Sku']} IMGS BECAUSE IT IS NOT IN EXCEL FILTER")
-                    continue
-
                 if 'imgs' in product:
                     cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
 
@@ -535,17 +531,13 @@ class OdooImport:
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
     @classmethod
-    def import_icons(cls, target_dir_path, uploaded_dir_path, use_excel_filter=False):
+    def import_icons(cls, target_dir_path, uploaded_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
             products = Util.load_json_data(file_path)
 
             for product in products:
-                if use_excel_filter and str(product['Sku']) not in cls.FILTER_SKUS_EXCEL_TO_IMPORT:
-                    cls.logger.info(f"SKIPPING SKU {product['Sku']} ICONS BECAUSE IT IS NOT IN EXCEL FILTER")
-                    continue
-
                 if 'icons' in product:
                     cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
 
