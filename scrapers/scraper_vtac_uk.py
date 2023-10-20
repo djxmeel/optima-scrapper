@@ -179,7 +179,7 @@ class ScraperVtacUk:
         try:
             item['default_code'] = f'{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
-            cls.logger.warning(f'SKU NO ENCONTRADO PARA URL {item['url']}')
+            cls.logger.warning(f'SKU NO ENCONTRADO PARA URL {item["url"]}')
             return None
 
         internal_ref = Util.get_internal_ref_from_sku(item['default_code'])

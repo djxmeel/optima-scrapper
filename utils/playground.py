@@ -300,10 +300,8 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 
 #convert_xlsx_to_json('data/misc/VTAC_ES_PUBLIC_CATEGORIES.xlsx', 'data/misc/PUBLIC_CATEGORIES.json')
 
-# TODO run below calls in workstation
+
 #process_ref_to_sku(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 #process_ref_to_sku(DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH)
-
-#process_names_to_ref__clean_bad_skus(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)

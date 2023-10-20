@@ -360,7 +360,6 @@ class OdooImport:
             print(f'FETCHING ALL PRODUCTS REFS : {len(skus_in_odoo)}')
 
             offset += batch_size
-            break
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         sku_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
