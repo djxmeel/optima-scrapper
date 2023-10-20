@@ -187,13 +187,13 @@ class DataMerger:
         return cls.load_data_for_country(country)
 
     @classmethod
-    def get_product_data_from_country_ref(cls, ref, country, only_media=False):
+    def get_product_data_from_country_sku(cls, sku, country, only_media=False):
         data = cls.country_data[country]
         if only_media:
             data = cls.country_media[country]
 
         for product in data:
-            if product["default_code"] == ref:
+            if product["default_code"] == sku:
                 return product
         return None
 
@@ -207,31 +207,31 @@ class DataMerger:
 
     @classmethod
     def merge_data(cls):
-        unique_product_refs = Util.get_unique_refs_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
+        unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
 
-        for ref in unique_product_refs:
-            product_data = {'es': cls.get_product_data_from_country_ref(ref, 'es'),
-                            'uk': cls.get_product_data_from_country_ref(ref, 'uk'),
-                            'ita': cls.get_product_data_from_country_ref(ref, 'ita')}
+        for sku in unique_product_skus:
+            product_data = {'es': cls.get_product_data_from_country_sku(sku, 'es'),
+                            'uk': cls.get_product_data_from_country_sku(sku, 'uk'),
+                            'ita': cls.get_product_data_from_country_sku(sku, 'ita')}
 
-            product_media = {'es': cls.get_product_data_from_country_ref(ref, 'es', True),
-                                'uk': cls.get_product_data_from_country_ref(ref, 'uk', True),
-                                'ita': cls.get_product_data_from_country_ref(ref, 'ita', True)}
+            product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
+                                'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
+                                'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
 
-            # Add empty spaces to ref to make it 8 characters long for better readability
-            ref += ' ' * (8 - len(ref))
+            # Add empty spaces to sku to make it 8 characters long for better readability
+            sku_spaced = sku + ' ' * (8 - len(sku))
 
-            cls.logger.info(f'\n{ref}: ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
+            cls.logger.info(f'\n{sku_spaced}: ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
 
             merged_product = {}
-            merged_media = {"default_code": ref}
+            merged_media = {"default_code": sku}
 
             # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:
                 # Stop at first found in priority order
                 if product_data[country] is not None:
                     merged_product = copy.deepcopy(product_data[country])
-                    cls.logger.info(f'{ref}: DEFAULT -> {country}')
+                    cls.logger.info(f'{sku_spaced}: DEFAULT -> {country}')
                     break
 
             # Then, merge fields from other countries in priority order
@@ -242,10 +242,10 @@ class DataMerger:
                     if product_data.get(country) and product_data[country].get(field) and product_data[country][field]:
                         if type(product_data[country][field]) is list:
                             merged_product[field] = copy.deepcopy(product_data[country][field])
-                            cls.logger.info(f'{ref}: MERGE {country} -> {field}')
+                            cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                             break
                         merged_product[field] = product_data[country][field]
-                        cls.logger.info(f'{ref}: MERGE {country} -> {field}')
+                        cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                         break
 
             # Then, merge MEDIA fields in priority order
@@ -254,10 +254,10 @@ class DataMerger:
                     if product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
                         if type(product_media[country][field]) is list:
                             merged_media[field] = copy.deepcopy(product_media[country][field])
-                            cls.logger.info(f'{ref}: MERGE {country} -> {field}')
+                            cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                             break
                         merged_media[field] = product_media[country][field]
-                        cls.logger.info(f'{ref}: MERGE {country} -> {field}')
+                        cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                         break
 
             for field_country in cls.COUNTRY_FIELDS_ALWAYS_KEEP:
@@ -266,7 +266,7 @@ class DataMerger:
                         field_to_keep = product_data[field_country['country']][field_country['field']]
                         if field_to_keep and merged_product[field_country['field']] is not field_to_keep:
                             merged_product[field_country['field']] += field_to_keep
-                            cls.logger.info(f'{ref}: KEEP {field_country["country"]} -> {field_country["field"]}')
+                            cls.logger.info(f'{sku_spaced}: KEEP {field_country["country"]} -> {field_country["field"]}')
                 except KeyError:
                     pass
 

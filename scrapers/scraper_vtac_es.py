@@ -86,22 +86,16 @@ class ScraperVtacSpain:
 
         # Extracción y formateo del SKU
         if 'Código de orden' in item.keys():
-            item['Sku'] = f'{item["Código de orden"]}'
+            item['default_code'] = f'{item["Código de orden"]}'
             del item['Código de orden']
         else:
-            item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
+            item['default_code'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
-        except:
+        internal_ref = Util.get_internal_ref_from_sku(item['Sku'])
+
+        # If internal_ref is None, it's SKU contains letters (Not V-TAC)
+        if not internal_ref:
             return None
-
-        # Extracción de la etiqueta energética
-        # try:
-        #     energy_tag_src = driver.find_element(By.XPATH, energy_tag_xpath).get_attribute('src')
-        #     item['imgs'].append(Util.src_to_base64(energy_tag_src))
-        # except NoSuchElementException:
-        #     pass
 
         # Extracción de las dimensiones gráficas
         try:
@@ -142,7 +136,7 @@ class ScraperVtacSpain:
             pass
 
         # Extracción del título
-        item['name'] = f'[{item["default_code"]}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():

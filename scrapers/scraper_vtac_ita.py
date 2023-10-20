@@ -84,7 +84,7 @@ class ScraperVtacItalia:
                 kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
                 kit_info = {'link': anchor.get_attribute('href'),
-                            'default_code': Util.get_internal_ref_from_sku(kit_span.find_element(By.TAG_NAME, 'span').text),
+                            'default_code': kit_span.find_element(By.TAG_NAME, 'span').text,
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
@@ -102,7 +102,7 @@ class ScraperVtacItalia:
                 acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
                 acces_info = {'link': acces_anchor.get_attribute('href'),
-                              'default_code': Util.get_internal_ref_from_sku(acces_anchor.find_element(By.TAG_NAME, 'b').text),
+                              'default_code': acces_anchor.find_element(By.TAG_NAME, 'b').text,
                               'cantidad': acces_cantidad.text.split('x')[0]
                               }
 
@@ -163,10 +163,13 @@ class ScraperVtacItalia:
                 item['weight'] = float(item['Peso'].lower().replace(',', '.').replace('kg', ''))
                 del item['Peso']
 
-        try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
-        except:
+        internal_ref = Util.get_internal_ref_from_sku(item['Sku'])
+
+        if not internal_ref:
             return None
+
+        item['default_code'] = item['Sku']
+        del item['Sku']
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',
@@ -195,7 +198,7 @@ class ScraperVtacItalia:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Formateo del titulo
-        item['name'] = f'[{item["default_code"]}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

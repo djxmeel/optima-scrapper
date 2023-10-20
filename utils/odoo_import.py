@@ -50,7 +50,7 @@ class OdooImport:
                         'ita': 'data/vtac_italia/PRODUCT_PDF/'}
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'Sku', 'public_categories', 'invoice_policy', 'detailed_type')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'invoice_policy', 'detailed_type')
 
     # Invoice policy (delivery ; order)
     CURRENT_INVOICE_POLICY = 'delivery'
@@ -208,7 +208,7 @@ class OdooImport:
             cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
             return
 
-        cls.logger.info(f"FINISHED ASSIGNING {product['default_code']} ATTRIBUTES")
+        cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
     def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False, use_excel_filter=False):
@@ -221,8 +221,8 @@ class OdooImport:
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
             for product in products:
-                if use_excel_filter and str(product['Sku']) not in cls.FILTER_SKUS_EXCEL_TO_IMPORT:
-                    cls.logger.info(f"SKIPPING SKU {product['Sku']} INFO BECAUSE IT IS NOT IN EXCEL FILTER")
+                if use_excel_filter and product['default_code'] not in cls.FILTER_SKUS_EXCEL_TO_IMPORT:
+                    cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN EXCEL FILTER")
                     continue
 
                 counter += 1
@@ -241,7 +241,7 @@ class OdooImport:
                         if key not in Util.ODOO_CUSTOM_FIELDS:
                             del product[key]
                         else:
-                            product[Util.format_field_odoo(key)] = product[key]
+                            product[Util.format_odoo_custom_field_name(key)] = product[key]
                             del product[key]
 
                 if not product_ids:
@@ -309,12 +309,12 @@ class OdooImport:
 
                 if accessories_sku:
                     # Search for the product template with the given name
-                    main_product_id = cls.PRODUCT_MODEL.search([('x_sku', '=', product['Sku'])])
+                    main_product_id = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
                     if main_product_id:
                         main_product_id = main_product_id[0]
-                        cls.logger.info(f'SKU: {product["Sku"]} Accesorios: {len(accessories_sku)}')
+                        cls.logger.info(f'SKU: {product["default_code"]} Accesorios: {len(accessories_sku)}')
                     else:
-                        cls.logger.info(f'SKU: {product["Sku"]} NOT FOUND IN ODOO')
+                        cls.logger.info(f'SKU: {product["default_code"]} NOT FOUND IN ODOO')
                         continue
 
                     for acc in accessories_sku:
@@ -326,12 +326,12 @@ class OdooImport:
 
                         try:
                             new_record_id = acc_model.create(new_record_data)
-                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["Sku"]} ID {main_product_id}')
+                            cls.logger.info(f'CREATED ACCESORIO OF PRODUCT WITH SKU {product["default_code"]} ID {main_product_id}')
 
                             desc_extension += f'<li><b>Referencia: </b>{new_record_data["x_default_code"]}  <b>Cantidad: </b>{new_record_data["x_cantidad"]}</li>'
 
                         except RPCError:
-                            cls.logger.info(f'{product["Sku"]} ERROR CREATING ACCESORIO')
+                            cls.logger.info(f'{product["default_code"]} ERROR CREATING ACCESORIO')
 
                     desc_extension += '</ul>'
 
@@ -348,7 +348,7 @@ class OdooImport:
         # Fetch records in batches to avoid RPCerror
         batch_size = 200
         offset = 0
-        refs_in_odoo = []
+        skus_in_odoo = []
 
         while True:
             product_ids = product_model.search([], offset=offset, limit=batch_size)
@@ -356,8 +356,8 @@ class OdooImport:
                 break
 
             products = product_model.browse(product_ids)
-            refs_in_odoo.extend([p.default_code for p in products])
-            print(f'FETCHING ALL PRODUCTS REFS : {len(refs_in_odoo)}')
+            skus_in_odoo.extend([p.default_code for p in products])
+            print(f'FETCHING ALL PRODUCTS REFS : {len(skus_in_odoo)}')
 
             offset += batch_size
             break
@@ -371,26 +371,19 @@ class OdooImport:
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
         sku_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
 
-        for index, ref in enumerate(refs_in_odoo[start_from:]):
-            print(f'{index+1} / {len(refs_in_odoo[start_from:])}')
+        for index, sku in enumerate(skus_in_odoo[start_from:]):
+            print(f'{index+1} / {len(skus_in_odoo[start_from:])}')
+            res_id = product_model.search([('default_code', '=', sku)])[0]
 
             if skip_products_w_attachments:
-                product_uploaded_attachments = attachments_model.search([('res_id', '=', ref)])
+
+                product_uploaded_attachments = attachments_model.search([('res_id', '=', res_id)])
 
                 if product_uploaded_attachments:
-                    cls.logger.warn(f"SKIPPING {ref} BECAUSE IT HAS ATTACHMENTS UPLOADED")
+                    cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
                     continue
 
             attachment_paths = []
-
-            # TODO REMOVE after re-DL pdfs using internal refs as directories
-            try:
-                if type(ref) is not str:
-                    continue
-                sku = str(int(int(ref[2:]) / 2))
-            except TypeError and ValueError:
-                cls.logger.warn(f"SKIPPED SKU {ref} BECAUSE IT IS NOT CONVERTABLE TO INT")
-                continue
 
             if sku in sku_list_es:
                 attachment_paths = Util.get_all_files_in_directory(
@@ -403,7 +396,7 @@ class OdooImport:
                     directory_list_ita[sku_list_ita.index(sku)])
 
             if attachment_paths:
-                cls.logger.info(f"{ref}: UPLOADING {len(attachment_paths)} FILES")
+                cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
                 for attachment_path in attachment_paths:
                     with open(attachment_path, 'rb') as file:
                         pdf_binary_data = file.read()
@@ -416,14 +409,12 @@ class OdooImport:
                     except:
                         pass
 
-                    attachment_name = f'{ref}_{attachment_name}'
-
-                    res_id = product_model.search([('default_code', '=', ref)])[0]
+                    attachment_name = f'{res_id}_{attachment_name}'
 
                     existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', res_id)])
 
                     if existing_attachment:
-                        cls.logger.info(f'{ref}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                        cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
                         continue
 
                     attachment_data = {
@@ -437,9 +428,9 @@ class OdooImport:
                     try:
                         attachment_id = attachments_model.create(attachment_data)
                         cls.logger.info(
-                            f'{ref}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+                            f'{sku}: ATTACHMENT WITH NAME {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
                     except TimeoutError:
-                        cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {ref}")
+                        cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
                         time.sleep(10)
                         cls.import_pdfs(start_from, skip_products_w_attachments)
                     except HTTPError:
@@ -590,7 +581,7 @@ class OdooImport:
         product_model_id = cls.odoo.env['ir.model'].search([('model', '=', 'product.template')])[0]
 
         for new_field in fields:
-            new_field_formatted = Util.format_field_odoo(new_field)
+            new_field_formatted = Util.format_odoo_custom_field_name(new_field)
 
             if fields_model.search([('name', '=', new_field_formatted), ('model', '=', 'product.template')]):
                 cls.logger.info(f'Field {new_field} already exists in Odoo')

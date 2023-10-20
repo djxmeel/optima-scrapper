@@ -34,7 +34,7 @@ class Util:
     PUBLIC_CATEGORIES_TRANSLATION_PATH = 'data/vtac_merged/FIELDS/PUBLIC_CATEGORIES_TRANSLATIONS.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('Sku', 'url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
     ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode')
     # Media fields
@@ -159,7 +159,10 @@ class Util:
 
     @staticmethod
     def get_internal_ref_from_sku(sku):
-        return f'VS{int(sku) * 2}'
+        try:
+            return f'VS{int(sku) * 2}'
+        except ValueError:
+            return None
 
     @staticmethod
     def load_json_data(file_path):
@@ -228,18 +231,14 @@ class Util:
 
     @staticmethod
     def get_unique_skus_from_dir(directory):
-        return set(product['Sku'] for product in Util.load_data_in_dir(directory))
-
-    @staticmethod
-    def get_unique_refs_from_dir(directory):
         return set(product['default_code'] for product in Util.load_data_in_dir(directory))
 
     @staticmethod
-    def get_unique_refs_from_dictionary(dictionary):
+    def get_unique_skus_from_dictionary(dictionary):
         return set(product['default_code'] for product in dictionary)
 
     @staticmethod
-    def format_field_odoo(field):
+    def format_odoo_custom_field_name(field):
         replacements = [
             (" ", "_"),
             ("(", ""),
@@ -279,7 +278,7 @@ class Util:
         for product in json_data:
             for field in product.keys():
                 fields.add(field)
-                ejemplos[field] = f'{product["Sku"]} -> {product[field]}'
+                ejemplos[field] = f'{product["default_code"]} -> {product[field]}'
                 urls[field] = product["url"]
 
         excel_dicts = []
@@ -329,7 +328,7 @@ class Util:
 
         for field in fields:
             excel_dicts.append(
-                {'Nombre de campo': Util.format_field_odoo(field),
+                {'Nombre de campo': Util.format_odoo_custom_field_name(field),
                  'Etiqueta de campo': field,
                  'Modelo': 'product.template',
                  'Tipo de campo': 'texto',

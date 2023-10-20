@@ -85,7 +85,6 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/electrical/cable-tie.html',
         'https://www.vtacexports.com/default/electrical/vacuum-cleaner-0.html',
         'https://www.vtacexports.com/default/electrical/led-screen-1.html'
-
     ]
 
     PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
@@ -178,13 +177,14 @@ class ScraperVtacUk:
 
         # Extracción del SKU
         try:
-            item['Sku'] = f'{Util.get_sku_from_link_uk(driver)}'
+            item['default_code'] = f'{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
-            cls.logger.warning('SKU NO ENCONTRADO')
+            cls.logger.warning(f'SKU NO ENCONTRADO PARA URL {item['url']}')
+            return None
 
-        try:
-            item['default_code'] = Util.get_internal_ref_from_sku(item['Sku'])
-        except:
+        internal_ref = Util.get_internal_ref_from_sku(item['default_code'])
+
+        if not internal_ref:
             return None
 
         # Extracción del precio
@@ -202,7 +202,7 @@ class ScraperVtacUk:
                                                                           '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{item["default_code"]}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'
 
         # Extracción de imágenes
         try:

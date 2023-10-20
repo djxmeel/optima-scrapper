@@ -15,11 +15,11 @@ from utils.util import Util
 
 
 def login_odoo():
-    odoo_host = 'trialdb-final.odoo.com'
+    odoo_host = 'trialdb-final2.odoo.com'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
 
-    odoo_db = 'trialdb-final'
+    odoo_db = 'trialdb-final2'
     odoo_login = 'itprotrial@outlook.com'
     odoo_pass = 'itprotrial'
 
@@ -98,7 +98,7 @@ def process_sku_to_ref(directory):
             print(f"Processed {file_path}")
 
 
-def process_names_to_ref(directory):
+def process_ref_to_sku(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.json'):
             file_path = os.path.join(directory, filename)
@@ -109,8 +109,41 @@ def process_names_to_ref(directory):
 
             # Check if the old key exists and rename it
             for product in data:
+                if 'Sku' in product:
+                    product['default_code'] = product['Sku']
+                    del product['Sku']
+                else:
+                    product['default_code'] = str(int(int(product["default_code"][2:]) / 2))
+            with open(file_path, 'w') as f:
+                json.dump(data, f)
+
+            print(f"Processed {file_path}")
+
+
+def process_names_to_ref__clean_bad_skus(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith('.json'):
+            file_path = os.path.join(directory, filename)
+
+            bad_sku_products = []
+
+            with open(file_path, 'r') as f:
+                print(f"OPENING {file_path}")
+                data = json.load(f)
+
+            # Check if the old key exists and rename it
+            for product in data:
                 if 'name' in product:
-                    product['name'] = f'[{product["default_code"]}] {product["name"].split("] ")[1]}'
+                    try:
+                        product['name'] = f'[VS{int(product["default_code"]) * 2}] {product["name"].split("] ")[1]}'
+                    except ValueError:
+                        bad_sku_products.append(product)
+                        print("REMOVING PRODUCT W/ BAD SKU: " + product['default_code'])
+                        continue
+
+            for product in bad_sku_products:
+                data.remove(product)
+
             with open(file_path, 'w') as f:
                 json.dump(data, f)
 
@@ -139,6 +172,28 @@ def process_sku_to_ref_acc(directory):
                 json.dump(data, f)
 
             print(f"Processed {file_path}")
+
+
+def process_ref_to_sku_acc(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith('.json'):
+            file_path = os.path.join(directory, filename)
+
+            with open(file_path, 'r') as f:
+                print(f"OPENING {file_path}")
+                data = json.load(f)
+
+            # Check if the old key exists and rename it
+            for product in data:
+                if 'accesorios' in product:
+                    for acc in product['accesorios']:
+                        if acc["default_code"].__contains__("VS"):
+                            acc['default_code'] = str(int(int(acc["default_code"][2:]) / 2))
+            with open(file_path, 'w') as f:
+                json.dump(data, f)
+
+            print(f"Processed {file_path}")
+
 
 def field_update():
     product_ids = product_model.search([])
@@ -244,3 +299,11 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 #ecommerce_filter_visibility_modifier('hidden')
 
 #convert_xlsx_to_json('data/misc/VTAC_ES_PUBLIC_CATEGORIES.xlsx', 'data/misc/PUBLIC_CATEGORIES.json')
+
+# TODO run below calls in workstation
+#process_ref_to_sku(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+#process_ref_to_sku(DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH)
+
+#process_names_to_ref__clean_bad_skus(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+
+#process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
