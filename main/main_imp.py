@@ -11,6 +11,8 @@ UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
 PUBLIC_CATEGORIES_FILE_PATH = 'data/misc/PUBLIC_CATEGORIES.json'
 
+SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/misc/Supplier Stock.xlsx'
+
 IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
@@ -21,12 +23,14 @@ USE_EXCEL_FILTER = False
 
 IF_IMPORT_ACC = False
 
-IF_IMPORT_PDFS = True
+IF_IMPORT_PDFS = False
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_IMGS = False
 
 IF_IMPORT_ICONS = False
+
+IF_IMPORT_SUPPLIER_INFO = True
 
 OdooImport.logger = Loggers.setup_odoo_import_logger()
 
@@ -66,3 +70,8 @@ if IF_IMPORT_ICONS:
     OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
     OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ICONS IMPORT')
+
+if IF_IMPORT_SUPPLIER_INFO:
+    OdooImport.logger.info(f'BEGINNING SUPPLIER INFO IMPORT')
+    OdooImport.import_supplier_info(SUPPLIER_STOCK_EXCEL_FILE_PATH)
+    OdooImport.logger.info(f'FINISHED SUPPLIER INFO IMPORT')

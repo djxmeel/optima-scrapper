@@ -15,13 +15,18 @@ from utils.util import Util
 
 
 def login_odoo():
-    odoo_host = 'trialdb-final2.odoo.com'
+    #odoo_host = 'trialdb-final2.odoo.com'
+    odoo_host = 'optimaluz.soluntec.net'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
 
-    odoo_db = 'trialdb-final2'
-    odoo_login = 'itprotrial@outlook.com'
-    odoo_pass = 'itprotrial'
+    #odoo_db = 'trialdb-final2'
+    #odoo_login = 'itprotrial@outlook.com'
+    #odoo_pass = 'itprotrial'
+
+    odoo_db = 'Pruebas'
+    odoo_login = 'productos@optimaluz.com'
+    odoo_pass = '96c04503fc98aa4ffd90a9cf72ceb2d90d709b01'
 
     odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
     # Authenticate with your credentials
@@ -34,6 +39,25 @@ odoo = login_odoo()
 
 product_model = odoo.env['product.template']
 product_attributes_model = odoo.env['product.attribute']
+
+def change_internal_ref_odoo():
+    # Fetch records in batches to avoid RPCerror
+    batch_size = 200
+    offset = 0
+    products = []
+
+    while True:
+        product_ids = product_model.search([], offset=offset, limit=batch_size)
+        if not product_ids:  # Exit the loop when no more records are found
+            break
+
+        products.extend(product_model.browse(product_ids))
+        print(len(products))
+
+        offset += batch_size
+
+    for product in products:
+        product_model.write(product.id, {'default_code': product.x_sku})
 
 
 def ecommerce_filter_visibility_modifier(is_visible):
@@ -305,3 +329,4 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 #process_ref_to_sku(DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH)
 
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+change_internal_ref_odoo()
