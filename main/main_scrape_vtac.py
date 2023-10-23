@@ -16,20 +16,20 @@ country_scrapers = {
 }
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS = True, False
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS_LINKS = True, True
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
 # If False : only extracts CUSTOM fields present in ODOO
 IF_ALL_FIELDS = False
 
-chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_ITEMS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
+chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS_LINKS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
 scraper = country_scrapers[chosen_country]
 scraper.logger = Loggers.setup_vtac_logger(chosen_country)
 
@@ -58,7 +58,7 @@ if IF_EXTRACT_ITEM_INFO:
 
     scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
 
-    links_path = scraper.NEW_PRODUCTS_LINKS_PATH if IF_ONLY_NEW_ITEMS else scraper.PRODUCTS_LINKS_PATH
+    links_path = scraper.NEW_PRODUCTS_LINKS_PATH if IF_ONLY_NEW_PRODUCTS_LINKS else scraper.PRODUCTS_LINKS_PATH
 
     if not os.path.exists(links_path):
         scraper.logger.info(f'No links file found at {links_path}. Please extract links first.')

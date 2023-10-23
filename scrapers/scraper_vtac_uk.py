@@ -254,12 +254,7 @@ class ScraperVtacUk:
                 return
 
             # Número total de productos por categoría
-            try:
-                product_count = int(
-                    driver.find_element(By.XPATH, '//*[@id="maincontent"]/div[4]/div[1]/h5').text.split(' ')[0])
-            except NoSuchElementException:
-                product_count = int(
-                    driver.find_element(By.XPATH, '//main/div[3]/div[1]/h5').text.split(' ')[0])
+            product_count = int(driver.find_element(By.XPATH, '//aside/h5').text.split(' ')[0])
 
             # Número de páginas (Total / 16)
             page_count = math.ceil(product_count / 16)
@@ -269,7 +264,8 @@ class ScraperVtacUk:
 
                 time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
 
-                links = driver.find_elements(By.XPATH, '/html/body/div[3]/main/div[4]/div[2]/section/div[2]/div//form/a')
+                links = driver.find_elements(By.XPATH, "//main//div[@class='column main']/section//form/a")
+                links.extend(driver.find_elements(By.XPATH, "//main//div[@class='column main']/section/div/div/div/a"))
 
                 if len(links) < 1:
                     links = driver.find_elements(By.XPATH, '//main//form/a')
@@ -294,6 +290,9 @@ class ScraperVtacUk:
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
+        # FIXME rescrape links to get links_categories json
+        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+
         if update:
             links_path = ScraperVtacUk.PRODUCTS_LINKS_PATH
 
@@ -302,8 +301,6 @@ class ScraperVtacUk:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
                     return extracted, new_links
-
-        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         return extracted, None
 
