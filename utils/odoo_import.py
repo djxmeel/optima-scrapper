@@ -1,6 +1,7 @@
 import copy
 import os.path
 import time
+from pprint import pprint
 from urllib.error import HTTPError
 
 import odoorpc
@@ -13,7 +14,7 @@ from utils.util import Util
 class OdooImport:
     logger = None
 
-    # odoo_host = 'trialdb-final.odoo.com'
+    #odoo_host = 'trialdb-final2.odoo.com'
     odoo_host = 'optimaluz.soluntec.net'
     odoo_protocol = 'jsonrpc+ssl'
     odoo_port = '443'
@@ -22,9 +23,9 @@ class OdooImport:
     odoo_login = 'productos@optimaluz.com'
     odoo_pass = '96c04503fc98aa4ffd90a9cf72ceb2d90d709b01'
 
-    # odoo_db = 'trialdb-final'
-    # odoo_login = 'itprotrial@outlook.com'
-    # odoo_pass = 'itprotrial'
+    #odoo_db = 'trialdb-final2'
+    #odoo_login = 'itprotrial@outlook.com'
+    #odoo_pass = 'itprotrial'
 
 
     #odoo = odoorpc.ODOO(odoo_host, port=odoo_port)
@@ -357,7 +358,7 @@ class OdooImport:
 
             products = product_model.browse(product_ids)
             skus_in_odoo.extend([p.default_code for p in products])
-            print(f'FETCHING ALL PRODUCTS REFS : {len(skus_in_odoo)}')
+            print(f'FETCHING ALL PRODUCTS SKUS : {len(skus_in_odoo)}')
 
             offset += batch_size
 
@@ -618,3 +619,51 @@ class OdooImport:
             })
 
             cls.logger.info("CREATED CATEGORY: " + category["Display Name"])
+
+    @classmethod
+    def browse_all_products_in_batches(cls, batch_size=200):
+        # Fetch records in batches to avoid RPCerror
+        batch_size = batch_size
+        offset = 0
+        products = []
+
+        while True:
+            product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
+            if not product_ids:  # Exit the loop when no more records are found
+                break
+
+            products.extend(cls.PRODUCT_MODEL.browse(product_ids))
+            cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
+
+            offset += batch_size
+
+        return products
+
+    @classmethod
+    def import_supplier_info(cls, supplier_stock_excel_path):
+        supplier_info_model = cls.odoo.env['product.supplierinfo']
+        partner_model = cls.odoo.env['res.partner']
+
+        products = cls.browse_all_products_in_batches()
+        stock_dicts = Util.load_excel_columns_in_dictionary(supplier_stock_excel_path)
+
+        for product in products:
+            supplier_prod_name = product.name
+
+            for line in stock_dicts:
+                if str(line['sku']) == product.default_code:
+                    supplier_prod_name = line['name']
+                    break
+
+            if supplier_info_model.search([('product_tmpl_id', '=', product.id)]):
+                cls.logger.info(f"SKIPPING PRODUCT {product.default_code} BECAUSE IT ALREADY HAS SUPPLIER INFO")
+                continue
+
+            supplier_info_model.create({
+                'product_name': supplier_prod_name,
+                'partner_id': partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0],
+                'product_tmpl_id': product.id,
+                'product_code': product.default_code
+            })
+
+            cls.logger.info(f"CREATED SUPPLIER INFO FOR PRODUCT {product.default_code}")

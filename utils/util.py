@@ -553,3 +553,14 @@ class Util:
         # Close the workbook and return the data
         workbook.close()
         return data
+
+
+    @classmethod
+    def load_excel_columns_in_dictionary(cls, file_path):
+        # Read the Excel file using pandas
+        df = pd.read_excel(file_path, engine='openpyxl')
+
+        # Convert the DataFrame to dictionary
+        result_dict = df.to_dict(orient='records')
+
+        return result_dict
