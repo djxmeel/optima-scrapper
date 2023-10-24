@@ -194,16 +194,16 @@ class ScraperVtacUk:
         # Extracción del precio
         try:
             item['list_price'] = driver.find_element(By.XPATH,
-                                                     f'/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[3]/div/div/div[2]/div[1]/span').text
+                                                     f'//main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[1]/span').text
             if len(item['list_price']) > 1:
-                item['list_price'] = float(item['list_price'].replace('£', '').replace(',', ''))
+                item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '').replace('€', ''))
         except NoSuchElementException:
             cls.logger.warning('PRECIO NO ENCONTRADO')
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('en',
                                                       driver.find_element(By.XPATH,
-                                                                          '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
+                                                                          '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
         item['name'] = f'[{internal_ref}] {item["name"]}'
@@ -225,13 +225,13 @@ class ScraperVtacUk:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Extracción de iconos
-        try:
-            icons = driver.find_elements(By.XPATH,
-                                         '/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
+        icons = driver.find_elements(By.XPATH,
+                                     '//main/div[3]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
 
-            for icon in icons:
-                item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
-        except NoSuchElementException:
+        for icon in icons:
+            item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
+
+        if not icons:
             cls.logger.warning('PRODUCT HAS NO ICONS')
 
         # Reemplazo de campos para ODOO

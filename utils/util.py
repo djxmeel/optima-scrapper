@@ -22,7 +22,7 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 10
+    JSON_DUMP_FREQUENCY = 25
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
@@ -139,7 +139,7 @@ class Util:
     def get_sku_from_link_uk(driver):
         try:
             return driver.find_element(By.XPATH,
-                                       "/html/body/div[3]/main/div[4]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
+                                       "//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
                 " ")[1]
         except NoSuchElementException:
             from scrapers.scraper_vtac_uk import ScraperVtacUk
