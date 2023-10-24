@@ -16,13 +16,14 @@ country_scrapers = {
 }
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS_LINKS = True, True
+# TODO where to extract only new?
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS_LINKS = True, False
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, False
 
 # Todos los campos de los productos a implementar en ODOO
 IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
