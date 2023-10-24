@@ -10,6 +10,7 @@ from datetime import datetime
 import openpyxl
 import pandas as pd
 import requests
+from deprecated.classic import deprecated
 from googletrans import Translator
 from selenium.common import NoSuchElementException
 from selenium.common import TimeoutException
@@ -525,13 +526,13 @@ class Util:
         links_categories = Util.load_json_data(scraper.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         if link in links_categories:
-            # FIXME uncomment when finished categories translations
             #return Util.convert_to_translated_categories(links_categories[link])
             return links_categories[link]
 
 
         return []
 
+    @deprecated
     @staticmethod
     def convert_to_translated_categories(public_categories):
         categories_translations = Util.load_json_data(Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
