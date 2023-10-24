@@ -294,7 +294,6 @@ class ScraperVtacUk:
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
-        # TODO rescrape links to get links_categories json
         Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')

@@ -16,7 +16,6 @@ country_scrapers = {
 }
 
 # Datos productos
-# TODO TEST only new products extraction
 IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = True, True
 
 # PDFs productos
