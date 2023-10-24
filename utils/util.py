@@ -525,7 +525,10 @@ class Util:
         links_categories = Util.load_json_data(scraper.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         if link in links_categories:
-            return Util.convert_to_translated_categories(links_categories[link])
+            # FIXME uncomment when finished categories translations
+            #return Util.convert_to_translated_categories(links_categories[link])
+            return links_categories[link]
+
 
         return []
 
