@@ -40,68 +40,68 @@ class ScraperVtacUk:
     PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     CATEGORIES_LINKS = [
-        'https://www.vtacexports.com/default/led-lighting/led-bulbs.html',
-        'https://www.vtacexports.com/default/led-lighting/led-spotlights.html',
-        'https://www.vtacexports.com/default/led-lighting/led-tubes.html',
-        'https://www.vtacexports.com/default/led-lighting/led-mini-panels.html',
-        'https://www.vtacexports.com/default/led-lighting/led-panels-0.html',
-        'https://www.vtacexports.com/default/led-lighting/led-downlights.html',
-        'https://www.vtacexports.com/default/led-lighting/led-dome-lights.html',
-        'https://www.vtacexports.com/default/led-lighting/led-strip-lights.html',
-        'https://www.vtacexports.com/default/led-lighting/led-tracklights.html',
-        'https://www.vtacexports.com/default/led-lighting/linear-lights-0.html',
-        'https://www.vtacexports.com/default/led-lighting/led-floodlights.html',
-        'https://www.vtacexports.com/default/led-lighting/led-highbays.html',
-        'https://www.vtacexports.com/default/led-lighting/led-streetlights.html',
-        'https://www.vtacexports.com/default/led-lighting/led-wall-lights.html',
-        'https://www.vtacexports.com/default/led-lighting/emergency-lights.html',
-        'https://www.vtacexports.com/default/led-lighting/outdoor-lighting.html',
-        'https://www.vtacexports.com/default/led-lighting/solar-lights.html',
-        'https://www.vtacexports.com/default/led-lighting/floor-lamps-0.html',
-        'https://www.vtacexports.com/default/led-lighting/table-lamps-0.html',
-        'https://www.vtacexports.com/default/led-lighting/motion-sensors.html',
-        'https://www.vtacexports.com/default/led-lighting/led-batten-fittings-1.html',
-        'https://www.vtacexports.com/default/catalog/category/view/s/led-ring-lights/id/5056/',
-        'https://www.vtacexports.com/default/decorative-lighting/pendant-holders.html',
-        'https://www.vtacexports.com/default/decorative-lighting/chandeliers.html',
-        'https://www.vtacexports.com/default/decorative-lighting/designer-ceiling-lights.html',
-        'https://www.vtacexports.com/default/decorative-lighting/designer-soft-lights.html',
-        'https://www.vtacexports.com/default/decorative-lighting/led-pendant-lights.html',
-        'https://www.vtacexports.com/default/decorative-lighting/mirror-lights.html',
-        'https://www.vtacexports.com/default/decorative-lighting/designer-garden-lights.html',
-        'https://www.vtacexports.com/default/decorative-lighting/bamboo-lights.html',
-        'https://www.vtacexports.com/default/decorative-lighting/designer-lamps.html',
-        'https://www.vtacexports.com/default/decorative-lighting/string-lights-1.html',
-        'https://www.vtacexports.com/default/decorative-lighting/pendant-fittings.html',
-        'https://www.vtacexports.com/default/catalog/category/view/s/accessories/id/5048/',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/sockets-0.html',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/plugs-0.html',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/doorbells.html',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/outdoor-cameras.html',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/temperature-sensor-0.html',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/remote-controls.html',
-        'https://www.vtacexports.com/default/smart-products/smart-electronics/robot-vacuums.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/led-downlights-1.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/lamp-holders-0.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/led-tracklights-0.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/strip-kits-0.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/led-floodlights-1.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/bulbs-1.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/spotlights-1.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/panels-2.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/designer-dome-lights.html',
-        'https://www.vtacexports.com/default/smart-products/smart-led-lights/ambiance-lamp.html',
-        'https://www.vtacexports.com/default/digital-accessories/charger.html',
-        'https://www.vtacexports.com/default/digital-accessories/speakers.html',
-        'https://www.vtacexports.com/default/digital-accessories/power-bank.html',
-        'https://www.vtacexports.com/default/digital-accessories/usb-cable.html',
-        'https://www.vtacexports.com/default/digital-accessories/headphones.html',
-        'https://www.vtacexports.com/default/electrical/adapters-sockets.html',
-        'https://www.vtacexports.com/default/electrical/fan.html',
-        'https://www.vtacexports.com/default/electrical/switches-dimmer.html',
-        'https://www.vtacexports.com/default/electrical/cable-tie.html',
-        'https://www.vtacexports.com/default/electrical/vacuum-cleaner-0.html',
-        'https://www.vtacexports.com/default/electrical/led-screen-1.html'
+        'https://www.vtacexports.com/eu/led-lighting/led-bulbs.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-spotlights.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-tubes.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-mini-panels.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-panels-0.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-downlights.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-dome-lights.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-strip-lights.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-tracklights.html',
+        'https://www.vtacexports.com/eu/led-lighting/linear-lights-0.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-floodlights.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-highbays.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-streetlights.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-wall-lights.html',
+        'https://www.vtacexports.com/eu/led-lighting/emergency-lights.html',
+        'https://www.vtacexports.com/eu/led-lighting/outdoor-lighting.html',
+        'https://www.vtacexports.com/eu/led-lighting/solar-lights.html',
+        'https://www.vtacexports.com/eu/led-lighting/floor-lamps-0.html',
+        'https://www.vtacexports.com/eu/led-lighting/table-lamps-0.html',
+        'https://www.vtacexports.com/eu/led-lighting/motion-sensors.html',
+        'https://www.vtacexports.com/eu/led-lighting/led-batten-fittings-1.html',
+        'https://www.vtacexports.com/eu/catalog/category/view/s/led-ring-lights/id/5056/',
+        'https://www.vtacexports.com/eu/decorative-lighting/pendant-holders.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/chandeliers.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/designer-ceiling-lights.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/designer-soft-lights.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/led-pendant-lights.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/mirror-lights.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/designer-garden-lights.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/bamboo-lights.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/designer-lamps.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/string-lights-1.html',
+        'https://www.vtacexports.com/eu/decorative-lighting/pendant-fittings.html',
+        'https://www.vtacexports.com/eu/catalog/category/view/s/accessories/id/5048/',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/sockets-0.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/plugs-0.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/doorbells.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/outdoor-cameras.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/temperature-sensor-0.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/remote-controls.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-electronics/robot-vacuums.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/led-downlights-1.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/lamp-holders-0.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/led-tracklights-0.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/strip-kits-0.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/led-floodlights-1.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/bulbs-1.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/spotlights-1.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/panels-2.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/designer-dome-lights.html',
+        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/ambiance-lamp.html',
+        'https://www.vtacexports.com/eu/digital-accessories/charger.html',
+        'https://www.vtacexports.com/eu/digital-accessories/speakers.html',
+        'https://www.vtacexports.com/eu/digital-accessories/power-bank.html',
+        'https://www.vtacexports.com/eu/digital-accessories/usb-cable.html',
+        'https://www.vtacexports.com/eu/digital-accessories/headphones.html',
+        'https://www.vtacexports.com/eu/electrical/adapters-sockets.html',
+        'https://www.vtacexports.com/eu/electrical/fan.html',
+        'https://www.vtacexports.com/eu/electrical/switches-dimmer.html',
+        'https://www.vtacexports.com/eu/electrical/cable-tie.html',
+        'https://www.vtacexports.com/eu/electrical/vacuum-cleaner-0.html',
+        'https://www.vtacexports.com/eu/electrical/led-screen-1.html'
     ]
 
     @classmethod
@@ -245,7 +245,7 @@ class ScraperVtacUk:
 
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
-        extracted = set()
+        extracted = []
         # Product links and categories {'link': 'category string'}
         product_links_categories = {}
 
@@ -286,7 +286,7 @@ class ScraperVtacUk:
 
                 for link in links:
                     href = link.get_attribute('href')
-                    extracted.add(href)
+                    extracted.append(href)
                     if href in product_links_categories:
                         product_links_categories[href].append(category_string)
                     else:
@@ -296,6 +296,12 @@ class ScraperVtacUk:
 
         # TODO rescrape links to get links_categories json
         Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')
+
+        extracted = set(extracted)
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} UNIQUE LINKS')
 
         if update:
             links_path = ScraperVtacUk.PRODUCTS_LINKS_PATH

@@ -210,7 +210,7 @@ class ScraperVtacItalia:
 
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
-        extracted = set()
+        extracted = []
         # Product links and categories {'link': 'category string'}
         product_links_categories = {}
 
@@ -251,7 +251,7 @@ class ScraperVtacItalia:
                     if articles_in_page:
                         for article in articles_in_page:
                             article_href = article.get_attribute('href').split('?asq=')[0]
-                            extracted.add(article_href)
+                            extracted.append(article_href)
                             if article_href in product_links_categories:
                                 product_links_categories[article_href].append(category_string)
                             else:
@@ -261,6 +261,12 @@ class ScraperVtacItalia:
 
                     cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
                     current_page += 1
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')
+
+        extracted = set(extracted)
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} UNIQUE LINKS')
 
         if update:
             links_path = ScraperVtacItalia.PRODUCTS_LINKS_PATH

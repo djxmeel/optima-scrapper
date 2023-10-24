@@ -156,7 +156,7 @@ class ScraperVtacSpain:
 
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
-        extracted = set()
+        extracted = []
         for cat in categories:
             try:
                 driver.get(cat)
@@ -176,9 +176,15 @@ class ScraperVtacSpain:
                 before = len(extracted)
 
                 for link in links:
-                    extracted.add(link.get_attribute('href'))
+                    extracted.append(link.get_attribute('href'))
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')
+
+        extracted = set(extracted)
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} UNIQUE LINKS')
 
         if update:
             links_path = ScraperVtacSpain.PRODUCTS_LINKS_PATH
