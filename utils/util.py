@@ -30,8 +30,8 @@ class Util:
     PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
-    # TODO do the categories translations
-    PUBLIC_CATEGORIES_TRANSLATION_PATH = 'data/vtac_merged/FIELDS/PUBLIC_CATEGORIES_TRANSLATIONS.json'
+    # FIXME do or remove the categories translations?
+    PUBLIC_CATEGORIES_TRANSLATION_PATH = 'data/misc/PUBLIC_CATEGORIES_TRANSLATIONS.json'
 
     # The fields kept in ODOO as custom fields
     ODOO_CUSTOM_FIELDS = ('url', 'Código de familia', 'Marca')
@@ -409,7 +409,7 @@ class Util:
                         public_categories.append(ScraperVtacSpain.get_internal_category(dup))
                         duplicate_links.append(dup)
                 else:
-                    # TODO TEST after finishing categs. translations json
+                    # FIXME TEST after finishing categs. translations json
                     public_categories = Util.get_public_categories_ita_uk(link, scraper)
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES, public_categories)
