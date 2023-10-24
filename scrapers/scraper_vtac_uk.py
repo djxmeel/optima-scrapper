@@ -22,6 +22,23 @@ class ScraperVtacUk:
 
     SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
+    PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_uk/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_uk/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_uk/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_uk/NEW/PRODUCT_PDF'
+
+    PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json'
+
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+
     CATEGORIES_LINKS = [
         'https://www.vtacexports.com/default/led-lighting/led-bulbs.html',
         'https://www.vtacexports.com/default/led-lighting/led-spotlights.html',
@@ -86,19 +103,6 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/electrical/vacuum-cleaner-0.html',
         'https://www.vtacexports.com/default/electrical/led-screen-1.html'
     ]
-
-    PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_uk/PRODUCT_PDF'
-
-    PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json'
-
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     @classmethod
     def instantiate_driver(cls):
@@ -290,7 +294,7 @@ class ScraperVtacUk:
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
-        # FIXME rescrape links to get links_categories json
+        # TODO rescrape links to get links_categories json
         Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         if update:

@@ -21,16 +21,13 @@ class ScraperVtacSpain:
 
     SPECS_SUBCATEGORIES = ()
 
-    CATEGORIES_LINKS = (
-        'https://v-tac.es/sistemas-solares.html',
-        'https://v-tac.es/iluminaci%C3%B3n.html',
-        'https://v-tac.es/smart-digital.html',
-        'https://v-tac.es/el%C3%A9ctrico.html',
-    )
-
     PRODUCTS_INFO_PATH = 'data/vtac_spain/PRODUCT_INFO'
     PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PRODUCT_MEDIA'
     PRODUCTS_PDF_PATH = 'data/vtac_spain/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_spain/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_spain/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_spain/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json'
@@ -40,6 +37,13 @@ class ScraperVtacSpain:
 
     PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
     PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+
+    CATEGORIES_LINKS = (
+        'https://v-tac.es/sistemas-solares.html',
+        'https://v-tac.es/iluminaci%C3%B3n.html',
+        'https://v-tac.es/smart-digital.html',
+        'https://v-tac.es/el%C3%A9ctrico.html',
+    )
 
     @classmethod
     def instantiate_driver(cls):

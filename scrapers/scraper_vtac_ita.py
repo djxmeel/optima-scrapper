@@ -21,15 +21,13 @@ class ScraperVtacItalia:
 
     SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
 
-    CATEGORIES_LINKS = (
-        'https://led-italia.it/prodotti/M4E-fotovoltaico',
-        'https://led-italia.it/prodotti/M54-illuminazione-led',
-        'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
-    )
-
     PRODUCTS_INFO_PATH = 'data/vtac_italia/PRODUCT_INFO'
     PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PRODUCT_MEDIA'
     PRODUCTS_PDF_PATH = 'data/vtac_italia/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_italia/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_italia/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_italia/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
@@ -39,6 +37,12 @@ class ScraperVtacItalia:
 
     PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
     PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+
+    CATEGORIES_LINKS = (
+        'https://led-italia.it/prodotti/M4E-fotovoltaico',
+        'https://led-italia.it/prodotti/M54-illuminazione-led',
+        'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
+    )
 
     @classmethod
     def instantiate_driver(cls):
