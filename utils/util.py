@@ -308,26 +308,10 @@ class Util:
                       index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
 
     @staticmethod
-    def extract_distinct_fields_to_excel(product_info_path, field_json_path, field_excel_path, extract_all=False):
-        file_list = Util.get_all_files_in_directory(product_info_path)
-        json_data = []
-        fields = set()
-
-        for file_path in file_list:
-            with open(file_path, "r", encoding='ISO-8859-1') as file:
-                json_data.extend(json.load(file))
-
-        for product in json_data:
-            for field in product.keys():
-                # Filter out non-custom fields
-                if extract_all or field in Util.ODOO_CUSTOM_FIELDS:
-                    fields.add(field)
-
+    def generate_custom_fields_excel_json(field_json_path, field_excel_path, custom_fields):
         excel_dicts = []
 
-        print(f'FOUND {len(fields)} DISTINCT FIELDS')
-
-        for field in fields:
+        for field in custom_fields:
             excel_dicts.append(
                 {'Nombre de campo': Util.format_odoo_custom_field_name(field),
                  'Etiqueta de campo': field,

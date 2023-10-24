@@ -24,12 +24,10 @@ IF_DL_ITEM_PDF = False
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 
-# Todos los campos de los productos a implementar en ODOO
-IF_EXTRACT_DISTINCT_ITEMS_FIELDS = False
-# If False : only extracts CUSTOM fields present in ODOO
-IF_ALL_FIELDS = False
+# Todos los distintos campos de los productos con ejemplos de su valor
+IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES = False
 
-chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_ITEMS_FIELDS)
+chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES)
 scraper = country_scrapers[chosen_country]
 scraper.logger = Loggers.setup_vtac_logger(chosen_country)
 
@@ -103,11 +101,12 @@ if IF_DL_ITEM_PDF:
     scraper.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 # DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
-if IF_EXTRACT_DISTINCT_ITEMS_FIELDS:
-    scraper.logger.info(f'BEGINNING DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_distinct_fields_to_excel(scraper.PRODUCTS_INFO_PATH, scraper.PRODUCTS_FIELDS_JSON_PATH, scraper.PRODUCTS_FIELDS_EXCEL_PATH, extract_all=IF_ALL_FIELDS)
+if IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES:
+    scraper.logger.info(f'BEGINNING DISTINCT FIELDS EXAMPLES EXTRACTION TO JSON THEN EXCEL')
     Util.extract_fields_example_to_excel(scraper.PRODUCTS_INFO_PATH, scraper.PRODUCTS_EXAMPLE_FIELDS_JSON_PATH, scraper.PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
-    scraper.logger.info(f'FINISHED DISTINCT FIELDS EXTRACTION TO JSON THEN EXCEL')
+    scraper.logger.info(f'FINISHED DISTINCT FIELDS EXAMPLES EXTRACTION TO JSON THEN EXCEL')
+
+
 
 try:
     url = scraper.DRIVER.current_url
