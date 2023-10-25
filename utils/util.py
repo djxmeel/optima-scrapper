@@ -138,15 +138,7 @@ class Util:
 
     @staticmethod
     def get_sku_from_link_uk(driver):
-        try:
-            return driver.find_element(By.XPATH,
-                                       "//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(
-                " ")[1]
-        except NoSuchElementException:
-            from scrapers.scraper_vtac_uk import ScraperVtacUk
-            ScraperVtacUk.logger.error("ERROR getting SKU. Retrying...")
-            time.sleep(5)
-            return Util.get_sku_from_link(driver, driver.current_url, 'UK')
+            return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
 
     @staticmethod
     def get_sku_from_link_es(driver):
