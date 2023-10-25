@@ -231,7 +231,10 @@ class ScraperVtacItalia:
             main_category = f'{driver.find_element(By.XPATH, "//main//h1").text} / '
 
             for subcat_link, subcat_string in zip(item_subcats_links, item_subcats_strings):
-                category_string = main_category + subcat_string
+                if subcat_string == main_category[:-3]:
+                    category_string = subcat_string
+                else:
+                    category_string = main_category + subcat_string
 
                 current_page = 0
                 do_page_exist = True
@@ -262,6 +265,8 @@ class ScraperVtacItalia:
                     cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
                     current_page += 1
 
+        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+
         cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')
 
         extracted = set(extracted)
@@ -277,8 +282,6 @@ class ScraperVtacItalia:
                     new_links = extracted - old_links
                     cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
                     return extracted, new_links
-
-        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
 
         return extracted, None
 

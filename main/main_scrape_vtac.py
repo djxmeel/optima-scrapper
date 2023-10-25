@@ -3,12 +3,11 @@ import time
 
 from scrapers.scraper_vtac_ita import ScraperVtacItalia
 from scrapers.scraper_vtac_es import ScraperVtacSpain
-from utils.loggers import Loggers
 from utils.util import Util
+from utils.loggers import Loggers
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 # VTAC SCRAPER
-# TODO reextract ITA & UK links to get categories (all UK products have just one categ.?)
 country_scrapers = {
     'es': ScraperVtacSpain,
     'uk': ScraperVtacUk,
@@ -16,13 +15,13 @@ country_scrapers = {
 }
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = True, True
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 
 # Todos los distintos campos de los productos con ejemplos de su valor
 IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES = False
