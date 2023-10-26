@@ -72,8 +72,6 @@ class ScraperVtacSpain:
 
         item["public_categories"] = public_categories
 
-        print(f"CATEG: {item['public_categories']}")
-
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
 
@@ -94,12 +92,6 @@ class ScraperVtacSpain:
             del item['Código de orden']
         else:
             item['default_code'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
-
-        internal_ref = Util.get_internal_ref_from_sku(item['Sku'])
-
-        # If internal_ref is None, it's SKU contains letters (Not V-TAC)
-        if not internal_ref:
-            return None
 
         # Extracción de las dimensiones gráficas
         try:
@@ -138,6 +130,12 @@ class ScraperVtacSpain:
 
         except NoSuchElementException:
             pass
+
+        internal_ref = Util.get_internal_ref_from_sku(item['default_code'])
+
+        # If internal_ref is None, it's SKU contains letters (Not V-TAC)
+        if not internal_ref:
+            return None
 
         # Extracción del título
         item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'
@@ -278,11 +276,10 @@ class ScraperVtacSpain:
         substring = base_link.split('/')[-1]
 
         links = []
-        print(f"LOOKING FOR {base_link} DUPLICATES")
 
         for link in data:
             if substring in link:
-                print('FOUND ->', link)
+                print('FOUND DUPLICATE ->', link)
                 links.append(link)
 
         return links
