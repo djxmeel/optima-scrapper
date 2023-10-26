@@ -411,8 +411,9 @@ class Util:
                     Util.dump_to_json(products_media_only, media_filename)
 
                     products_data.clear()
-        except:
+        except Exception as e:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
+            logger.error(e)
             time.sleep(2)
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
