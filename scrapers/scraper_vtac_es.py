@@ -62,7 +62,6 @@ class ScraperVtacSpain:
 
         name_xpath = "//h3[@itemprop='name']"
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
-        energy_tag_xpath = "//img[@alt = 'Energy Class']"
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
         # Diccionario que almacena todos los datos de un artículo

@@ -1,7 +1,6 @@
 import copy
 import os.path
 import time
-from pprint import pprint
 from urllib.error import HTTPError
 
 import odoorpc
@@ -133,8 +132,6 @@ class OdooImport:
 
             # Saving the created IDs as keys in dict with their values
             created_attrs_values_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
-
-        attr_values_to_create = []
 
         for id, value in created_attrs_values_ids.items():
             try:
