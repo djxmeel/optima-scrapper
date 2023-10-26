@@ -7,10 +7,6 @@ import pandas as pd
 
 import odoorpc
 
-from scrapers.scraper_vtac_es import ScraperVtacSpain
-from scrapers.scraper_vtac_ita import ScraperVtacItalia
-from scrapers.scraper_vtac_uk import ScraperVtacUk
-from utils.data_merger import DataMerger
 from utils.util import Util
 
 
