@@ -51,18 +51,14 @@ class DataMerger:
         'videos': ('uk', 'ita', 'es')
     }
 
-    # TODO remove !capitalized keys after new ita & uk scrape
+    # TODO commit changes after new ita & uk scrape
     # Fields to rename for common naming between data sources
     FIELDS_RENAMES = {
         "Código ean": "barcode",
-        "Código EAN": "barcode",
         'Ean código': 'barcode',
-        'Ean Código': 'barcode',
         'Ean': 'barcode',
-        'EAN': 'barcode',
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la familia": "Código de familia",
-        "Código de la Familia": "Código de familia",
         "Modelo": "Código de familia",
         "Eficacia luminosa (lm/w)": "Eficacia luminosa",
         "Factor de potencia (fp)": "Factor de potencia",
@@ -73,7 +69,6 @@ class DataMerger:
         "Garanzia": "Garantía",
         "Dimensión": "Dimensiones",
         "Dimensioni (axlxp)": "Dimensiones",
-        "Dimensioni (AxLxP)": "Dimensiones",
         "Nombre de la marca": "Marca",
         'Ángulo de haz°': 'Ángulo de apertura',
         'Ángulo de haz': 'Ángulo de apertura',
@@ -82,9 +77,6 @@ class DataMerger:
         'Las condiciones de trabajo': 'Temperaturas de trabajo',
         'Temperatura de operacion': 'Temperaturas de trabajo',
         'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
-        'sku': 'Sku',
-        'SKU': 'Sku',
-        'kit': 'accesorios',
         'Larga vida': 'Vida útil',
         'Durata': 'Vida útil',
         'Grado de protección': 'Protección IP',
