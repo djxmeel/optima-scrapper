@@ -117,7 +117,7 @@ class DataMerger:
         'El ahorro de energía': 'Ahorro energético'
     }
 
-    # TODO
+    # TODO test
     VALUE_RENAMES = {
         'Color de la luz': [
             ('día blanco', 'Blanco neutro'),
@@ -179,7 +179,7 @@ class DataMerger:
         if not only_media:
             # Filtering None
             # Merging fields when necessary
-            data = [cls.rename__delete_product_fields(p, cls.FIELDS_RENAMES, cls.FIELDS_TO_DELETE) for p in data if p is not None]
+            data = [cls.rename__delete_product_fields__values(p, cls.FIELDS_RENAMES, cls.FIELDS_TO_DELETE, cls.VALUE_RENAMES) for p in data if p is not None]
             cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
         return data
@@ -220,7 +220,7 @@ class DataMerger:
         return None
 
     @classmethod
-    def rename__delete_product_fields(cls, product, fields_to_rename, fields_to_delete):
+    def rename__delete_product_fields__values(cls, product, fields_to_rename, fields_to_delete, value_renames):
         for key, value in fields_to_rename.items():
             if product.get(key):
                 product[value] = product[key]
@@ -229,6 +229,11 @@ class DataMerger:
         for field in fields_to_delete:
             if product.get(field):
                 del product[field]
+
+        for key, value in value_renames.items():
+            if product.get(key):
+                for value_rename in value:
+                    product[key] = product[key].replace(value_rename[0], value_rename[1])
         return product
 
     @classmethod
