@@ -15,7 +15,34 @@ class ScraperEfectoLed:
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
+    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/efectoled/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+
     SPECS_SUBCATEGORIES = ()
+
+    PRODUCTS_INFO_PATH = 'data/efectoled/PROD/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/efectoled/PROD/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/efectoled/PROD/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH = 'data/efectoled/PROD/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/efectoled/PROD/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/efectoled/PROD/NEW/PRODUCT_PDF'
+
+    PRODUCTS_INFO_PATH_TEST = 'data/efectoled/TEST/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH_TEST = 'data/efectoled/TEST/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH_TEST = 'data/efectoled/TEST/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH_TEST = 'data/efectoled/TEST/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/efectoled/TEST/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH_TEST = 'data/efectoled/TEST/NEW/PRODUCT_PDF'
+
+    PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/PRODUCTS_LINKS_EFECTOLED.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/NEW_PRODUCTS_LINKS_EFECTOLED.json'
+
+    PRODUCTS_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     CATEGORIES_LINKS = (
         'https://www.efectoled.com/es/6-comprar-bombillas-lamparas-led',
@@ -30,19 +57,6 @@ class ScraperEfectoLed:
         'https://www.efectoled.com/es/11047-comprar-estilos',
         'https://www.efectoled.com/es/11047-comprar-estilos',
     )
-
-    PRODUCTS_INFO_PATH = 'data/efectoled/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/efectoled/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/efectoled/PRODUCT_PDF'
-
-    PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/PRODUCTS_LINKS_ES.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/NEW_PRODUCTS_LINKS_ES.json'
-
-    PRODUCTS_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     @classmethod
     def instantiate_driver(cls):

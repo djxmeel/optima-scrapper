@@ -7,7 +7,7 @@ from utils.util import Util
 from utils.loggers import Loggers
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
-# TODO manage to give option to extract to TEST env or PROD env
+# TODO TEST PROD & TEST envs
 # VTAC SCRAPER
 country_scrapers = {
     'es': ScraperVtacSpain,
@@ -17,6 +17,8 @@ country_scrapers = {
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = True, False
+# Extraer a directorio de test o de producción
+IF_EXTRACT_TO_TEST = True
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
@@ -56,15 +58,27 @@ if IF_EXTRACT_ITEM_INFO:
 
     scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
 
-    # Determine whether to extract to default or new products files
-    if IF_ONLY_NEW_PRODUCTS:
-        products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
-        products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
-        links_path = scraper.NEW_PRODUCTS_LINKS_PATH
+    # Determine whether to extract to TEST env or PROD env
+    if IF_EXTRACT_TO_TEST:
+        # Determine whether to extract to default or new products files
+        if IF_ONLY_NEW_PRODUCTS:
+            products_info_path = scraper.NEW_PRODUCTS_INFO_PATH_TEST
+            products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH_TEST
+            links_path = scraper.NEW_PRODUCTS_LINKS_PATH_TEST
+        else:
+            products_info_path = scraper.PRODUCTS_INFO_PATH_TEST
+            products_media_path = scraper.PRODUCTS_MEDIA_PATH_TEST
+            links_path = scraper.PRODUCTS_LINKS_PATH_TEST
     else:
-        products_info_path = scraper.PRODUCTS_INFO_PATH
-        products_media_path = scraper.PRODUCTS_MEDIA_PATH
-        links_path = scraper.PRODUCTS_LINKS_PATH
+        # Determine whether to extract to default or new products files
+        if IF_ONLY_NEW_PRODUCTS:
+            products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
+            products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
+            links_path = scraper.NEW_PRODUCTS_LINKS_PATH
+        else:
+            products_info_path = scraper.PRODUCTS_INFO_PATH
+            products_media_path = scraper.PRODUCTS_MEDIA_PATH
+            links_path = scraper.PRODUCTS_LINKS_PATH
 
     if not os.path.exists(links_path):
         scraper.logger.info(f'No links file found at {links_path}. Please extract links first.')

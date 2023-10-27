@@ -21,13 +21,21 @@ class ScraperVtacItalia:
 
     SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
 
-    PRODUCTS_INFO_PATH = 'data/vtac_italia/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_italia/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_italia/PROD/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PROD/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_italia/PROD/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_italia/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_italia/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_italia/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_PDF'
+
+    PRODUCTS_INFO_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
