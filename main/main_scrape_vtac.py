@@ -7,6 +7,7 @@ from utils.util import Util
 from utils.loggers import Loggers
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
+# TODO manage to give option to extract to TEST env or PROD env
 # VTAC SCRAPER
 country_scrapers = {
     'es': ScraperVtacSpain,
