@@ -8,8 +8,8 @@ from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 class DataMerger:
     logger = None
-    # TODO manage to extract scrapes into new directories with format : 'country'_'date'_'time' instead of overwriting
-    JSON_DUMP_FREQUENCY = 10
+
+    JSON_DUMP_FREQUENCY = 25
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
 
@@ -51,7 +51,11 @@ class DataMerger:
         'videos': ('uk', 'ita', 'es')
     }
 
-    # TODO commit changes after new ita & uk scrape
+    # Fields to delete from products
+    FIELDS_TO_DELETE = [
+        "Código de producto"
+    ]
+
     # Fields to rename for common naming between data sources
     FIELDS_RENAMES = {
         "Código ean": "barcode",
@@ -60,7 +64,7 @@ class DataMerger:
         "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
         "Código de la familia": "Código de familia",
         "Modelo": "Código de familia",
-        "Eficacia luminosa (lm/w)": "Eficacia luminosa",
+        "Eficacia luminosa (lm/w)": "Eficiencia lumínica",
         "Factor de potencia (fp)": "Factor de potencia",
         "Fp": "Factor de potencia",
         "Flujo luminoso (lm)": "Flujo luminoso",
@@ -73,7 +77,6 @@ class DataMerger:
         'Ángulo de haz°': 'Ángulo de apertura',
         'Ángulo de haz': 'Ángulo de apertura',
         'Haz de luz': 'Ángulo de apertura',
-        'Código de producto': 'Código de familia',
         'Las condiciones de trabajo': 'Temperaturas de trabajo',
         'Temperatura de operacion': 'Temperaturas de trabajo',
         'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
@@ -103,11 +106,38 @@ class DataMerger:
         'Cantidad de rollo': 'Longitud de la bobina',
         'Montar': 'Tipo',
         'Tipo de instalación': 'Tipo',
+        'Tipo de cuerpo': 'Material',
         'Longitud': 'Longitud del cable',
         'Detección a distancia': 'Distancia de detección',
         'Rango de detección': 'Distancia de detección',
         'Campo de detección': 'Ángulo de detección',
         'Detección por movimiento': 'Velocidad de movimiento de detección',
+        'Color para web': 'Color de la luz',
+        'Sin destellos': 'Sin parpadeo',
+        'El ahorro de energía': 'Ahorro energético'
+    }
+
+    # TODO
+    VALUE_RENAMES = {
+        'Color de la luz': [
+            ('día blanco', 'Blanco neutro'),
+            ('Blanco', 'Blanco frío')
+        ],
+        'Color': [
+            ('Bianco', 'Blanco')
+        ],
+        'Material': [
+            ('ordenador', 'PC'),
+            ('vidrio', 'Cristal'),
+            ('ordenador personal', 'PC'),
+        ],
+        'Sin destellos': [
+            ('sin destellos', 'Sí')
+        ],
+        'Ahorro energético': [
+            ('80 energía', '80'),
+            ('85 Energía', '85')
+        ]
     }
 
     # Fields that are always kept from a country (field must be stored as a list in json)
@@ -149,7 +179,7 @@ class DataMerger:
         if not only_media:
             # Filtering None
             # Merging fields when necessary
-            data = [cls.rename_product_fields(p, cls.FIELDS_RENAMES) for p in data if p is not None]
+            data = [cls.rename__delete_product_fields(p, cls.FIELDS_RENAMES, cls.FIELDS_TO_DELETE) for p in data if p is not None]
             cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
         return data
@@ -190,11 +220,15 @@ class DataMerger:
         return None
 
     @classmethod
-    def rename_product_fields(cls, product, fields_to_rename):
+    def rename__delete_product_fields(cls, product, fields_to_rename, fields_to_delete):
         for key, value in fields_to_rename.items():
             if product.get(key):
                 product[value] = product[key]
                 del product[key]
+
+        for field in fields_to_delete:
+            if product.get(field):
+                del product[field]
         return product
 
     @classmethod
