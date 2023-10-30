@@ -42,6 +42,19 @@ class DataMerger:
         'ita': ScraperVtacItalia.PRODUCTS_MEDIA_PATH
     }
 
+    # TODO use to merge only new
+    COUNTRY_NEW_PRODUCT_INFO_DIR_PATHS = {
+        'es': ScraperVtacSpain.NEW_PRODUCTS_INFO_PATH,
+        'uk': ScraperVtacUk.NEW_PRODUCTS_INFO_PATH,
+        'ita': ScraperVtacItalia.NEW_PRODUCTS_INFO_PATH
+    }
+
+    COUNTRY_NEW_PRODUCT_MEDIA_DIR_PATHS = {
+        'es': ScraperVtacSpain.NEW_PRODUCTS_INFO_PATH,
+        'uk': ScraperVtacUk.NEW_PRODUCTS_INFO_PATH,
+        'ita': ScraperVtacItalia.NEW_PRODUCTS_INFO_PATH
+    }
+
     # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
