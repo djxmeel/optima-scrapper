@@ -62,7 +62,7 @@ class OdooImport:
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
 
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
-    FILTER_SKUS_EXCEL_TO_IMPORT = Util.get_skus_excel_filter('data/misc/Productos Comprados o Vendidos VTAC.xlsx', 'A')
+    PRIORITY_EXCEL_SKUS = Util.get_priority_excel_skus('data/misc/Productos Comprados o Vendidos VTAC.xlsx', 'A')
 
     @classmethod
     def create_internal_category(cls, internal_category):
@@ -74,39 +74,20 @@ class OdooImport:
         except RPCError:
             return None
 
-    # Currently done with EXCEL file
     @classmethod
-    def create_public_categories(cls, public_categories):
-        pass
+    def assign_public_categories(cls, product_id, public_categories):
+        categ_ids = []
+        for category in public_categories:
+                categ_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', category)])
+                if categ_id:
+                    categ_ids.append(categ_id[0])
 
-    @classmethod
-    def assign_public_categories(cls, product_id, product):
-        if 'public_categories' in product:
-            # CATEGORY TREE FORMAT "PARENT1 / PARENT2 / CATEG"
-            categ_ids = []
-
-            for category_tree in product['public_categories']:
-                categories = [cat.strip() for cat in category_tree.split("/")]
-                categ_name = categories[-1]
-
-                if len(categories) > 1:
-                    parent_categ = categories[-2]
-                    parent_categ_ids = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', parent_categ)])
-                    if parent_categ_ids:
-                        categ_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', categ_name), ('parent_id', '=', parent_categ_ids[0])])
-                        if categ_id:
-                            categ_ids.append(categ_id[0])
-                else:
-                    categ_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', categ_name)])
-                    if categ_id:
-                        categ_ids.append(categ_id[0])
-
-            try:
-                if categ_ids:
-                    cls.PRODUCT_MODEL.write(product_id, {'public_categ_ids': categ_ids})
-                    cls.logger.info(f"ASSIGNED Public categories {categ_ids} to product {product['name']}")
-            except RPCError:
-                cls.logger.warn(f"Public categories {categ_ids} not assigned to product {product['name']}")
+        try:
+            if categ_ids:
+                cls.PRODUCT_MODEL.write(product_id, {'public_categ_ids': categ_ids})
+                cls.logger.info(f"ASSIGNED Public categories {public_categories} to product with id {product_id}")
+        except RPCError:
+            cls.logger.warn(f"Public categories {public_categories} not assigned to product with id {product_id}")
 
     @classmethod
     def create_attributes_and_values(cls, attributes_values):
@@ -209,7 +190,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_attrs_of_existing=False, update_internal_category=False, update_invoice_policy=False, update_detailed_type=False, update_public_categories=False, use_excel_filter=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, if_update_existing, use_priority_excel=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -219,8 +200,8 @@ class OdooImport:
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
             for product in products:
-                if use_excel_filter and product['default_code'] not in cls.FILTER_SKUS_EXCEL_TO_IMPORT:
-                    cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN EXCEL FILTER")
+                if use_priority_excel and product['default_code'] not in cls.PRIORITY_EXCEL_SKUS:
+                    cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
 
                 counter += 1
@@ -228,7 +209,8 @@ class OdooImport:
 
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
-                product_copy = copy.deepcopy(product)
+
+                public_categs = product['public_categories']
 
                 url = product["url"]
 
@@ -251,27 +233,24 @@ class OdooImport:
                         cls.logger.info(f'Product {product["default_code"]} with origin URL : {url} NOT CREATED')
                         continue
 
+                    cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
+                    cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
+                    cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, False)
+                    cls.assign_public_categories(product_id, public_categs)
+                elif if_update_existing:
+                    product_id = product_ids[0]
+                    cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {product["url"]}')
+
+                    created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, True)
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
                     cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
-                    cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
-                    cls.assign_public_categories(product_id, product_copy)
+                    cls.assign_public_categories(product_id, public_categs)
                 else:
-                    product_id = product_ids[0]
-                    cls.logger.info(f'Product {product["default_code"]} already exists in Odoo with id {product_ids[0]}')
-
-                    if not skip_attrs_of_existing:
-                        created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
-                        cls.assign_attribute_values(product_id, product_copy, created_attrs_ids_values)
-                    if update_internal_category:
-                        cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    if update_invoice_policy:
-                        cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
-                    if update_detailed_type:
-                        cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
-                    if update_public_categories:
-                        cls.assign_public_categories(product_id, product_copy)
+                    cls.logger.info(f'Product {product["default_code"]} with origin URL {product["url"]} already exists')
 
                 cls.logger.info(f"PROCESSED: {counter} products\n")
 
@@ -642,7 +621,7 @@ class OdooImport:
         partner_model = cls.odoo.env['res.partner']
 
         products = cls.browse_all_products_in_batches()
-        stock_dicts = Util.load_excel_columns_in_dictionary(supplier_stock_excel_path)
+        stock_dicts = Util.load_excel_columns_in_dictionary_list(supplier_stock_excel_path)
 
         for product in products:
             supplier_prod_name = product.name

@@ -31,9 +31,6 @@ class Util:
     PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
-    # FIXME do or remove the categories translations?
-    PUBLIC_CATEGORIES_TRANSLATION_PATH = 'data/misc/PUBLIC_CATEGORIES_TRANSLATIONS.json'
-
     # The fields kept in ODOO as custom fields
     ODOO_CUSTOM_FIELDS = ('url', 'Código de familia', 'Marca')
     # Default fields supported by Odoo (not custom)
@@ -369,27 +366,20 @@ class Util:
         products_data = []
         counter = start_from
 
-        # Different links and different category but with same product
+        # Different links but same product
         duplicate_links = []
 
         try:
             for link in links[start_from:]:
-                public_categories = []
-
+                # Skip duplicate links for ES
                 if scraper.COUNTRY == 'es':
                     if link in duplicate_links:
                         continue
 
-                    from scrapers.scraper_vtac_es import ScraperVtacSpain
-
-                    for dup in scraper.get_same_product_links(ScraperVtacSpain.PRODUCTS_LINKS_PATH, link):
-                        public_categories.append(ScraperVtacSpain.get_internal_category(dup))
+                    for dup in scraper.get_same_product_links(scraper.PRODUCTS_LINKS_PATH, link):
                         duplicate_links.append(dup)
-                else:
-                    # FIXME TEST after finishing categs. translations json
-                    public_categories = Util.get_public_categories_ita_uk(link, scraper)
 
-                product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES, public_categories)
+                product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES)
 
                 # If product is None, it's SKU contains letters (Not V-TAC)
                 if not product:
@@ -497,30 +487,19 @@ class Util:
 
         return chosen_country
 
-
     @staticmethod
-    def get_public_categories_ita_uk(link, scraper):
-        links_categories = Util.load_json_data(scraper.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+    def get_public_category_from_sku(sku, public_categories_excel_path):
+        categories_sku = Util.load_excel_columns_in_dictionary_list(public_categories_excel_path)
+        public_categories = []
 
-        if link in links_categories:
-            #return Util.convert_to_translated_categories(links_categories[link])
-            return links_categories[link]
+        for category_sku in categories_sku:
+            if sku == category_sku['SKU']:
+                public_categories.append(category_sku['CATEGORY ES'])
 
-        return []
-
-    @staticmethod
-    def convert_to_translated_categories(public_categories):
-        categories_translations = Util.load_json_data(Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
-        translated = []
-
-        for categ in public_categories:
-            if categ in categories_translations:
-                translated.append(categories_translations[categ])
-
-        return translated
+        return public_categories
 
     @classmethod
-    def get_skus_excel_filter(cls, file_path, column_letter, sheet_name=None):
+    def get_priority_excel_skus(cls, file_path, column_letter, sheet_name=None):
         workbook = openpyxl.load_workbook(file_path)
 
         # If sheet_name is not specified, use the active sheet. Otherwise, use the specified sheet.
@@ -535,7 +514,7 @@ class Util:
 
 
     @classmethod
-    def load_excel_columns_in_dictionary(cls, file_path):
+    def load_excel_columns_in_dictionary_list(cls, file_path):
         # Read the Excel file using pandas
         df = pd.read_excel(file_path, engine='openpyxl')
 

@@ -57,7 +57,7 @@ class ScraperVtacItalia:
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
+    def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -78,9 +78,6 @@ class ScraperVtacItalia:
                 'imgs': [], 'icons': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
-
-        # Asignación de categoría pública
-        item['public_categories'] = public_categories
 
         # Extracción de los enlaces de videos
         iframes = driver.find_elements(By.XPATH, '//main//iframe')

@@ -25,6 +25,9 @@ class DataMerger:
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
+    # Path to [category_en|category_es|sku] Excel file
+    PUBLIC_CATEGORY_EXCEL_PATH = 'data/misc/PUBLIC_CATEGORIES.xlsx'
+
     COUNTRY_PRODUCT_INFO_DIR_PATHS = {
         'es': ScraperVtacSpain.PRODUCTS_INFO_PATH,
         'uk': ScraperVtacUk.PRODUCTS_INFO_PATH,
@@ -41,8 +44,7 @@ class DataMerger:
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
         'website_description': ('es', 'uk'),
-        'accesorios': ('ita'),
-        'public_categories': ('es')
+        'accesorios': ('ita')
     }
 
     MEDIA_FIELDS_PRIORITIES = {
@@ -300,6 +302,11 @@ class DataMerger:
                             cls.logger.info(f'{sku_spaced}: KEEP {field_country["country"]} -> {field_country["field"]}')
                 except KeyError:
                     pass
+
+            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
+
+            if not merged_product.get('public_categories'):
+                cls.logger.info(f'{sku_spaced}: NO PUBLIC CATEGORIES FOUND')
 
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_media)

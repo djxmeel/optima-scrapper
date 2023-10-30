@@ -117,7 +117,7 @@ class ScraperVtacUk:
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
+    def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -148,9 +148,6 @@ class ScraperVtacUk:
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
-
-        # Asignación de categoría pública
-        item['public_categories'] = public_categories
 
         # Para cada subcategoria, extraemos sus campos
         for subcat_li in subcategories_li_elements:

@@ -58,7 +58,7 @@ class ScraperVtacSpain:
         cls.DRIVER = webdriver.Firefox()
 
     @classmethod
-    def scrape_item(cls, driver, url, subcategories=None, public_categories=None):
+    def scrape_item(cls, driver, url, subcategories=None):
         try:
             # Se conecta el driver instanciado a la URL
             driver.get(url)
@@ -73,11 +73,9 @@ class ScraperVtacSpain:
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'public_categories': []}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
-
-        item["public_categories"] = public_categories
 
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
@@ -276,7 +274,7 @@ class ScraperVtacSpain:
         return categories[:-2].strip()
 
     @classmethod
-    def get_same_product_links(cls, file_path, base_link):
+    def get_duplicate_product_links(cls, file_path, base_link):
         with open(file_path, 'r') as f:
             data = json.load(f)
 
