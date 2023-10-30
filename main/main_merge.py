@@ -4,6 +4,7 @@ from utils.util import Util
 
 # Merge uk + eso + ita
 IF_MERGE = True
+IF_ONLY_NEW_PRODUCTS = False
 # Extract distinct fields examples to excel
 IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES = False
 # Generate custom fields excel & json
@@ -14,7 +15,7 @@ DataMerger.logger = Loggers.setup_merge_logger()
 # DATA MERGING
 if IF_MERGE:
     DataMerger.logger.info('BEGINNING DATA MERGING')
-    DataMerger.load_all().merge_data()
+    DataMerger.load_all(IF_ONLY_NEW_PRODUCTS).merge_data()
     DataMerger.extract_merged_data(DataMerger.merged_data, DataMerger.merged_media)
     DataMerger.logger.info('FINISHED DATA MERGING')
 

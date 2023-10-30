@@ -318,7 +318,7 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 
 #ecommerce_filter_visibility_modifier('hidden')
 
-#convert_xlsx_to_json('data/misc/VTAC_ES_PUBLIC_CATEGORIES.xlsx', 'data/misc/PUBLIC_CATEGORIES.json')
+#convert_xlsx_to_json('data/misc/VTAC_ES_PUBLIC_CATEGORIES.xlsx', 'data/common/PUBLIC_CATEGORIES.json')
 
 
 #process_ref_to_sku(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)

@@ -28,31 +28,12 @@ class DataMerger:
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
     # Path to [category_en|category_es|sku] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/misc/PUBLIC_CATEGORIES.xlsx'
+    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/PUBLIC_CATEGORIES.xlsx'
 
-    COUNTRY_PRODUCT_INFO_DIR_PATHS = {
-        'es': ScraperVtacSpain.PRODUCTS_INFO_PATH,
-        'uk': ScraperVtacUk.PRODUCTS_INFO_PATH,
-        'ita': ScraperVtacItalia.PRODUCTS_INFO_PATH
-    }
-
-    COUNTRY_PRODUCT_MEDIA_DIR_PATHS = {
-        'es': ScraperVtacSpain.PRODUCTS_MEDIA_PATH,
-        'uk': ScraperVtacUk.PRODUCTS_MEDIA_PATH,
-        'ita': ScraperVtacItalia.PRODUCTS_MEDIA_PATH
-    }
-
-    # TODO use to merge only new
-    COUNTRY_NEW_PRODUCT_INFO_DIR_PATHS = {
-        'es': ScraperVtacSpain.NEW_PRODUCTS_INFO_PATH,
-        'uk': ScraperVtacUk.NEW_PRODUCTS_INFO_PATH,
-        'ita': ScraperVtacItalia.NEW_PRODUCTS_INFO_PATH
-    }
-
-    COUNTRY_NEW_PRODUCT_MEDIA_DIR_PATHS = {
-        'es': ScraperVtacSpain.NEW_PRODUCTS_INFO_PATH,
-        'uk': ScraperVtacUk.NEW_PRODUCTS_INFO_PATH,
-        'ita': ScraperVtacItalia.NEW_PRODUCTS_INFO_PATH
+    COUNTRY_SCRAPERS = {
+        'es': ScraperVtacSpain,
+        'uk': ScraperVtacUk,
+        'ita': ScraperVtacItalia
     }
 
     # Field priorities, 'default' is for fields that are not in this list
@@ -180,12 +161,18 @@ class DataMerger:
     }
 
     @classmethod
-    def load_data_for_country(cls, country, only_media=False):
-        directory_path = cls.COUNTRY_PRODUCT_INFO_DIR_PATHS[country]
+    def load_data_for_country(cls, country, only_media=False, if_only_new=False):
+        if if_only_new:
+            directory_path = cls.COUNTRY_SCRAPERS[country].NEW_PRODUCTS_INFO_PATH
+        else:
+            directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_INFO_PATH
         data = []
 
         if only_media:
-            directory_path = cls.COUNTRY_PRODUCT_MEDIA_DIR_PATHS[country]
+            if if_only_new:
+                directory_path = cls.COUNTRY_SCRAPERS[country].NEW_PRODUCTS_MEDIA_PATH
+            else:
+                directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_MEDIA_PATH
 
         # Load data
         file_list = Util.get_all_files_in_directory(directory_path)
@@ -202,28 +189,21 @@ class DataMerger:
         return data
 
     @classmethod
-    def load_all(cls):
-        for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
+    def load_all(cls, if_only_new):
+        for country in cls.COUNTRY_SCRAPERS.keys():
             if cls.country_data.get(country):
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_data[country] = cls.load_data_for_country(country)
+            cls.country_data[country] = cls.load_data_for_country(country, if_only_new)
 
-        for country in cls.COUNTRY_PRODUCT_INFO_DIR_PATHS.keys():
+        for country in cls.COUNTRY_SCRAPERS.keys():
             if cls.country_media.get(country):
                 if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_media[country] = cls.load_data_for_country(country, True)
+            cls.country_media[country] = cls.load_data_for_country(country, True, if_only_new)
         return cls
-
-    @classmethod
-    def get_country_data(cls, country):
-        if cls.country_data.get(country):
-            return cls.country_data.get(country, None)
-
-        return cls.load_data_for_country(country)
 
     @classmethod
     def get_product_data_from_country_sku(cls, sku, country, only_media=False):

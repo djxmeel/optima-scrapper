@@ -23,7 +23,7 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 25
+    JSON_DUMP_FREQUENCY = 5
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
@@ -376,7 +376,7 @@ class Util:
                     if link in duplicate_links:
                         continue
 
-                    for dup in scraper.get_same_product_links(scraper.PRODUCTS_LINKS_PATH, link):
+                    for dup in scraper.get_duplicate_product_links(scraper.PRODUCTS_LINKS_PATH, link):
                         duplicate_links.append(dup)
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES)
@@ -493,7 +493,7 @@ class Util:
         public_categories = []
 
         for category_sku in categories_sku:
-            if sku == category_sku['SKU']:
+            if sku == str(category_sku['SKU']):
                 public_categories.append(category_sku['CATEGORY ES'])
 
         return public_categories

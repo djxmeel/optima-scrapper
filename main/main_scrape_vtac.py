@@ -56,19 +56,17 @@ if IF_EXTRACT_ITEM_INFO:
     scraper.instantiate_driver()
     start_time = time.time()
 
-    scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH}')
-
     # Determine whether to extract to TEST env or PROD env
     if IF_EXTRACT_TO_TEST:
         # Determine whether to extract to default or new products files
         if IF_ONLY_NEW_PRODUCTS:
             products_info_path = scraper.NEW_PRODUCTS_INFO_PATH_TEST
             products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH_TEST
-            links_path = scraper.NEW_PRODUCTS_LINKS_PATH_TEST
+            links_path = scraper.NEW_PRODUCTS_LINKS_PATH
         else:
             products_info_path = scraper.PRODUCTS_INFO_PATH_TEST
             products_media_path = scraper.PRODUCTS_MEDIA_PATH_TEST
-            links_path = scraper.PRODUCTS_LINKS_PATH_TEST
+            links_path = scraper.PRODUCTS_LINKS_PATH
     else:
         # Determine whether to extract to default or new products files
         if IF_ONLY_NEW_PRODUCTS:
@@ -79,6 +77,8 @@ if IF_EXTRACT_ITEM_INFO:
             products_info_path = scraper.PRODUCTS_INFO_PATH
             products_media_path = scraper.PRODUCTS_MEDIA_PATH
             links_path = scraper.PRODUCTS_LINKS_PATH
+
+    scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION')
 
     if not os.path.exists(links_path):
         scraper.logger.info(f'No links file found at {links_path}. Please extract links first.')
@@ -95,8 +95,7 @@ if IF_EXTRACT_ITEM_INFO:
     )
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
-    scraper.logger.info(
-        f'FINISHED PRODUCT INFO EXTRACTION TO {scraper.PRODUCTS_INFO_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
+    scraper.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 # PDF DL
 if IF_DL_ITEM_PDF:
