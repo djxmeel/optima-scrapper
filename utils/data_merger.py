@@ -1,5 +1,7 @@
 import json
 import copy
+import threading
+
 from utils.util import Util
 from scrapers.scraper_vtac_es import ScraperVtacSpain
 from scrapers.scraper_vtac_ita import ScraperVtacItalia
@@ -311,18 +313,25 @@ class DataMerger:
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_media)
 
+    # TODO test
     @classmethod
-    def extract_merged_data(cls, data, is_media=False):
-        path = cls.MEDIA_DUMP_PATH_TEMPLATE if is_media else cls.DATA_DUMP_PATH_TEMPLATE
+    def extract_merged_data(cls, data, media):
+        data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
+        media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
 
-        if not data:
-            cls.load_all().merge_data()
-            data = cls.merged_media if is_media else cls.merged_data
+        def async_task(data_type, path):
+            for index in range(0, len(data_type), cls.JSON_DUMP_FREQUENCY):
+                counter = index + cls.JSON_DUMP_FREQUENCY
 
-        for index in range(0, len(data), cls.JSON_DUMP_FREQUENCY):
-            counter = index + cls.JSON_DUMP_FREQUENCY
+                if index + cls.JSON_DUMP_FREQUENCY > len(data_type):
+                    counter = len(data_type)
 
-            if index + cls.JSON_DUMP_FREQUENCY > len(data):
-                counter = len(data)
+                Util.dump_to_json(data_type[index:counter], path.format(counter))
 
-            Util.dump_to_json(data[index:counter], path.format(counter))
+        t1 = threading.Thread(target=async_task, args=(data, data_path_temp), name='t1')
+        t2 = threading.Thread(target=async_task, args=(media, media_path_temp), name='t2')
+
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
