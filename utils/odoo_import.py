@@ -579,22 +579,25 @@ class OdooImport:
             cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")
 
     @classmethod
-    def import_public_categories(cls, public_categories_json_path):
-        public_categories = Util.load_json_data(public_categories_json_path)
+    def import_public_categories(cls, public_categories_path):
+        public_categories = sorted(list(set([e['CATEGORY ES'] for e in Util.load_excel_columns_in_dictionary_list(public_categories_path) if e['CATEGORY ES'] != ''])))
         public_categories_model = cls.odoo.env['product.public.category']
 
+        seq = 10000
+
         for category in public_categories:
-            if public_categories_model.search([('name', '=', category["Display Name"]), ('sequence', '=', category["Sequence"])]):
-                cls.logger.info(f'Category {category["Display Name"]} already exists in Odoo')
+            if public_categories_model.search([('name', '=', category)]):
+                cls.logger.info(f'Category {category} already exists in Odoo')
                 continue
 
             public_categories_model.create({
-                'name': category["Display Name"],
-                'parent_id': public_categories_model.search([('name', '=', category["Parent Category"])])[0] if category["Parent Category"] else '',
-                'sequence': category["Sequence"]
+                'name': category,
+                'sequence': seq
             })
 
-            cls.logger.info("CREATED CATEGORY: " + category["Display Name"])
+            seq += 1
+
+            cls.logger.info("CREATED CATEGORY: " + category)
 
     @classmethod
     def browse_all_products_in_batches(cls, batch_size=200):

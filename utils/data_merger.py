@@ -27,8 +27,8 @@ class DataMerger:
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
-    # Path to [category_en|category_es|sku] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/PUBLIC_CATEGORIES.xlsx'
+    # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
+    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/PUBLIC_CATEGORY_SKU.xlsx'
 
     COUNTRY_SCRAPERS = {
         'es': ScraperVtacSpain,
@@ -127,7 +127,7 @@ class DataMerger:
         'Material': [
             ('ordenador', 'PC'),
             ('vidrio', 'Cristal'),
-            ('ordenador personal', 'PC'),
+            ('ordenador personal', 'PC')
         ],
         'Sin destellos': [
             ('sin destellos', 'Sí')
@@ -306,7 +306,6 @@ class DataMerger:
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_media)
 
-    # TODO test
     @classmethod
     def extract_merged_data(cls, data, media):
         data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
