@@ -243,8 +243,8 @@ def field_update():
     print(f"Updated {len(product_ids)} products.")
 
 def get_distinct_categs():
-    categs = list(Util.load_json_data('data/vtac_italia/LINKS/PRODUCT_LINKS_CATEGORIES.json').values())
-    categs += list(Util.load_json_data('data/vtac_uk/LINKS/PRODUCT_LINKS_CATEGORIES.json').values())
+    categs = list(Util.load_json('data/vtac_italia/LINKS/PRODUCT_LINKS_CATEGORIES.json').values())
+    categs += list(Util.load_json('data/vtac_uk/LINKS/PRODUCT_LINKS_CATEGORIES.json').values())
 
     distinct_categs = set()
 

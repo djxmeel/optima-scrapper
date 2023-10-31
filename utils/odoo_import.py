@@ -195,7 +195,7 @@ class OdooImport:
         counter = 0
 
         for file_path in sorted(file_list):
-            products = Util.load_json_data(file_path)
+            products = Util.load_json(file_path)
 
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
@@ -273,7 +273,7 @@ class OdooImport:
         acc_model.unlink(acc_model.search([]))
 
         for file_path in sorted(file_list):
-            products = Util.load_json_data(file_path)
+            products = Util.load_json(file_path)
 
             # Iterate over the products
             for product in products:
@@ -418,7 +418,7 @@ class OdooImport:
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
-            products = Util.load_json_data(file_path)
+            products = Util.load_json(file_path)
 
             for product in products:
                 if 'imgs' in product:
@@ -503,7 +503,7 @@ class OdooImport:
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
-            products = Util.load_json_data(file_path)
+            products = Util.load_json(file_path)
 
             for product in products:
                 if 'icons' in product:

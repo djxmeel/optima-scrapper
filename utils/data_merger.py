@@ -55,88 +55,9 @@ class DataMerger:
     ]
 
     # Fields to rename for common naming between data sources
-    FIELDS_RENAMES = {
-        "Código ean": "barcode",
-        'Ean código': 'barcode',
-        'Ean': 'barcode',
-        "Ciclos de encendido / apagado": "Ciclos de encendido/apagado",
-        "Código de la familia": "Código de familia",
-        "Modelo": "Código de familia",
-        "Eficacia luminosa (lm/w)": "Eficiencia lumínica",
-        "Factor de potencia (fp)": "Factor de potencia",
-        "Fp": "Factor de potencia",
-        "Flujo luminoso (lm)": "Flujo luminoso",
-        "Flujo luminoso/m": "Flujo luminoso",
-        "Lúmenes": "Flujo luminoso",
-        "Garanzia": "Garantía",
-        "Dimensión": "Dimensiones",
-        "Dimensioni (axlxp)": "Dimensiones",
-        "Nombre de la marca": "Marca",
-        'Ángulo de haz°': 'Ángulo de apertura',
-        'Ángulo de haz': 'Ángulo de apertura',
-        'Haz de luz': 'Ángulo de apertura',
-        'Las condiciones de trabajo': 'Temperaturas de trabajo',
-        'Temperatura de operacion': 'Temperaturas de trabajo',
-        'Hora de inicio al 100% encendido': 'Tiempo de inicio al 100% encendido',
-        'Larga vida': 'Vida útil',
-        'Durata': 'Vida útil',
-        'Grado de protección': 'Protección IP',
-        'Clasificación del ip': 'Protección IP',
-        'Fuerza': 'Potencia',
-        'Ik rating': 'Grado de protección IK',
-        'Tamaño de la batería': 'Batería',
-        'Capacidad de la batería': 'Tipo de batería',
-        'Capacidad': 'Tipo de batería',
-        'Tipo de chip led': 'Tipo LED',
-        'Chip led': 'Tipo LED',
-        'Clase de eficiencia': 'Clase de eficiencia energética',
-        'Etiqueta de calificación energética': 'Clase de eficiencia energética',
-        'Casquillo': 'Tipo casquillo',
-        'Base': 'Tipo casquillo',
-        'Ataque': 'Tipo casquillo',
-        'Marca del conductor': 'Marca del Driver',
-        'Temperatura de color (cti)': 'Temperatura del color',
-        'Temperatura de color': 'Temperatura del color',
-        'Color de la unidad': 'Color',
-        'Color del cuerpo': 'Color',
-        'Tono de luz': 'Color de la luz',
-        'Voltaje': 'Tensión',
-        'Cantidad de rollo': 'Longitud de la bobina',
-        'Montar': 'Tipo',
-        'Tipo de instalación': 'Tipo',
-        'Tipo de cuerpo': 'Material',
-        'Longitud': 'Longitud del cable',
-        'Detección a distancia': 'Distancia de detección',
-        'Rango de detección': 'Distancia de detección',
-        'Campo de detección': 'Ángulo de detección',
-        'Detección por movimiento': 'Velocidad de movimiento de detección',
-        'Color para web': 'Color de la luz',
-        'Sin destellos': 'Sin parpadeo',
-        'El ahorro de energía': 'Ahorro energético'
-    }
+    FIELDS_RENAMES_JSON_PATH = 'data/common/FIELDS_RENAMES.json'
 
-    # TODO test
-    VALUE_RENAMES = {
-        'Color de la luz': [
-            ('día blanco', 'Blanco neutro'),
-            ('Blanco', 'Blanco frío')
-        ],
-        'Color': [
-            ('Bianco', 'Blanco')
-        ],
-        'Material': [
-            ('ordenador', 'PC'),
-            ('vidrio', 'Cristal'),
-            ('ordenador personal', 'PC')
-        ],
-        'Sin destellos': [
-            ('sin destellos', 'Sí')
-        ],
-        'Ahorro energético': [
-            ('80 energía', '80'),
-            ('85 Energía', '85')
-        ]
-    }
+    VALUES_RENAMES_JSON_PATH = 'data/common/VALUES_RENAMES.json'
 
     # Fields that are always kept from a country (field must be stored as a list in json)
     # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
@@ -183,7 +104,7 @@ class DataMerger:
         if not only_media:
             # Filtering None
             # Merging fields when necessary
-            data = [cls.rename__delete_product_fields__values(p, cls.FIELDS_RENAMES, cls.FIELDS_TO_DELETE, cls.VALUE_RENAMES) for p in data if p is not None]
+            data = [cls.rename__delete_product_fields__values(p, cls.FIELDS_RENAMES_JSON_PATH, cls.FIELDS_TO_DELETE, cls.VALUES_RENAMES_JSON_PATH) for p in data if p is not None]
             cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
         return data
@@ -217,18 +138,21 @@ class DataMerger:
         return None
 
     @classmethod
-    def rename__delete_product_fields__values(cls, product, fields_to_rename, fields_to_delete, value_renames):
+    def rename__delete_product_fields__values(cls, product, fields_to_rename_json_path, fields_to_delete, value_renames_json_path):
+        fields_to_rename = Util.load_json(fields_to_rename_json_path)
+        value_renames = Util.load_json(value_renames_json_path)
+
         for key, value in fields_to_rename.items():
-            if product.get(key):
+            if key in product:
                 product[value] = product[key]
                 del product[key]
 
         for field in fields_to_delete:
-            if product.get(field):
+            if field in product:
                 del product[field]
 
         for key, value in value_renames.items():
-            if product.get(key):
+            if key in product:
                 for value_rename in value:
                     product[key] = product[key].replace(value_rename[0], value_rename[1])
         return product

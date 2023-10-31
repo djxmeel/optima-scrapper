@@ -86,7 +86,6 @@ class ScraperVtacSpain:
                 value = key_value.find_element(By.TAG_NAME, "div")
             except NoSuchElementException:
                 cls.logger.warning(f'Field {key.text} has no value.')
-                item[key.text] = ''
                 continue
 
             item[str(key.text).capitalize()] = value.text

@@ -155,7 +155,7 @@ class Util:
             return None
 
     @staticmethod
-    def load_json_data(file_path):
+    def load_json(file_path):
         """
         Loads JSON data from a given file path.
 
@@ -215,7 +215,7 @@ class Util:
         file_list = Util.get_all_files_in_directory(directory)
 
         for file_path in file_list:
-            loaded_data += Util.load_json_data(file_path)
+            loaded_data += Util.load_json(file_path)
 
         return loaded_data
 
@@ -361,7 +361,7 @@ class Util:
         start_from (int): The index to start extraction from.
         """
         # Load links from JSON file
-        links = Util.load_json_data(links_path)
+        links = Util.load_json(links_path)
 
         products_data = []
         counter = start_from
