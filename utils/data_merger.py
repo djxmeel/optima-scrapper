@@ -142,19 +142,19 @@ class DataMerger:
         fields_to_rename = Util.load_json(fields_to_rename_json_path)
         value_renames = Util.load_json(value_renames_json_path)
 
-        for key, value in fields_to_rename.items():
-            if key in product:
-                product[value] = product[key]
-                del product[key]
+        for field, field_renamed in fields_to_rename.items():
+            if field in product:
+                product[field_renamed] = product[field]
+                del product[field]
 
         for field in fields_to_delete:
             if field in product:
                 del product[field]
 
-        for key, value in value_renames.items():
-            if key in product:
-                for value_rename in value:
-                    product[key] = product[key].replace(value_rename[0], value_rename[1])
+        for field, renames in value_renames.items():
+            if field in product:
+                for rename in renames:
+                    product[field] = product[field].replace(rename[0], rename[1])
         return product
 
     @classmethod

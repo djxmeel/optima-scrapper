@@ -17,5 +17,8 @@
 "Ahorro energético": [
 ["80 energía", "80"],
 ["85 Energía", "85"]
+],
+"Vida útil": [
+["ore", "horas"]
 ]
 }
