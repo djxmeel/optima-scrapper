@@ -1,7 +1,10 @@
 {
 "Color de la luz": [
 ["día blanco", "Blanco neutro"],
-["Blanco", "Blanco frío"]
+["Blanco", "Blanco frío"],
+["Blanco frío cálido", "Blanco cálido"],
+["Blanco frío néutro", "Blanco neutro"],
+["Blanco frío frío", "Blanco frío"]
 ],
 "Color": [
 ["Bianco", "Blanco"]
