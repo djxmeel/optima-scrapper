@@ -487,8 +487,8 @@ class Util:
 
         return chosen_country
 
-    @staticmethod
-    def get_public_category_from_sku(sku, public_categories_excel_path):
+    @classmethod
+    def get_public_category_from_sku(cls, sku, public_categories_excel_path):
         categories_sku = Util.load_excel_columns_in_dictionary_list(public_categories_excel_path)
         public_categories = []
 
@@ -496,7 +496,10 @@ class Util:
             if str(sku) == str(category_sku['SKU']):
                 public_categories.append(category_sku['CATEGORY ES'])
 
-        print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories}')
+        if not public_categories:
+            print(f'{sku}: NO PUBLIC CATEGORIES FOUND')
+        else:
+            print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories}')
 
         return public_categories
 

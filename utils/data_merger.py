@@ -300,9 +300,6 @@ class DataMerger:
 
             merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
 
-            if not merged_product.get('public_categories'):
-                cls.logger.info(f'{sku_spaced}: NO PUBLIC CATEGORIES FOUND')
-
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_media)
 
