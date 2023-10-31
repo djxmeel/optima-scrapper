@@ -1,5 +1,11 @@
 /logs
-/data
+data/vtac_italia/PROD
+data/vtac_italia/TEST
+data/vtac_spain/PROD
+data/vtac_spain/TEST
+data/vtac_uk/PROD
+data/vtac_uk/TEST
+data/vtac_merged
 /dlls
 .idea/shelf/
 .idea/misc.xml
