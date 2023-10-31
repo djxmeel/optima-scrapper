@@ -23,7 +23,7 @@ import cairosvg
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
-    JSON_DUMP_FREQUENCY = 5
+    JSON_DUMP_FREQUENCY = 25
 
     PDF_DOWNLOAD_DELAY = 2
     PRODUCT_LINK_EXTRACTION_DELAY = 2
@@ -494,7 +494,7 @@ class Util:
 
         for category_sku in categories_sku:
             if str(sku) == str(category_sku['SKU']):
-                public_categories.append(category_sku['CATEGORY ES'])
+                public_categories.append(category_sku['CATEGORY ES'].strip())
 
         if not public_categories:
             print(f'{sku}: NO PUBLIC CATEGORIES FOUND')

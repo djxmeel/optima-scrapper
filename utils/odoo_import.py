@@ -591,7 +591,7 @@ class OdooImport:
                 continue
 
             public_categories_model.create({
-                'name': category,
+                'name': str(category).strip(),
                 'sequence': seq
             })
 
