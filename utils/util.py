@@ -493,8 +493,10 @@ class Util:
         public_categories = []
 
         for category_sku in categories_sku:
-            if sku == str(category_sku['SKU']):
+            if str(sku) == str(category_sku['SKU']):
                 public_categories.append(category_sku['CATEGORY ES'])
+
+        print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories}')
 
         return public_categories
 
