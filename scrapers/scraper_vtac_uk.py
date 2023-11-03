@@ -14,6 +14,8 @@ from utils.util import Util
 class ScraperVtacUk:
     COUNTRY = 'uk'
 
+    WEBSITE_NAME = 'V-TAC UK'
+
     DRIVER = None
     logger = None
     BEGIN_SCRAPE_FROM = 0

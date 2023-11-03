@@ -12,6 +12,7 @@ from utils.util import Util
 # VTAC ES SCRAPER
 class ScraperVtacSpain:
     COUNTRY = 'es'
+    WEBSITE_NAME = 'V-TAC España'
 
     DRIVER = None
     logger = None

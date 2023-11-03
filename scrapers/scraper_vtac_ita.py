@@ -13,6 +13,8 @@ from utils.util import Util
 class ScraperVtacItalia:
     COUNTRY = 'ita'
 
+    WEBSITE_NAME = 'V-TAC Italia'
+
     DRIVER = None
     logger = None
     BEGIN_SCRAPE_FROM = 0
