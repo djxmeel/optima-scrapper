@@ -11,6 +11,8 @@ from scrapers.scraper_vtac_uk import ScraperVtacUk
 class DataMerger:
     logger = None
 
+    # TODO REPLACE ICONS WITH THEIR TRANSLATIONS data\common\unique_icons -> data\common\edited_icons
+
     JSON_DUMP_FREQUENCY = 25
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
