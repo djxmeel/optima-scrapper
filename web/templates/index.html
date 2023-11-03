@@ -8,15 +8,22 @@
             <h3>Product count : </h3>
         <table border="1" class="monitor-table">
             <tr>
-                <th>Website</th>
+                <th rowspan="2">Website</th>
+                <th colspan="2">Links</th>
+                <th colspan="2">Local</th>
+            </tr>
+            <tr>
                 <th>Count</th>
                 <th>New</th>
-            </tr>
+                <th>Count</th>
+                <th>New</th>
             {% for record in data %}
                 <tr>
                     <td>{{ record['website'] }}</td>
-                    <td>{{ record['count'] }}</td>
+                    <td>{{ record['count'] | default(0) }}</td>
                     <td>{{ record['new'] | default(0) }}</td>
+                    <td>{{ record['local_count'] | default(0) }}</td>
+                    <td>{{ record['local_new'] | default(0) }}</td>
                 </tr>
             {% endfor %}
         </table>
