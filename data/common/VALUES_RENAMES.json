@@ -1,0 +1,27 @@
+{
+"Color de la luz": [
+["día blanco", "Blanco neutro"],
+["Blanco", "Blanco frío"],
+["Blanco frío cálido", "Blanco cálido"],
+["Blanco frío néutro", "Blanco neutro"],
+["Blanco frío frío", "Blanco frío"]
+],
+"Color": [
+["Bianco", "Blanco"]
+],
+"Material": [
+["ordenador", "PC"],
+["vidrio", "Cristal"],
+["ordenador personal", "PC"]
+],
+"Sin destellos": [
+["sin destellos", "Sí"]
+],
+"Ahorro energético": [
+["80 energía", "80"],
+["85 Energía", "85"]
+],
+"Vida útil": [
+["ore", "horas"]
+]
+}

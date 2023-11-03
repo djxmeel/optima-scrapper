@@ -13,32 +13,46 @@ from utils.util import Util
 class ScraperVtacItalia:
     COUNTRY = 'ita'
 
+    WEBSITE_NAME = 'V-TAC Italia'
+
     DRIVER = None
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
+    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/vtac_italia/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+
     SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
+
+    PRODUCTS_INFO_PATH = 'data/vtac_italia/PROD/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PROD/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_italia/PROD/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_PDF'
+
+    PRODUCTS_INFO_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_PDF'
+
+    NEW_PRODUCTS_INFO_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_PDF'
+
+    PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
+
+    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     CATEGORIES_LINKS = (
         'https://led-italia.it/prodotti/M4E-fotovoltaico',
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     )
-
-    PRODUCTS_INFO_PATH = 'data/vtac_ita/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_ita/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_ita/PRODUCT_PDF'
-
-    PRODUCTS_LINKS_PATH = 'data/vtac_ita/LINKS/PRODUCTS_LINKS_ITA.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_ita/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
-
-
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_ita/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_ita/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_ita/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_ita/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
 
     @classmethod
     def instantiate_driver(cls):
@@ -81,7 +95,7 @@ class ScraperVtacItalia:
                 kit_span = anchor.find_element(By.TAG_NAME, 'span')
 
                 kit_info = {'link': anchor.get_attribute('href'),
-                            'sku': f"VS{kit_span.find_element(By.TAG_NAME, 'span').text}",
+                            'default_code': kit_span.find_element(By.TAG_NAME, 'span').text,
                             'cantidad': kit_span.text.split('x')[0]
                             }
 
@@ -99,7 +113,7 @@ class ScraperVtacItalia:
                 acces_anchor = li.find_element(By.TAG_NAME, 'a')
 
                 acces_info = {'link': acces_anchor.get_attribute('href'),
-                              'sku': f"VS{acces_anchor.find_element(By.TAG_NAME, 'b').text}",
+                              'default_code': acces_anchor.find_element(By.TAG_NAME, 'b').text,
                               'cantidad': acces_cantidad.text.split('x')[0]
                               }
 
@@ -133,7 +147,7 @@ class ScraperVtacItalia:
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
             desc_outer_html = driver.find_element(By.XPATH,
-                                                 f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
+                                                    f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
                 'outerHTML')
 
             item['website_description'] = Util.translate_from_to_spanish('it', desc_outer_html)
@@ -150,7 +164,7 @@ class ScraperVtacItalia:
             for field in fields:
                 key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
 
-                item[key] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
+                item[str(key).capitalize()] = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'span').text)
 
             # Uso de los campos de ODOO para el volumen y el peso si están disponibles
             if 'Volume' in item:
@@ -159,9 +173,14 @@ class ScraperVtacItalia:
             if 'Peso' in item:
                 item['weight'] = float(item['Peso'].lower().replace(',', '.').replace('kg', ''))
                 del item['Peso']
-            if 'SKU' in item:
-                item['sku'] = item['SKU']
-                del item['SKU']
+
+        internal_ref = Util.get_internal_ref_from_sku(item['Sku'])
+
+        if not internal_ref:
+            return None
+
+        item['default_code'] = item['Sku']
+        del item['Sku']
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',
@@ -189,11 +208,8 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Formateo del SKU
-        item['sku'] = f'VS{item["sku"]}'
-
         # Formateo del titulo
-        item['name'] = f'[{item["sku"]}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
@@ -201,7 +217,10 @@ class ScraperVtacItalia:
 
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
-        extracted = set()
+        extracted = []
+        # Product links and categories {'link': 'category string'}
+        product_links_categories = {}
+
         for cat in categories:
             try:
                 driver.get(cat)
@@ -210,18 +229,28 @@ class ScraperVtacItalia:
                 ScraperVtacItalia.extract_all_links(driver, categories)
                 return
 
-            item_subcats = [link.get_attribute('href') for link in
-                            driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/a')]
+            item_subcats = driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/a')
 
-            for item_subcat in item_subcats:
+            item_subcats_links = [link.get_attribute('href') for link in item_subcats]
+
+            item_subcats_strings = [element.find_element(By.XPATH, 'div[2]').text for element in item_subcats]
+
+            main_category = f'{driver.find_element(By.XPATH, "//main//h1").text} / '
+
+            for subcat_link, subcat_string in zip(item_subcats_links, item_subcats_strings):
+                if subcat_string == main_category[:-3]:
+                    category_string = subcat_string
+                else:
+                    category_string = main_category + subcat_string
+
                 current_page = 0
                 do_page_exist = True
 
                 while do_page_exist:
-                    if item_subcat.__contains__('?sub'):
-                        driver.get(f'{item_subcat}&page={current_page}')
+                    if subcat_link.__contains__('?sub'):
+                        driver.get(f'{subcat_link}&page={current_page}')
                     else:
-                        driver.get(f'{item_subcat}?page={current_page}')
+                        driver.get(f'{subcat_link}?page={current_page}')
 
                     time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
                     articles_in_page = driver.find_elements(By.XPATH,
@@ -231,12 +260,25 @@ class ScraperVtacItalia:
 
                     if articles_in_page:
                         for article in articles_in_page:
-                            extracted.add(article.get_attribute('href').split('?asq=')[0])
+                            article_href = article.get_attribute('href').split('?asq=')[0]
+                            extracted.append(article_href)
+                            if article_href in product_links_categories:
+                                product_links_categories[article_href].append(category_string)
+                            else:
+                                product_links_categories[article_href] = [category_string]
                     else:
                         do_page_exist = False
 
                     cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
                     current_page += 1
+
+        Util.dump_to_json(product_links_categories, cls.PRODUCT_LINKS_CATEGORIES_JSON_PATH)
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')
+
+        extracted = set(extracted)
+
+        cls.logger.info(f'EXTRACTED {len(extracted)} UNIQUE LINKS')
 
         if update:
             links_path = ScraperVtacItalia.PRODUCTS_LINKS_PATH

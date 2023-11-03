@@ -9,49 +9,53 @@ from selenium.common.exceptions import TimeoutException
 from utils.util import Util
 
 
-# VTAC ES SCRAPER
-class ScraperVtacSpain:
-    COUNTRY = 'es'
-    WEBSITE_NAME = 'V-TAC España'
-
+# EFECTOLED SCRAPER
+class ScraperEfectoLed:
     DRIVER = None
     logger = None
     BEGIN_SCRAPE_FROM = 0
 
-    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/vtac_spain/LINKS/PRODUCT_LINKS_CATEGORIES.json'
+    PRODUCT_LINKS_CATEGORIES_JSON_PATH = 'data/efectoled/LINKS/PRODUCT_LINKS_CATEGORIES.json'
 
     SPECS_SUBCATEGORIES = ()
 
-    PRODUCTS_INFO_PATH = 'data/vtac_spain/PROD/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PROD/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_spain/PROD/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/efectoled/PROD/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/efectoled/PROD/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/efectoled/PROD/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/efectoled/PROD/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/efectoled/PROD/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/efectoled/PROD/NEW/PRODUCT_PDF'
 
-    PRODUCTS_INFO_PATH_TEST= 'data/vtac_spain/TEST/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_spain/TEST/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH_TEST = 'data/vtac_spain/TEST/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH_TEST = 'data/efectoled/TEST/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH_TEST = 'data/efectoled/TEST/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH_TEST = 'data/efectoled/TEST/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH_TEST = 'data/vtac_spain/TEST/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_spain/TEST/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH_TEST = 'data/vtac_spain/TEST/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH_TEST = 'data/efectoled/TEST/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/efectoled/TEST/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH_TEST = 'data/efectoled/TEST/NEW/PRODUCT_PDF'
 
-    PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json'
-    NEW_PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json'
+    PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/PRODUCTS_LINKS_EFECTOLED.json'
+    NEW_PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/NEW_PRODUCTS_LINKS_EFECTOLED.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
+    PRODUCTS_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS.json'
+    PRODUCTS_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
 
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
+    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
+    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     CATEGORIES_LINKS = (
-        'https://v-tac.es/sistemas-solares.html',
-        'https://v-tac.es/iluminaci%C3%B3n.html',
-        'https://v-tac.es/smart-digital.html',
-        'https://v-tac.es/el%C3%A9ctrico.html',
+        'https://www.efectoled.com/es/6-comprar-bombillas-lamparas-led',
+        'https://www.efectoled.com/es/7-comprar-tubos-pantallas-y-lineal-led',
+        'https://www.efectoled.com/es/content/328-iluminacion-interior',
+        'https://www.efectoled.com/es/11-comprar-downlight-led',
+        'https://www.efectoled.com/es/8-comprar-paneles-led',
+        'https://www.efectoled.com/es/10-comprar-tiras-y-neon-led',
+        'https://www.efectoled.com/es/content/324-iluminacion-exterior',
+        'https://www.efectoled.com/es/content/311-home-deco',
+        'https://www.efectoled.com/es/11051-comprar-espacios',
+        'https://www.efectoled.com/es/11047-comprar-estilos',
+        'https://www.efectoled.com/es/11047-comprar-estilos',
     )
 
     @classmethod
@@ -66,12 +70,11 @@ class ScraperVtacSpain:
         except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
             time.sleep(5)
-            ScraperVtacSpain.scrape_item(driver, url)
+            ScraperEfectoLed.scrape_item(driver, url)
             return
 
         name_xpath = "//h3[@itemprop='name']"
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
-        graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
@@ -87,26 +90,17 @@ class ScraperVtacSpain:
                 value = key_value.find_element(By.TAG_NAME, "div")
             except NoSuchElementException:
                 cls.logger.warning(f'Field {key.text} has no value.')
+                item[key.text] = ''
                 continue
 
-            item[str(key.text).capitalize()] = value.text
+            item[key.text] = value.text
 
         # Extracción y formateo del SKU
         if 'Código de orden' in item.keys():
-            item['default_code'] = f'{item["Código de orden"]}'
+            item['Sku'] = f'{item["Código de orden"]}'
             del item['Código de orden']
         else:
-            item['default_code'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
-
-        # Extracción de las dimensiones gráficas
-        try:
-            graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
-            item['imgs'].append({
-                'src': graph_dimensions_src,
-                'img64': Util.src_to_base64(graph_dimensions_src)
-            })
-        except NoSuchElementException:
-            pass
+            item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
         # Extracción de imágenes
         try:
@@ -136,14 +130,8 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             pass
 
-        internal_ref = Util.get_internal_ref_from_sku(item['default_code'])
-
-        # If internal_ref is None, it's SKU contains letters (Not V-TAC)
-        if not internal_ref:
-            return None
-
         # Extracción del título
-        item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{item["Sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
@@ -159,13 +147,13 @@ class ScraperVtacSpain:
 
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
-        extracted = []
+        extracted = set()
         for cat in categories:
             try:
                 driver.get(cat)
             except TimeoutException:
                 cls.logger.error("ERROR navegando a la página. Reintentando...")
-                ScraperVtacSpain.extract_all_links(driver, categories, update)
+                ScraperEfectoLed.extract_all_links(driver, categories, update)
                 return
 
             inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH,
@@ -179,18 +167,12 @@ class ScraperVtacSpain:
                 before = len(extracted)
 
                 for link in links:
-                    extracted.append(link.get_attribute('href'))
+                    extracted.add(link.get_attribute('href'))
 
                 cls.logger.info(f'ADDED: {len(extracted) - before} TOTAL: {len(extracted)} URL: {driver.current_url}')
 
-        cls.logger.info(f'EXTRACTED {len(extracted)} LINKS')
-
-        extracted = set(extracted)
-
-        cls.logger.info(f'EXTRACTED {len(extracted)} UNIQUE LINKS')
-
         if update:
-            links_path = ScraperVtacSpain.PRODUCTS_LINKS_PATH
+            links_path = ScraperEfectoLed.PRODUCTS_LINKS_PATH
 
             if os.path.exists(links_path):
                 with open(links_path, 'r') as file:
@@ -204,15 +186,15 @@ class ScraperVtacSpain:
     def count_pdfs_of_link(cls, link):
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
-        if ScraperVtacSpain.DRIVER.current_url != link:
-            ScraperVtacSpain.DRIVER.get(link)
+        if ScraperEfectoLed.DRIVER.current_url != link:
+            ScraperEfectoLed.DRIVER.get(link)
 
         attachments_xpath = '//div[@class="downloads"]//a'
         pdf_elements = []
 
         try:
             # Get the <a> elements
-            pdf_elements = ScraperVtacSpain.DRIVER.find_elements(By.XPATH, attachments_xpath)
+            pdf_elements = ScraperEfectoLed.DRIVER.find_elements(By.XPATH, attachments_xpath)
         except NoSuchElementException:
             pass
 
@@ -242,7 +224,7 @@ class ScraperVtacSpain:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{ScraperVtacSpain.PRODUCTS_PDF_PATH}/{sku}'
+            nested_dir = f'{ScraperEfectoLed.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
             # Get the original file name if possible
@@ -259,32 +241,3 @@ class ScraperVtacSpain:
                 file.write(response.content)
 
         return len(pdf_elements)
-
-    @classmethod
-    def get_internal_category(cls, link):
-        # Extracción de las categorías del producto
-        cls.DRIVER.get(link)
-        categories_crumbs = cls.DRIVER.find_elements(By.CLASS_NAME, "breadcrumb-item")
-        categories = ""
-
-        # Ignore last crumb (product name)
-        for crumb in categories_crumbs[:-1]:
-            categories += f'{crumb.text} / '
-
-        return categories[:-2].strip()
-
-    @classmethod
-    def get_duplicate_product_links(cls, file_path, base_link):
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-
-        substring = base_link.split('/')[-1]
-
-        links = []
-
-        for link in data:
-            if substring in link:
-                print('FOUND DUPLICATE ->', link)
-                links.append(link)
-
-        return links

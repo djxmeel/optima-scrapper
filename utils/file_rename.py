@@ -1,5 +1,6 @@
 import os
 
+
 def rename_files_in_directory(directory_path, naming_func):
     # Ensure the directory exists
     if not os.path.exists(directory_path):
@@ -16,19 +17,23 @@ def rename_files_in_directory(directory_path, naming_func):
         os.rename(os.path.join(directory_path, filename), os.path.join(directory_path, new_name))
         print(f"Renamed '{filename}' to '{new_name}'")
 
+
 def renamer(filename):
     return filename.replace("", "")
 
+
 # Example usage
 directory_paths = [
-    "../vtac_ita/PRODUCT_INFO",
-    "../vtac_ita/PRODUCT_MEDIA",
-    "../vtac_es/PRODUCT_INFO",
-    "../vtac_es/PRODUCT_MEDIA",
+    "../vtac_italia/PRODUCT_INFO",
+    "../vtac_italia/PRODUCT_MEDIA",
+    "../vtac_spain/PRODUCT_INFO",
+    "../vtac_spain/PRODUCT_MEDIA",
     "../vtac_uk/PRODUCT_INFO",
     "../vtac_uk/PRODUCT_MEDIA"
 ]
-#rename_files_in_directory(directory_path, lambda filename: filename.replace("VTAC_", ""))
+
+
+# rename_files_in_directory(directory_path, lambda filename: filename.replace("VTAC_", ""))
 for path in directory_paths:
     rename_files_in_directory(path, renamer)
     
