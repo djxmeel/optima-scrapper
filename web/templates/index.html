@@ -3,7 +3,24 @@
 
 {% block content %}
     <main>
-        <h2><span class="highlight">Dashboard</span></h2>
+        <h2 class="highlight">Dashboard</h2>
+        <div class="left-side-main">
+            <h3>Product count : </h3>
+        <table border="1" class="monitor-table">
+            <tr>
+                <th>Website</th>
+                <th>Count</th>
+                <th>New</th>
+            </tr>
+            {% for record in data %}
+                <tr>
+                    <td>{{ record['website'] }}</td>
+                    <td>{{ record['count'] }}</td>
+                    <td>{{ record['new'] | default(0) }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        </div>
         <form action="/process" method="post">
             <label for="data">Enter Data:</label>
             <input type="text" id="data" name="data">

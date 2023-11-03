@@ -529,3 +529,27 @@ class Util:
         result_dict = df.to_dict(orient='records')
 
         return result_dict
+
+    @classmethod
+    def get_website_product_count(cls):
+        from scrapers.scraper_vtac_uk import ScraperVtacUk
+        from scrapers.scraper_vtac_es import ScraperVtacSpain
+        from scrapers.scraper_vtac_ita import ScraperVtacItalia
+
+        scrapers = [
+            ScraperVtacUk,
+            ScraperVtacSpain,
+            ScraperVtacItalia
+        ]
+
+        website_product_count = []
+        for scraper in scrapers:
+            website_product_count.append(
+                {
+                    'website': scraper.WEBSITE_NAME,
+                    'count': len(cls.load_data_in_dir(scraper.PRODUCTS_INFO_PATH)),
+                    'new': len(cls.load_data_in_dir(scraper.NEW_PRODUCTS_INFO_PATH))
+                }
+            )
+
+        return website_product_count

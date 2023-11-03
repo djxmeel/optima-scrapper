@@ -1,17 +1,23 @@
 from flask import render_template, request
+
+from utils.util import Util
 from . import app
+
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', data=Util.get_website_product_count())
+
 
 @app.route('/scrapers')
 def scrapers():
     return render_template('scrapers.html')
 
+
 @app.route('/merge')
 def merge():
     return render_template('merge.html')
+
 
 @app.route('/imports')
 def odoo_imports():
