@@ -167,8 +167,13 @@ class Util:
         Returns:
         list: A list of data loaded from the JSON file.
         """
-        with open(file_path, encoding='utf-8') as file:
-            return json.load(file)
+        try:
+            with open(file_path, encoding='utf-8') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print(f'File not found: {file_path}')
+            return []
+
 
     @staticmethod
     def get_nested_directories(path):
@@ -547,8 +552,10 @@ class Util:
             website_product_count.append(
                 {
                     'website': scraper.WEBSITE_NAME,
-                    'count': len(cls.load_data_in_dir(scraper.PRODUCTS_INFO_PATH)),
-                    'new': len(cls.load_data_in_dir(scraper.NEW_PRODUCTS_INFO_PATH))
+                    'count': len(cls.load_json(scraper.PRODUCTS_LINKS_PATH)),
+                    'new': len(cls.load_json(scraper.NEW_PRODUCTS_LINKS_PATH)),
+                    'local_count': len(cls.load_data_in_dir(scraper.PRODUCTS_INFO_PATH)),
+                    'local_new': len(cls.load_data_in_dir(scraper.NEW_PRODUCTS_INFO_PATH))
                 }
             )
 
