@@ -226,6 +226,9 @@ class DataMerger:
 
             merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
 
+            if 'icons' in merged_media:
+                merged_media['icons'] = cls.get_translated_icons(merged_media['icons'])
+
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_media)
 
@@ -250,3 +253,13 @@ class DataMerger:
         t2.start()
         t1.join()
         t2.join()
+
+    # TODO test
+    @classmethod
+    def get_translated_icons(cls, icons):
+        original_translated_icons_tuples = Util.load_json('data/common/original_translated_icons.json')
+
+        for tuple in original_translated_icons_tuples:
+            if tuple[0] in icons:
+                icons.remove(tuple[0])
+                icons.append(tuple[1])
