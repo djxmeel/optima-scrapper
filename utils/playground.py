@@ -7,6 +7,7 @@ import pandas as pd
 
 import odoorpc
 
+from utils.data_merger import DataMerger
 from utils.util import Util
 
 
@@ -30,13 +31,11 @@ def login_odoo():
 
     return odoo
 
-
-odoo = login_odoo()
-
-product_model = odoo.env['product.template']
-product_attributes_model = odoo.env['product.attribute']
-
 def change_internal_ref_odoo():
+    odoo = login_odoo()
+
+    product_model = odoo.env['product.template']
+
     # Fetch records in batches to avoid RPCerror
     batch_size = 200
     offset = 0
@@ -57,6 +56,9 @@ def change_internal_ref_odoo():
 
 
 def ecommerce_filter_visibility_modifier(is_visible):
+    odoo = login_odoo()
+    product_attributes_model = odoo.env['product.attribute']
+
     attributes_ids = product_attributes_model.search([])
 
     product_attributes_model.write(attributes_ids, {'visibility': is_visible})
@@ -216,6 +218,11 @@ def process_ref_to_sku_acc(directory):
 
 
 def field_update():
+    odoo = login_odoo()
+
+    product_model = odoo.env['product.template']
+    product_attributes_model = odoo.env['product.attribute']
+
     product_ids = product_model.search([])
 
     for i, product_id in enumerate(product_ids):
@@ -258,6 +265,21 @@ def get_distinct_categs():
         empty_translation_dict[categ] = ''
 
     return empty_translation_dict
+
+
+def generate_all_products_info_json(directory):
+    """Generates a JSON file with all the products info from the specified directory."""
+    products_info = []
+
+    for file_path in Util.get_all_files_in_directory(directory):
+        if file_path.endswith('.json'):
+            with open(file_path, 'r') as f:
+                print(f"OPENING {file_path}")
+                data = json.load(f)
+
+            products_info.extend(data)
+
+    Util.dump_to_json(products_info, 'data/common/PRODUCT_INFO_ALL.json')
 
 
 def convert_xlsx_to_json(excel_file_path, json_file_path):
@@ -325,4 +347,7 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 #process_ref_to_sku(DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH)
 
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
-change_internal_ref_odoo()
+#change_internal_ref_odoo()
+
+generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+
