@@ -1,4 +1,3 @@
-import copy
 import os.path
 import time
 from urllib.error import HTTPError
@@ -114,18 +113,18 @@ class OdooImport:
             # Saving the created IDs as keys in dict with their values
             created_attrs_values_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
 
-        for id, value in created_attrs_values_ids.items():
+        for attr_id, value in created_attrs_values_ids.items():
             try:
-                attr_val_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', id)])
+                attr_val_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attr_id)])
 
                 if attr_val_ids:
-                    created_attrs_values_ids[id] = attr_val_ids[0]
+                    created_attrs_values_ids[attr_id] = attr_val_ids[0]
                     raise RPCError(f'Attribute\'s value {value} already exists')
 
                 # Create attribute value and store value ID
-                created_attrs_values_ids[id] = cls.ATTRIBUTE_VALUE_MODEL.create({
+                created_attrs_values_ids[attr_id] = cls.ATTRIBUTE_VALUE_MODEL.create({
                     'name': value,
-                    'attribute_id': id
+                    'attribute_id': attr_id
                 })
             except RPCError:
                 pass
@@ -380,10 +379,7 @@ class OdooImport:
 
                     attachment_name = attachment_path.split('\\')[-1]
 
-                    try:
-                        attachment_name = Util.translate_from_to_spanish('detect', attachment_name)
-                    except:
-                        pass
+                    attachment_name = Util.translate_from_to_spanish('detect', attachment_name)
 
                     attachment_name = f'{res_id}_{attachment_name}'
 
