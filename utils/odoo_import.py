@@ -624,12 +624,12 @@ class OdooImport:
         partner_model = cls.odoo.env['res.partner']
 
         products = cls.browse_all_products_in_batches()
-        stock_dicts = Util.load_excel_columns_in_dictionary_list(supplier_stock_excel_path)
+        stock_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_stock_excel_path)
 
         for product in products:
             supplier_prod_name = product.name
 
-            for line in stock_dicts:
+            for line in stock_excel_dicts:
                 if str(line['sku']) == product.default_code:
                     supplier_prod_name = line['name']
                     break
