@@ -1,27 +1,101 @@
 {
-"Color de la luz": [
-["día blanco", "Blanco neutro"],
-["Blanco", "Blanco frío"],
-["Blanco frío cálido", "Blanco cálido"],
-["Blanco frío néutro", "Blanco neutro"],
-["Blanco frío frío", "Blanco frío"]
-],
-"Color": [
-["Bianco", "Blanco"]
-],
-"Material": [
-["ordenador", "PC"],
-["vidrio", "Cristal"],
-["ordenador personal", "PC"]
-],
-"Sin destellos": [
-["sin destellos", "Sí"]
-],
-"Ahorro energético": [
-["80 energía", "80"],
-["85 Energía", "85"]
-],
-"Vida útil": [
-["ore", "horas"]
-]
+  "Color de la luz": [
+    ["día blanco", "Blanco neutro"],
+    ["Blanco", "Blanco frío"],
+    ["Blanco frío cálido", "Blanco cálido"],
+    ["Blanco frío néutro", "Blanco neutro"],
+    ["Blanco frío frío", "Blanco frío"],
+    ["blu", "Azúl"]
+  ],
+  "Color": [
+    ["Bianco", "Blanco"],
+    ["Grigio", "Gris"],
+    ["Copper", "Cobre"],
+    ["Champagne Gold", "Oro Champagne"]
+  ],
+  "Material": [
+    ["ordenador", "PC"],
+    ["vidrio", "Cristal"],
+    ["ordenador personal", "PC"],
+    ["Thermoplastico", "Termoplástico"],
+    ["Die Cast Aluminio", "Aluminio"]
+  ],
+  "Sin destellos": [
+    ["sin destellos", "Sí"]
+  ],
+  "Ahorro energético": [
+    ["80 energía", "80"],
+    ["85 Energía", "85"]
+  ],
+  "Vida útil": [
+    ["ore", "horas"]
+  ],
+  "Tipo de LED": [
+    ["Filament", "Filamento"],
+    ["Plastic", "Plástico"]
+  ],
+  "Tipo": [
+    ["A Plafone", "Plafón"],
+    ["Trimless", "Empotrable"],
+    ["Suspended", "Colgante"],
+    ["Recessed", "Empotrado"]
+  ],
+  "Forma": [
+      ["Square", "Cuadrado"],
+      ["Round", "Redondo"],
+      ["Ovale", "Oval"]
+  ],
+  "Dimensiones de Montaje": [
+    ["Height", "Altura"]
+  ],
+  "Garantía": [
+    ["years", "Años"]
+  ],
+  "Temperaturas de trabajo": [
+    ["Not suitable for use in extreme conditions. Normal working conditions is -20° +45°", "No es adecuado para su uso en condiciones extremas. Condiciones de trabajo normales de -20 ° a + 45 °"]
+  ],
+  "Ampolla exterior": [
+    ["Candle", "Vela"]
+  ],
+  "Factor del mantenimiento de los lúmenes al final de la vida nominal": [
+    ["V-TAC Floodlights", "V-TAC Focos"]
+  ],
+  "Puntos de corte": [
+    ["Copper pads spaced every 3 LEDs. Cut only on the given cut line between the copper dots.", "Puntos de soldadura de cobre espaciadas cada 3 LEDs. Corte solo en la línea de corte indicada entre los puntos de cobre."],
+    ["Cut only on the given cut line between the copper dots.", "Corte solo en la línea de corte indicada entre los puntos de cobre."]
+  ],
+  "Corriente": [
+    ["Input", "Entrada"],
+    ["Output", "Salida"],
+    ["channels", "canales"],
+    ["channel", "canal"],
+    ["Channels", "Canales"],
+    ["Channel", "Canal"]
+  ],
+  "Salida": [
+    ["Input", "Entrada"],
+    ["Output", "Salida"],
+    ["channels", "canales"],
+    ["channel", "canal"],
+    ["Channels", "Canales"],
+    ["Channel", "Canal"]
+  ],
+  "Longitud del cable": [
+    ["meters", "metros"],
+    ["Wire", "Cable"],
+    ["wire", "cable"]
+  ],
+  "Tipo de batería": [
+      ["Rechargable Lithium battery", " Batería de Litio recargable"],
+      ["4V,2.5AH Lead Acid Battery", "Batería de plomo y ácido 4V,2.5AH"],
+      ["3.7V, Lithium Battery 1800mAh", "Batería de Litio 3.7V 1800mAh"],
+      ["1AA battery 1.2V/500 mAH Ni-MHV", "Batería 1AA 1.2V/500 mAH Ni-MHV"],
+      ["Lithium battery", "Bateria de Litio"]
+  ],
+  "Rotación": [
+    ["Yes", "Sí"]
+  ],
+  "Tiempo de retado": [
+    ["Adjustable", "Ajustable"]
+  ],
 }
