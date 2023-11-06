@@ -3,8 +3,10 @@
     ["día blanco", "Blanco neutro"],
     ["Blanco", "Blanco frío"],
     ["Blanco frío cálido", "Blanco cálido"],
-    ["Blanco frío néutro", "Blanco neutro"],
+    ["Blanco frío néutro", "Blanco néutro"],
+    ["Blanco frío neutro", "Blanco néutro"],
     ["Blanco frío frío", "Blanco frío"],
+    ["Blanco frío frio", "Blanco frío"],
     ["blu", "Azúl"]
   ],
   "Color": [
@@ -23,9 +25,9 @@
   "Sin destellos": [
     ["sin destellos", "Sí"]
   ],
-  "Ahorro energético": [
-    ["80 energía", "80"],
-    ["85 Energía", "85"]
+  "Ahorro de energía": [
+    ["energía", ""],
+    ["Energía", ""]
   ],
   "Vida útil": [
     ["ore", "horas"]
@@ -97,5 +99,5 @@
   ],
   "Tiempo de retado": [
     ["Adjustable", "Ajustable"]
-  ],
+  ]
 }
