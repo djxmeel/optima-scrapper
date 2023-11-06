@@ -258,7 +258,9 @@ class DataMerger:
     def get_translated_icons(cls, icons):
         original_translated_icons_tuples = Util.load_json('data/common/original_translated_icons.json')
 
-        for tuple in original_translated_icons_tuples:
-            if tuple[0] in icons:
-                icons.remove(tuple[0])
-                icons.append(tuple[1])
+        for entry in original_translated_icons_tuples:
+            if entry[0] in icons:
+                icons.remove(entry[0])
+                icons.append(entry[1])
+
+        return icons
