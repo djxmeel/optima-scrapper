@@ -40,7 +40,8 @@ class DataMerger:
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
         'website_description': ('es', 'uk'),
-        'accesorios': ('ita')
+        'accesorios': ('ita'),
+        'list_price': ('ita', 'uk', 'es')
     }
 
     MEDIA_FIELDS_PRIORITIES = {
