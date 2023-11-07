@@ -512,17 +512,21 @@ class Util:
 
     @classmethod
     def get_priority_excel_skus(cls, file_path, column_letter, sheet_name=None):
-        workbook = openpyxl.load_workbook(file_path)
+        try:
+            workbook = openpyxl.load_workbook(file_path)
 
-        # If sheet_name is not specified, use the active sheet. Otherwise, use the specified sheet.
-        sheet = workbook[sheet_name] if sheet_name else workbook.active
+            # If sheet_name is not specified, use the active sheet. Otherwise, use the specified sheet.
+            sheet = workbook[sheet_name] if sheet_name else workbook.active
 
-        # Extract data from the desired column
-        data = [cell.value for cell in sheet[column_letter] if cell.value is not None]
+            # Extract data from the desired column
+            data = [cell.value for cell in sheet[column_letter] if cell.value is not None]
 
-        # Close the workbook and return the data
-        workbook.close()
-        return data
+            # Close the workbook and return the data
+            workbook.close()
+            return data
+        except FileNotFoundError:
+            print(f'File not found: {file_path}')
+            return []
 
 
     @classmethod
