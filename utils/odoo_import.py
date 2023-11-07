@@ -239,7 +239,7 @@ class OdooImport:
                     cls.assign_public_categories(product_id, public_categs)
                 elif if_update_existing:
                     product_id = product_ids[0]
-                    cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {product["url"]}')
+                    cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
 
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
                     cls.assign_attribute_values(product_id, product, created_attrs_ids_values, True)
