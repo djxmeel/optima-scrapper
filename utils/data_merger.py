@@ -52,7 +52,17 @@ class DataMerger:
 
     # Fields to delete from products
     FIELDS_TO_DELETE = [
-        "Código de producto"
+        'Evolución',
+        'Id eprel',
+        'Informe emc',
+        'Informe lvd',
+        'Informe rohs',
+        'Inmóvil',
+        'Ordenable en múltiplos de',
+        'Piezas bancales',
+        'Product information document (eu fiche)',
+        'Se puede pedir en múltiplos de',
+        'Tamaño polo'
     ]
 
     # Fields to rename for common naming between data sources
