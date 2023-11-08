@@ -19,7 +19,7 @@ from selenium.webdriver.common.by import By
 os.environ['path'] += r';dlls/'
 import cairosvg
 
-
+# TODO: NAME corrector for product names
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
