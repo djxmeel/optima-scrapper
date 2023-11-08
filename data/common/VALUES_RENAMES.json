@@ -65,7 +65,8 @@
   ],
   "Puntos de corte": [
     ["Copper pads spaced every 3 LEDs. Cut only on the given cut line between the copper dots.", "Puntos de soldadura de cobre espaciadas cada 3 LEDs. Corte solo en la línea de corte indicada entre los puntos de cobre."],
-    ["Cut only on the given cut line between the copper dots.", "Corte solo en la línea de corte indicada entre los puntos de cobre."]
+    ["Cut only on the given cut line between the copper dots.", "Corte solo en la línea de corte indicada entre los puntos de cobre."],
+    ["Cut only on the given cut copper line.", "Corte solo en la línea de cobre."]
   ],
   "Corriente": [
     ["Input", "Entrada"],
