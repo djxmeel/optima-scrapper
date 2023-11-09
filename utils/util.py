@@ -38,6 +38,8 @@ class Util:
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
+    PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/PRODUCT_NAME_RENAMES.json'
+
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
         """
@@ -564,3 +566,14 @@ class Util:
             )
 
         return website_product_count
+
+    #TODO test
+    @classmethod
+    def get_correctly_translated_product_name(cls, name):
+        replacements = Util.load_json(cls.PRODUCT_NAME_REPLACEMENTS_JSON_PATH)
+
+        for incorrect, replacement in replacements.items():
+            if incorrect in name:
+                name = name.replace(incorrect, replacement)
+
+        return name
