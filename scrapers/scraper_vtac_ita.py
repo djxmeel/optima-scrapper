@@ -187,7 +187,7 @@ class ScraperVtacItalia:
                                                       driver.find_element(By.XPATH,
                                                                           '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
 
-        item['name'] = Util.get_correctly_translated_product_name(item['name'])
+        item['name'] = Util.get_correctly_translated_product_name(item['name'].upper())
 
         # Extracción de iconos
         try:

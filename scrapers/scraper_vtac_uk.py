@@ -213,7 +213,7 @@ class ScraperVtacUk:
                                                                           '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = Util.get_correctly_translated_product_name(f'[{internal_ref}] {item["name"]}')
+        item['name'] = Util.get_correctly_translated_product_name(f'[{internal_ref}] {item["name"]}'.upper())
 
         # Extracción de imágenes
         try:

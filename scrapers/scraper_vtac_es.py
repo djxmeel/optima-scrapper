@@ -143,7 +143,7 @@ class ScraperVtacSpain:
             return None
 
         # Extracción del título
-        item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'.upper()
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
