@@ -6,11 +6,13 @@ import odoorpc
 import base64
 
 from odoorpc.error import RPCError
+
+from utils.loggers import Loggers
 from utils.util import Util
 
 
 class OdooImport:
-    logger = None
+    logger = Loggers.setup_odoo_import_logger()
 
     #odoo_host = 'trialdb-final2.odoo.com'
     odoo_host = 'optimaluz.soluntec.net'

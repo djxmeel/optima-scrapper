@@ -32,8 +32,6 @@ IF_IMPORT_ICONS = False
 
 IF_IMPORT_SUPPLIER_INFO = False
 
-OdooImport.logger = Loggers.setup_odoo_import_logger()
-
 # ODOO IMPORT
 if IF_IMPORT_FIELDS:
     OdooImport.logger.info(f'BEGINNING FIELDS IMPORT')
