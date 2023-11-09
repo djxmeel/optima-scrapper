@@ -8,6 +8,7 @@ import pandas as pd
 import odoorpc
 
 from utils.data_merger import DataMerger
+from utils.odoo_import import OdooImport
 from utils.util import Util
 
 
@@ -296,6 +297,32 @@ def convert_xlsx_to_json(excel_file_path, json_file_path):
     return json_data
 
 
+def upper_allproduct_names():
+    products = OdooImport.browse_all_products_in_batches()
+    odoo = login_odoo()
+    product_model = odoo.env['product.template']
+
+    for product in products:
+        name = product.name.upper()
+        product_model.write(product.id, {'name': name})
+        print(f"UPDATED OLD: {product.name}\n NEW: {name}")
+
+def correct_allproduct_names():
+    products = OdooImport.browse_all_products_in_batches()
+    replacements = Util.load_json('data/common/PRODUCT_NAME_RENAMES.json')
+    odoo = login_odoo()
+    product_model = odoo.env['product.template']
+    name = ""
+
+    for product in products:
+        for incorrect, replacement in replacements.items():
+            if incorrect in product.name:
+                name = product.name.replace(incorrect, replacement)
+
+        product_model.write(product.id, {'name': name})
+        print(f"UPDATED OLD: {product.name}\n NEW: {name}")
+
+
 def decode_and_save_b64_image(b64_string, output_folder, image_name):
     """Decode base64 string to image and save it"""
     image_data = base64.b64decode(b64_string)
@@ -349,5 +376,6 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 #change_internal_ref_odoo()
 
-generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+#generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
+upper_allproduct_names()
