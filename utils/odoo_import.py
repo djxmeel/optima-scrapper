@@ -184,7 +184,7 @@ class OdooImport:
 
         try:
             cls.ATTRIBUTE_LINE_MODEL.create(attr_lines)
-        except TypeError or RPCError:
+        except (TypeError, RPCError):
             cls.logger.info(f'ERROR ASSIGNING ATTRIBUTES TO PRODUCT WITH ID {product_id}')
             return
 
@@ -348,7 +348,16 @@ class OdooImport:
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
         sku_list_ita = [dirr.split('\\')[-1] for dirr in directory_list_ita]
 
-        for index, sku in enumerate(skus_in_odoo[start_from:]):
+
+        while False in skus_in_odoo:
+            skus_in_odoo.remove(False)
+
+        for index, sku in enumerate(sorted(skus_in_odoo[start_from:])):
+            # TODO REMOVE
+            atts = attachments_model.search([('res_id', '=', product_model.search([('default_code', '=', sku)])[0])])
+            attachments_model.unlink(atts)
+            print(sku, len(atts))
+
             print(f'{index+1} / {len(skus_in_odoo[start_from:])}')
             res_id = product_model.search([('default_code', '=', sku)])[0]
 
@@ -380,7 +389,7 @@ class OdooImport:
 
                     attachment_name = attachment_path.split('\\')[-1]
 
-                    attachment_name = Util.translate_from_to_spanish('detect', attachment_name)
+                    attachment_name = Util.translate_from_to_spanish('ita', attachment_name, 'en')
 
                     attachment_name = f'{res_id}_{attachment_name}'
 
