@@ -171,8 +171,13 @@ class DataMerger:
     @classmethod
     def merge_data(cls):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
+        skus_to_skip = Util.load_json('data/common/SKUS_TO_SKIP.json')
 
         for sku in unique_product_skus:
+            if sku in skus_to_skip['skus']:
+                cls.logger.info(f'SKIPPING {sku} FROM MERGE')
+                continue
+
             product_data = {'es': cls.get_product_data_from_country_sku(sku, 'es'),
                             'uk': cls.get_product_data_from_country_sku(sku, 'uk'),
                             'ita': cls.get_product_data_from_country_sku(sku, 'ita')}
