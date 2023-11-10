@@ -46,9 +46,9 @@ class OdooImport:
     PRODUCT_PUBLIC_CATEGORIES_MODEL = odoo.env['product.public.category']
     PRODUCT_INTERNAL_CATEGORY_MODEL = odoo.env['product.category']
 
-    PRODUCT_PDF_DIRS = {'es': 'data/vtac_spain/PRODUCT_PDF/',
-                        'uk': 'data/vtac_uk/PRODUCT_PDF/',
-                        'ita': 'data/vtac_italia/PRODUCT_PDF/'}
+    PRODUCT_PDF_DIRS = {'es': 'data/vtac_spain/PROD/PRODUCT_PDF',
+                        'uk': 'data/vtac_uk/PROD/PRODUCT_PDF',
+                        'ita': 'data/vtac_italia/PROD/PRODUCT_PDF'}
 
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'invoice_policy', 'detailed_type')
@@ -340,20 +340,19 @@ class OdooImport:
             offset += batch_size
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
-        sku_list_es = [dirr.split('/')[3] for dirr in directory_list_es]
+        sku_list_es = [dirr.split('\\')[-1] for dirr in directory_list_es]
 
         directory_list_uk = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['uk'])
-        sku_list_uk = [dirr.split('/')[3] for dirr in directory_list_uk]
+        sku_list_uk = [dirr.split('\\')[-1] for dirr in directory_list_uk]
 
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
-        sku_list_ita = [dirr.split('/')[3] for dirr in directory_list_ita]
+        sku_list_ita = [dirr.split('\\')[-1] for dirr in directory_list_ita]
 
         for index, sku in enumerate(skus_in_odoo[start_from:]):
             print(f'{index+1} / {len(skus_in_odoo[start_from:])}')
             res_id = product_model.search([('default_code', '=', sku)])[0]
 
             if skip_products_w_attachments:
-
                 product_uploaded_attachments = attachments_model.search([('res_id', '=', res_id)])
 
                 if product_uploaded_attachments:
