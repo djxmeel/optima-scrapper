@@ -80,7 +80,7 @@ class Util:
         return products_media
 
     @staticmethod
-    def translate_from_to_spanish(_from, text):
+    def translate_from_to_spanish(_from, text, to='es'):
         """
         Translates Italian text to Spanish using Google Translate.
 
@@ -99,13 +99,13 @@ class Util:
             detected_language = translator.detect(text).lang
 
             if detected_language == _from or _from == 'detect':
-                translation = translator.translate(text, src=detected_language, dest='es')
+                translation = translator.translate(text, src=detected_language, dest=to)
                 return translation.text
         except TimeoutException:
             print('TRANSLATION TIMED OUT. Retrying...')
             time.sleep(3)
             return Util.translate_from_to_spanish(_from, text)
-        except AttributeError and TypeError and ValueError:
+        except (AttributeError ,TypeError, ValueError):
             print(f'{text} NOT TRANSLATABLE. SKIPPING...')
 
         return text
