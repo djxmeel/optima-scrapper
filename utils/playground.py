@@ -7,7 +7,6 @@ import pandas as pd
 
 import odoorpc
 
-from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
@@ -309,18 +308,15 @@ def upper_allproduct_names():
 
 def correct_allproduct_names():
     products = OdooImport.browse_all_products_in_batches()
-    replacements = Util.load_json('data/common/PRODUCT_NAME_RENAMES.json')
     odoo = login_odoo()
     product_model = odoo.env['product.template']
-    name = ""
 
     for product in products:
-        for incorrect, replacement in replacements.items():
-            if incorrect in product.name:
-                name = product.name.replace(incorrect, replacement)
+        name = Util.get_correctly_translated_product_name(product.name)
 
         product_model.write(product.id, {'name': name})
-        print(f"UPDATED OLD: {product.name}\n NEW: {name}")
+        if name != product.name:
+            print(f"UPDATED OLD: {product.name}\n NEW: {name}")
 
 
 def decode_and_save_b64_image(b64_string, output_folder, image_name):
@@ -378,4 +374,4 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
 
 #generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
-upper_allproduct_names()
+#correct_allproduct_names()
