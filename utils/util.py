@@ -19,8 +19,10 @@ from selenium.webdriver.common.by import By
 os.environ['path'] += r';dlls/'
 import cairosvg
 
-# TODO: NAME corrector for product names
+
 class Util:
+    # TODO use docgen plugin to generate documentation?
+    # FIXME icon replacement not working (b64 not always same)
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
 
     JSON_DUMP_FREQUENCY = 25
