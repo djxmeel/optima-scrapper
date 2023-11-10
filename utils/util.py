@@ -105,7 +105,7 @@ class Util:
             print('TRANSLATION TIMED OUT. Retrying...')
             time.sleep(3)
             return Util.translate_from_to_spanish(_from, text)
-        except AttributeError and TypeError:
+        except AttributeError and TypeError and ValueError:
             print(f'{text} NOT TRANSLATABLE. SKIPPING...')
 
         return text
