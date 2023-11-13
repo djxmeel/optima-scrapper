@@ -357,6 +357,35 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
         decode_and_save_b64_image(b64_string, output_folder, image_name)
 
 
+def delete_excel_rows(excel_file_path):
+    """Delete rows from an Excel file."""
+    data = Util.load_excel_columns_in_dictionary_list(excel_file_path)
+
+    # load merged products and compare reference with rows with brand= V-TAC then delete the rows
+    merged_products = [str(p['default_code']) for p in Util.load_data_in_dir('data/vtac_merged/PRODUCT_INFO')]
+
+    for product in data:
+        if product['Brand'] == 'V-TAC':
+            if product['Referencia interna'] in merged_products:
+                data.remove(product)
+
+    df = pd.DataFrame(data)
+    df.to_excel('data/common/excel/NOT_ON_ODOO_16.xlsx', index=False)
+
+
+    filtered_data = []
+
+    # if !brand but reference exists -> separate
+    for product in data:
+        if str(product['Brand']).strip() == '':
+            if product['Referencia interna'] in merged_products:
+                filtered_data.append(product)
+
+    df = pd.DataFrame(filtered_data)
+    df.to_excel('data/common/excel/NO_BRAND_AND_IN_ODOO_16.xlsx', index=False)
+
+
+delete_excel_rows("data/common/excel/productos_odoo-15.xlsx", )
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
 # Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)

@@ -570,7 +570,6 @@ class Util:
 
         return website_product_count
 
-    #TODO test
     @classmethod
     def get_correctly_translated_product_name(cls, name):
         replacements = Util.load_json(cls.PRODUCT_NAME_REPLACEMENTS_JSON_PATH)
