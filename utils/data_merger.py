@@ -8,6 +8,7 @@ from scrapers.scraper_vtac_ita import ScraperVtacItalia
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 
+# TODO implement a filter that checks product names to determine their category (json in David workstation)
 class DataMerger:
     logger = None
 
