@@ -522,13 +522,13 @@ class OdooImport:
                         image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
 
                         # Product existing icons
-                        images_elements = cls.MEDIA_MODEL.browse(image_ids)
+                        icons_elements = cls.MEDIA_MODEL.browse(image_ids)
 
-                        images = [image.image_1920 for image in images_elements]
+                        icons = [icon.image_1920 for icon in icons_elements]
 
                         # Iterate over the products
                         for icon in product['icons']:
-                            if not images.__contains__(icon):
+                            if not icons.__contains__(icon):
                                 name = f'{product_ids[0]}_{product["icons"].index(icon)}'
                                 new_image = {
                                     'name': name,  # Replace with your image name
@@ -544,6 +544,10 @@ class OdooImport:
                                     pass
                             else:
                                 cls.logger.info('Icon already exists')
+
+                        #TODO Iterate through images_elements and UNLINK when b64 in temp_delete_icons
+                        b64_to_delete = Util.load_json('data/common/temp_delete_icons.json')
+
                     else:
                         cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
 
