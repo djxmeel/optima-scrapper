@@ -353,12 +353,12 @@ class OdooImport:
             skus_in_odoo.remove(False)
 
         for index, sku in enumerate(sorted(skus_in_odoo[start_from:])):
-            # TODO REMOVE
+            # TODO REMOVE ( 6302 uploaded )
             atts = attachments_model.search([('res_id', '=', product_model.search([('default_code', '=', sku)])[0])])
             attachments_model.unlink(atts)
             print(sku, len(atts))
 
-            print(f'{index+1} / {len(skus_in_odoo[start_from:])}')
+            print(f'{index+start_from+1} / {len(skus_in_odoo[start_from:])}')
             res_id = product_model.search([('default_code', '=', sku)])[0]
 
             if skip_products_w_attachments:

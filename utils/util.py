@@ -7,14 +7,17 @@ import time
 import shutil
 from datetime import datetime
 
+
 import openpyxl
 import pandas as pd
 import requests
 
 from googletrans import Translator
+from httpcore import ReadTimeout
 from selenium.common import NoSuchElementException
 from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
+from urllib3.exceptions import ReadTimeoutError
 
 os.environ['path'] += r';dlls/'
 import cairosvg
@@ -101,7 +104,7 @@ class Util:
             if detected_language == _from or _from == 'detect':
                 translation = translator.translate(text, src=detected_language, dest=to)
                 return translation.text
-        except TimeoutException:
+        except (TimeoutException, ReadTimeoutError, ReadTimeout):
             print('TRANSLATION TIMED OUT. Retrying...')
             time.sleep(3)
             return Util.translate_from_to_spanish(_from, text)

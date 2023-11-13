@@ -16,12 +16,12 @@ country_scrapers = {
 }
 
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = True, False
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 # Extraer a directorio de test o de producción
 IF_EXTRACT_TO_TEST = False
 
 # PDFs productos
-IF_DL_ITEM_PDF = False
+IF_DL_ITEM_PDF = True
 
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
