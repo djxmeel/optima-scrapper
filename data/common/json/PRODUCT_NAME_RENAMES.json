@@ -33,7 +33,7 @@
   " LUZ DE PASO ": " BALIZA ",
   " 1 GANG ": " ",
   " 1 VÍA ": " ",
-  " BANCO DE ENERGIA ": " POWER BANK ",
+  " BANCO DE ENERGÍA ": " POWER BANK ",
   " FUEGO ": " IGNÍFUGO ",
   " DELGADA ": " SLIM ",
   " DELGADO ": " SLIM ",
@@ -41,11 +41,7 @@
   " SUBTERRÁNEO ": " EMPOTRABLE PARA SUELO ",
   " FARETTO ": " DICROICA",
   " PISTA LINEAL ": " LUMINARIA DE CARRIL ",
-  "  ": "  ",
-  "  ": "  ",
-  "  ": "  ",
-  "  ": "  ",
-  "  ": "  ",
-  "  ": "  ",
-  "  ": "  ",
+  " RESISTENTE AL IGNÍFUGO ": " IGNÍFUGO ",
+  " RESISTENTE AL FUEGO ": " IGNÍFUGO ",
+  " RESISTENTE AL FUEGO- ": " IGNÍFUGO "
 }

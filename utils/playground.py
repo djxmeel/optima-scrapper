@@ -380,7 +380,7 @@ def delete_excel_rows(excel_file_path):
 
     # if !brand but reference exists -> separate
     for product in data:
-        if str(product['Brand']).strip() == '':
+        if not product['Brand']:
             if str(product['Referencia interna']) in merged_products:
                 print("KEEPING (NO BRAND & REF EXISTS IN ODOO 16): " + str(product['Referencia interna'] + " " + str(product['Brand'])))
                 filtered_data.append(product)
