@@ -367,6 +367,7 @@ def delete_excel_rows(excel_file_path):
     for product in data:
         if str(product['Brand']).strip() == 'V-TAC':
             if str(product['Referencia interna']) in merged_products:
+                print("REMOVING (V-TAC AND EXISTS IN ODOO 16): " + str(product['Referencia interna'] + " " + str(product['Brand'])))
                 data.remove(product)
 
     df = pd.DataFrame(data)
@@ -379,6 +380,7 @@ def delete_excel_rows(excel_file_path):
     for product in data:
         if str(product['Brand']).strip() == '':
             if str(product['Referencia interna']) in merged_products:
+                print("KEEPING (NO BRAND & REF EXISTS IN ODOO 16): " + str(product['Referencia interna'] + " " + str(product['Brand'])))
                 filtered_data.append(product)
 
     df = pd.DataFrame(filtered_data)
