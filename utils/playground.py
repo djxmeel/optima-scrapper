@@ -376,20 +376,7 @@ def delete_excel_rows(excel_file_path):
     df.to_excel('data/common/excel/NOT_ON_ODOO_16.xlsx', index=False)
 
 
-    filtered_data = []
-
-    # if !brand but reference exists -> separate
-    for product in data:
-        if str(product['Brand']).strip() == '':
-            if str(product['Referencia interna']) in merged_products:
-                print("KEEPING (NO BRAND & REF EXISTS IN ODOO 16): " + str(product['Referencia interna'] + " " + str(product['Brand'])))
-                filtered_data.append(product)
-
-    df = pd.DataFrame(filtered_data)
-    df.to_excel('data/common/excel/NO_BRAND_AND_IN_ODOO_16.xlsx', index=False)
-
-
-delete_excel_rows("data/common/excel/productos_odoo-15.xlsx", )
+delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
 # Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
