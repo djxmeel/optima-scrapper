@@ -522,9 +522,9 @@ class OdooImport:
                         image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
 
                         # Product existing icons
-                        images = cls.MEDIA_MODEL.browse(image_ids)
+                        images_elements = cls.MEDIA_MODEL.browse(image_ids)
 
-                        images = [image.image_1920 for image in images]
+                        images = [image.image_1920 for image in images_elements]
 
                         # Iterate over the products
                         for icon in product['icons']:
