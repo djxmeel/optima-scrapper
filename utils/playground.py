@@ -1,6 +1,8 @@
 import json
 import os
 import base64
+from copy import copy
+
 from PIL import Image
 from io import BytesIO
 import pandas as pd
@@ -364,7 +366,7 @@ def delete_excel_rows(excel_file_path):
     # load merged products and compare reference with rows with brand= V-TAC then delete the rows
     merged_products = [str(p['default_code']) for p in Util.load_data_in_dir('data/vtac_merged/PRODUCT_INFO')]
 
-    for product in data:
+    for product in copy(data):
         if str(product['Brand']).strip() == 'V-TAC':
             if str(product['Referencia interna']) in merged_products:
                 print("REMOVING (V-TAC AND EXISTS IN ODOO 16): " + str(product['Referencia interna'] + " " + str(product['Brand'])))
