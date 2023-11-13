@@ -365,8 +365,8 @@ def delete_excel_rows(excel_file_path):
     merged_products = [str(p['default_code']) for p in Util.load_data_in_dir('data/vtac_merged/PRODUCT_INFO')]
 
     for product in data:
-        if product['Brand'] == 'V-TAC':
-            if product['Referencia interna'] in merged_products:
+        if str(product['Brand']).strip() == 'V-TAC':
+            if str(product['Referencia interna']) in merged_products:
                 data.remove(product)
 
     df = pd.DataFrame(data)
@@ -378,7 +378,7 @@ def delete_excel_rows(excel_file_path):
     # if !brand but reference exists -> separate
     for product in data:
         if str(product['Brand']).strip() == '':
-            if product['Referencia interna'] in merged_products:
+            if str(product['Referencia interna']) in merged_products:
                 filtered_data.append(product)
 
     df = pd.DataFrame(filtered_data)
