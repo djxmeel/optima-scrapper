@@ -63,7 +63,7 @@ class OdooImport:
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
 
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
-    PRIORITY_EXCEL_SKUS = Util.get_priority_excel_skus('data/common/Productos Comprados o Vendidos VTAC.xlsx', 'A')
+    PRIORITY_EXCEL_SKUS = Util.get_priority_excel_skus('data/common/excel/Productos Comprados o Vendidos VTAC.xlsx', 'A')
 
     @classmethod
     def create_internal_category(cls, internal_category):

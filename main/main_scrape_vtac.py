@@ -7,7 +7,7 @@ from utils.util import Util
 from utils.loggers import Loggers
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
-# TODO TEST PROD & TEST envs
+
 # VTAC SCRAPER
 country_scrapers = {
     'es': ScraperVtacSpain,

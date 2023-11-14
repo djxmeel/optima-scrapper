@@ -281,7 +281,7 @@ def generate_all_products_info_json(directory):
 
             products_info.extend(data)
 
-    Util.dump_to_json(products_info, 'data/common/PRODUCT_INFO_ALL.json')
+    Util.dump_to_json(products_info, 'data/common/json/PRODUCT_INFO_ALL.json')
 
 
 def convert_xlsx_to_json(excel_file_path, json_file_path):

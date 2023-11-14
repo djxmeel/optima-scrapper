@@ -1,6 +1,5 @@
 from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
-from utils.loggers import Loggers
 from utils.util import Util
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
@@ -9,9 +8,9 @@ TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 UPLOADED_DATA_DIR_PATH = DataMerger.UPLOADED_DATA_DIR_PATH
 UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
-PUBLIC_CATEGORIES_FILE_PATH = 'data/common/PUBLIC_CATEGORY_SKU.xlsx'
+PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/PUBLIC_CATEGORY_SKU.xlsx'
 
-SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/Supplier Stock.xlsx'
+SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/Supplier Stock.xlsx'
 
 IF_IMPORT_FIELDS = False
 
@@ -23,14 +22,14 @@ USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
 
-IF_IMPORT_PDFS = True
-#FIXME: 6302
+IF_IMPORT_PDFS = False
+#FIXME: 6302 Check why some ita attachments are not getting translated correctly
 PDF_START_FROM = 6302
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_IMGS = False
 
-IF_IMPORT_ICONS = False
+IF_IMPORT_ICONS = True
 
 IF_IMPORT_SUPPLIER_INFO = False
 
