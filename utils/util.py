@@ -42,6 +42,7 @@ class Util:
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/PRODUCT_NAME_RENAMES.json'
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/ATTACHMENT_NAME_RENAMES.json'
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
@@ -591,3 +592,13 @@ class Util:
                 name = name.replace(incorrect, replacement)
 
         return name
+
+    @classmethod
+    def attachment_naming_replacements(cls, attachment_name):
+        replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH)
+
+        for incorrect, replacement in replacements.items():
+            if incorrect in attachment_name:
+                attachment_name = attachment_name.replace(incorrect, replacement)
+
+        return attachment_name

@@ -388,7 +388,7 @@ class OdooImport:
 
                     attachment_name = attachment_path.split('\\')[-1]
 
-                    attachment_name = Util.translate_from_to_spanish('ita', attachment_name, 'en')
+                    attachment_name = Util.attachment_naming_replacements(attachment_name.lower())
 
                     attachment_name = f'{res_id}_{attachment_name}'
 
