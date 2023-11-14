@@ -41,7 +41,7 @@ class Util:
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
-    PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/PRODUCT_NAME_RENAMES.json'
+    PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/PRODUCT_NAME_RENAMES.json'
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
@@ -514,6 +514,18 @@ class Util:
             print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories}')
 
         return public_categories
+
+
+    @classmethod
+    def get_public_category_from_name(cls, product_name, name_to_categ_json_path):
+        name_to_categ = Util.load_json(name_to_categ_json_path)
+
+        if product_name in name_to_categ.keys():
+            print(f'{product_name}: ASSIGNED PUBLIC CATEGORY {name_to_categ[product_name]}')
+            return [name_to_categ[product_name]]
+
+        return []
+
 
     @classmethod
     def get_priority_excel_skus(cls, file_path, column_letter, sheet_name=None):

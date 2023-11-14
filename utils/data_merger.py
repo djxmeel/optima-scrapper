@@ -8,7 +8,6 @@ from scrapers.scraper_vtac_ita import ScraperVtacItalia
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
 
-# TODO implement a filter that checks product names to determine their category (json in David workstation)
 class DataMerger:
     logger = None
 
@@ -29,7 +28,10 @@ class DataMerger:
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
     # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/PUBLIC_CATEGORY_SKU.xlsx'
+    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/PUBLIC_CATEGORY_SKU.xlsx'
+
+    # Path to json with name -> category mapping
+    PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
 
     COUNTRY_SCRAPERS = {
         'es': ScraperVtacSpain,
@@ -67,9 +69,9 @@ class DataMerger:
     ]
 
     # Fields to rename for common naming between data sources
-    FIELDS_RENAMES_JSON_PATH = 'data/common/FIELDS_RENAMES.json'
+    FIELDS_RENAMES_JSON_PATH = 'data/common/json/FIELDS_RENAMES.json'
 
-    VALUES_RENAMES_JSON_PATH = 'data/common/VALUES_RENAMES.json'
+    VALUES_RENAMES_JSON_PATH = 'data/common/json/VALUES_RENAMES.json'
 
     # Fields that are always kept from a country (field must be stored as a list in json)
     # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
@@ -172,7 +174,7 @@ class DataMerger:
     @classmethod
     def merge_data(cls):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
-        skus_to_skip = Util.load_json('data/common/SKUS_TO_SKIP.json')
+        skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
 
         for sku in unique_product_skus:
             if sku in skus_to_skip['skus']:
@@ -241,6 +243,10 @@ class DataMerger:
 
             merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
 
+            # TODO test filter product names to category (json in David workstation)
+            if not merged_product['public_categories']:
+                merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
+
             if 'icons' in merged_media:
                 merged_media['icons'] = cls.get_translated_icons(merged_media['icons'])
 
@@ -272,7 +278,7 @@ class DataMerger:
     # TODO test
     @classmethod
     def get_translated_icons(cls, icons):
-        original_translated_icons_tuples = Util.load_json('data/common/original_translated_icons.json')
+        original_translated_icons_tuples = Util.load_json('data/common/json/original_translated_icons.json')
 
         for entry in original_translated_icons_tuples['icons']:
             if entry[0] in icons:
