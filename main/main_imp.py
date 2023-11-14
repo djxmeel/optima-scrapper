@@ -23,8 +23,7 @@ USE_PRIORITY_EXCEL = False
 IF_IMPORT_ACC = False
 
 IF_IMPORT_PDFS = False
-#FIXME: 6302 Check why some ita attachments are not getting translated correctly
-PDF_START_FROM = 6302
+PDF_START_FROM = 0
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_IMGS = False
