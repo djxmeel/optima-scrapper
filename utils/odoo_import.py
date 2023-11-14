@@ -353,7 +353,7 @@ class OdooImport:
             skus_in_odoo.remove(False)
 
         for index, sku in enumerate(sorted(skus_in_odoo[start_from:])):
-            # TODO REMOVE after finishing the import
+            # TODO REMOVE after REDOING the import
             atts = attachments_model.search([('res_id', '=', product_model.search([('default_code', '=', sku)])[0])])
             attachments_model.unlink(atts)
 
