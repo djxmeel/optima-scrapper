@@ -253,6 +253,8 @@ class DataMerger:
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_media)
 
+        return cls.merged_data, cls.merged_media
+
     @classmethod
     def extract_merged_data(cls, data, media):
         data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
