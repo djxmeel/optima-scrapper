@@ -520,12 +520,13 @@ class Util:
     @classmethod
     def get_public_category_from_name(cls, product_name, name_to_categ_json_path):
         name_to_categ = Util.load_json(name_to_categ_json_path)
+        categs = []
 
-        if product_name in name_to_categ.keys():
-            print(f'{product_name}: ASSIGNED PUBLIC CATEGORY {name_to_categ[product_name]}')
-            return [name_to_categ[product_name]]
+        for substr, categ in name_to_categ.items():
+            if substr in product_name:
+                categs.append(categ)
 
-        return []
+        return categs
 
 
     @classmethod
