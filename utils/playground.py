@@ -308,6 +308,19 @@ def upper_allproduct_names():
         product_model.write(product.id, {'name': name})
         print(f"UPDATED OLD: {product.name}\n NEW: {name}")
 
+
+def delete_attachments(field, condition, value):
+    odoo = login_odoo()
+    product_model = odoo.env['product.template']
+    attachments_model = odoo.env['ir.attachment']
+    products_ids = product_model.search([(field, condition, value)])
+
+    for product_id in products_ids:
+        attachments = attachments_model.search([('res_id', '=', product_id)])
+        attachments_model.unlink(attachments)
+        print(f"DELETED ATTACHMENTS FOR PRODUCT: {product_id}")
+
+
 def correct_allproduct_names():
     products = OdooImport.browse_all_products_in_batches()
     odoo = login_odoo()
@@ -376,7 +389,7 @@ def delete_excel_rows(excel_file_path):
     df.to_excel('data/common/excel/NOT_ON_ODOO_16.xlsx', index=False)
 
 
-delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
+#delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
 # Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
@@ -395,3 +408,5 @@ delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 #generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
 #correct_allproduct_names()
+
+#delete_attachments('x_url', 'ilike', 'italia')

@@ -275,7 +275,7 @@ class DataMerger:
         t1.join()
         t2.join()
 
-    # TODO test
+
     @classmethod
     def get_translated_icons(cls, icons):
         original_translated_icons_tuples = Util.load_json('data/common/json/original_translated_icons.json')
