@@ -9,6 +9,7 @@ import pandas as pd
 
 import odoorpc
 
+from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
@@ -389,6 +390,18 @@ def delete_excel_rows(excel_file_path):
     df.to_excel('data/common/excel/NOT_ON_ODOO_16.xlsx', index=False)
 
 
+# TODO Iterate through items after assign_public_categs_from_name() and change categ when "Samsung" is in name
+def assign_public_categs_from_name():
+    products = OdooImport.browse_all_products_in_batches()
+
+    for product in products:
+        if product.public_categ_ids:
+            continue
+        # TODO TEST
+        categs_names = Util.get_public_category_from_name(product.name, DataMerger.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
+        OdooImport.assign_public_categories(product.id, categs_names)
+
+
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
@@ -410,3 +423,5 @@ def delete_excel_rows(excel_file_path):
 #correct_allproduct_names()
 
 #delete_attachments('x_url', 'ilike', 'italia')
+
+assign_public_categs_from_name()
