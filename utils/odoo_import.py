@@ -527,7 +527,7 @@ class OdooImport:
                         icons = [icon.image_1920 for icon in icons_elements]
 
                         # TODO Iterate through images_elements and UNLINK when b64 in temp_delete_icons
-                        b64_to_delete = Util.load_json('data/common/temp_delete_icons.json')
+                        b64_to_delete = Util.load_json('data/common/json/temp_delete_icons.json')
 
                         for icon in icons_elements:
                             if icon.image_1920 in b64_to_delete:
