@@ -356,7 +356,6 @@ class OdooImport:
             # TODO REMOVE after finishing the import
             atts = attachments_model.search([('res_id', '=', product_model.search([('default_code', '=', sku)])[0])])
             attachments_model.unlink(atts)
-            print(sku, len(atts))
 
             print(f'{index+start_from+1} / {len(skus_in_odoo[start_from:])}')
             res_id = product_model.search([('default_code', '=', sku)])[0]
@@ -525,14 +524,6 @@ class OdooImport:
                         icons_elements = cls.MEDIA_MODEL.browse(image_ids)
 
                         icons = [icon.image_1920 for icon in icons_elements]
-
-                        # TODO Iterate through images_elements and UNLINK when b64 in temp_delete_icons
-                        b64_to_delete = Util.load_json('data/common/json/temp_delete_icons.json')
-
-                        for icon in icons_elements:
-                            if icon.image_1920 in b64_to_delete:
-                                cls.MEDIA_MODEL.unlink([icon.id])
-                                cls.logger.info(f'{product["default_code"]}: DELETED ICON with name : {icon.name}')
 
                         # Iterate over the products
                         for icon in product['icons']:
