@@ -373,6 +373,21 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
         decode_and_save_b64_image(b64_string, output_folder, image_name)
 
 
+def assign_public_categories(public_categories_path):
+    odoo = login_odoo()
+    public_categories_rows = Util.load_excel_columns_in_dictionary_list(public_categories_path)
+    public_categories_model = odoo.env['product.public.category']
+    product_model = odoo.env['product.template']
+
+    for category_row in public_categories_rows:
+        categ_ids = public_categories_model.search([('name', '=', category_row['CATEGORY ES'])])
+        product_id = product_model.search([('default_code', '=', category_row['SKU'])])
+
+        if categ_ids and product_id:
+            print("ASSIGNING CATEGORY: " + category_row['CATEGORY ES'] + " TO SKU: " + str(category_row['SKU']))
+            product_model.write(product_id[0], {'public_categ_ids': [(6, 0, categ_ids)]})
+
+
 def delete_excel_rows(excel_file_path):
     """Delete rows from an Excel file."""
     data = Util.load_excel_columns_in_dictionary_list(excel_file_path)
@@ -402,6 +417,8 @@ def assign_public_categs_from_name():
         OdooImport.assign_public_categories(product.id, categs_names)
 
 
+#TODO func that deletes skus in SKUS_TO_SKIP.json
+
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
@@ -420,8 +437,10 @@ def assign_public_categs_from_name():
 
 #generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
-#correct_allproduct_names()
+correct_allproduct_names()
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-assign_public_categs_from_name()
+#assign_public_categs_from_name()
+
+#assign_public_categories('data/common/excel/PUBLIC_CATEGORY_SKU.xlsx')
