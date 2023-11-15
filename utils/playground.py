@@ -405,7 +405,6 @@ def delete_excel_rows(excel_file_path):
     df.to_excel('data/common/excel/NOT_ON_ODOO_16.xlsx', index=False)
 
 
-# TODO Iterate through items after assign_public_categs_from_name() and change categ when "Samsung" is in name
 def assign_public_categs_from_name():
     products = OdooImport.browse_all_products_in_batches()
 
@@ -437,10 +436,10 @@ def assign_public_categs_from_name():
 
 #generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
-correct_allproduct_names()
+#correct_allproduct_names()
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-#assign_public_categs_from_name()
+assign_public_categs_from_name()
 
 #assign_public_categories('data/common/excel/PUBLIC_CATEGORY_SKU.xlsx')
