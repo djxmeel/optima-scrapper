@@ -520,10 +520,14 @@ class Util:
     @classmethod
     def get_public_category_from_name(cls, product_name, name_to_categ_json_path):
         name_to_categ = Util.load_json(name_to_categ_json_path)
+        samsung_categs_map = Util.load_json('data/common/json/SAMSUNG_CATEGORIES_MAP.json')
+
         categs = []
 
         for substr, categ in name_to_categ.items():
             if substr in product_name:
+                if 'SAMSUNG' in product_name and categ in samsung_categs_map:
+                    categ = samsung_categs_map[categ]
                 categs.append(categ)
 
         return categs
