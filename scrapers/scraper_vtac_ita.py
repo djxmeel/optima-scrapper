@@ -122,28 +122,6 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('EL ARTICULO NO TIENE ACCESORIOS')
 
-        # Extracción del precio
-        try:
-            item['list_price'] = driver.find_element(By.XPATH,
-                                                     f'//*[normalize-space() = \'Prezzo di listino\']/parent::span/span[2]').text
-
-            if item['list_price'].__contains__('('):
-                item['list_price'] = item['list_price'].split('(')[0]
-
-            item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
-        except NoSuchElementException:
-            try:
-                item['list_price'] = driver.find_element(By.XPATH,
-                                                         f'//*[normalize-space() = \'Prezzo al pubblico\']/parent::span').text[
-                                     19:-9]
-
-                if item['list_price'].__contains__('('):
-                    item['list_price'] = item['list_price'].split('(')[0]
-
-                item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
-            except NoSuchElementException:
-                cls.logger.warning('PRECIO NO ENCONTRADO')
-
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
             desc_outer_html = driver.find_element(By.XPATH,

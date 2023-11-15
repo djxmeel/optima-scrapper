@@ -198,15 +198,6 @@ class ScraperVtacUk:
         if not internal_ref:
             return None
 
-        # Extracción del precio
-        try:
-            item['list_price'] = driver.find_element(By.XPATH,
-                                                     f'//main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[1]/span').text
-            if len(item['list_price']) > 1:
-                item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '').replace('€', ''))
-        except NoSuchElementException:
-            cls.logger.warning('PRECIO NO ENCONTRADO')
-
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('en',
                                                       driver.find_element(By.XPATH,
