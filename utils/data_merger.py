@@ -242,7 +242,6 @@ class DataMerger:
 
             merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
 
-            # TODO test filter product names to category (json in David workstation)
             if not merged_product['public_categories']:
                 merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
 
