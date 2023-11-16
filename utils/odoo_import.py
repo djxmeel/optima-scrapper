@@ -624,30 +624,48 @@ class OdooImport:
         return products
 
     @classmethod
-    def import_supplier_info(cls, supplier_stock_excel_path):
+    def import_supplier_info(cls, supplier_stock_excel_path, supplier_pricelist_excel_path, update_mode=False):
         supplier_info_model = cls.odoo.env['product.supplierinfo']
         partner_model = cls.odoo.env['res.partner']
 
         products = cls.browse_all_products_in_batches()
         stock_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_stock_excel_path)
+        pricelist_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_pricelist_excel_path)
 
         for product in products:
             supplier_prod_name = product.name
+            price = 0
 
             for line in stock_excel_dicts:
-                if str(line['sku']) == product.default_code:
+                if str(line['SKU']) == product.default_code and line['name']:
                     supplier_prod_name = line['name']
                     break
 
+            for line in pricelist_excel_dicts:
+                if str(line['SKU']) == product.default_code:
+                    price = line['PRECIO COMPRA']
+                    break
+
             if supplier_info_model.search([('product_tmpl_id', '=', product.id)]):
-                cls.logger.info(f"SKIPPING PRODUCT {product.default_code} BECAUSE IT ALREADY HAS SUPPLIER INFO")
+                if update_mode:
+                    supplier_info_model.write(supplier_info_model.search([('product_tmpl_id', '=', product.id)])[0], {
+                        'product_name': supplier_prod_name,
+                        'partner_id': partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0],
+                        'product_tmpl_id': product.id,
+                        'product_code': product.default_code,
+                        'price': price
+                    })
+                    cls.logger.info(f"UPDATED SUPPLIER INFO FOR PRODUCT {product.default_code}")
+                else:
+                    cls.logger.info(f"SKIPPING PRODUCT {product.default_code} BECAUSE IT ALREADY HAS SUPPLIER INFO")
                 continue
 
             supplier_info_model.create({
                 'product_name': supplier_prod_name,
                 'partner_id': partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0],
                 'product_tmpl_id': product.id,
-                'product_code': product.default_code
+                'product_code': product.default_code,
+                'price': price
             })
 
             cls.logger.info(f"CREATED SUPPLIER INFO FOR PRODUCT {product.default_code}")

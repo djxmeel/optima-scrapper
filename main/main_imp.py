@@ -10,7 +10,8 @@ UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
 PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/PUBLIC_CATEGORY_SKU.xlsx'
 
-SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/Supplier Stock.xlsx'
+SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/supplier_stock.xlsx'
+SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'
 
 IF_IMPORT_FIELDS = False
 
@@ -27,10 +28,11 @@ PDF_START_FROM = 0
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_IMGS = False
+#TODO launch icon imp after merge
+IF_IMPORT_ICONS = False
 
-IF_IMPORT_ICONS = True
-
-IF_IMPORT_SUPPLIER_INFO = False
+IF_IMPORT_SUPPLIER_INFO = True
+IF_UPDATE_MODE = True
 
 # ODOO IMPORT
 if IF_IMPORT_FIELDS:
@@ -71,5 +73,5 @@ if IF_IMPORT_ICONS:
 
 if IF_IMPORT_SUPPLIER_INFO:
     OdooImport.logger.info(f'BEGINNING SUPPLIER INFO IMPORT')
-    OdooImport.import_supplier_info(SUPPLIER_STOCK_EXCEL_FILE_PATH)
+    OdooImport.import_supplier_info(SUPPLIER_STOCK_EXCEL_FILE_PATH, SUPPLIER_PRICELIST_EXCEL_FILE_PATH, IF_UPDATE_MODE)
     OdooImport.logger.info(f'FINISHED SUPPLIER INFO IMPORT')
