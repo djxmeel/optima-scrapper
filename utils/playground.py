@@ -411,12 +411,31 @@ def assign_public_categs_from_name():
     for product in products:
         if product.public_categ_ids:
             continue
-        # TODO TEST
+
         categs_names = Util.get_public_category_from_name(product.name, DataMerger.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
         OdooImport.assign_public_categories(product.id, categs_names)
 
 
-#TODO func that deletes skus in SKUS_TO_SKIP.json
+def delete_skus_in_odoo(skus_json_path):
+    skus = Util.load_json(skus_json_path)
+    odoo = login_odoo()
+    product_model = odoo.env['product.template']
+
+    for sku in skus["skus"]:
+        product_id = product_model.search([('default_code', '=', sku)])
+        if product_id:
+            product_model.unlink(product_id)
+            print(f"DELETED SKU: {sku}")
+
+
+def set_all_prices(price):
+    products = OdooImport.browse_all_products_in_batches()
+    odoo = login_odoo()
+    product_model = odoo.env['product.template']
+
+    for product in products:
+        product_model.write(product.id, {'list_price': price})
+        print(f"UPDATED SKU: {product.default_code} PRICE: {price}")
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 
@@ -440,6 +459,10 @@ def assign_public_categs_from_name():
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-assign_public_categs_from_name()
+#assign_public_categs_from_name()
 
 #assign_public_categories('data/common/excel/PUBLIC_CATEGORY_SKU.xlsx')
+
+#delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
+
+#set_all_prices(0)
