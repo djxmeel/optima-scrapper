@@ -2,6 +2,7 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
+
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
@@ -31,8 +32,8 @@ IF_IMPORT_IMGS = False
 #TODO launch icon imp after merge
 IF_IMPORT_ICONS = False
 
-IF_IMPORT_SUPPLIER_INFO = True
-IF_UPDATE_MODE = True
+IF_IMPORT_SUPPLIER_INFO_AND_COST = True
+IF_UPDATE_MODE = False
 
 # ODOO IMPORT
 if IF_IMPORT_FIELDS:
@@ -71,7 +72,7 @@ if IF_IMPORT_ICONS:
     OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ICONS IMPORT')
 
-if IF_IMPORT_SUPPLIER_INFO:
+if IF_IMPORT_SUPPLIER_INFO_AND_COST:
     OdooImport.logger.info(f'BEGINNING SUPPLIER INFO IMPORT')
     OdooImport.import_supplier_info(SUPPLIER_STOCK_EXCEL_FILE_PATH, SUPPLIER_PRICELIST_EXCEL_FILE_PATH, IF_UPDATE_MODE)
     OdooImport.logger.info(f'FINISHED SUPPLIER INFO IMPORT')

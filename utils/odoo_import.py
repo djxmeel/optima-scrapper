@@ -635,6 +635,7 @@ class OdooImport:
         for product in products:
             supplier_prod_name = product.name
             price = 0
+            cost_price = 0
 
             for line in stock_excel_dicts:
                 if str(line['SKU']) == product.default_code and line['name']:
@@ -644,6 +645,7 @@ class OdooImport:
             for line in pricelist_excel_dicts:
                 if str(line['SKU']) == product.default_code:
                     price = line['PRECIO COMPRA']
+                    cls.PRODUCT_MODEL.write(product.id, {'standard_price': line['COSTE']})
                     break
 
             if supplier_info_model.search([('product_tmpl_id', '=', product.id)]):
