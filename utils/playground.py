@@ -437,6 +437,32 @@ def set_all_prices(price):
         product_model.write(product.id, {'list_price': price})
         print(f"UPDATED SKU: {product.default_code} PRICE: {price}")
 
+
+def merge_excel_files(path1, path2, output_path, concat=True):
+    # Read the Excel files
+    df1 = pd.read_excel(path1)
+    df2 = pd.read_excel(path2)
+
+    # Extract unique SKUs from the first DataFrame
+    unique_skus = set(df1['SKU'])
+
+    # Filter the second DataFrame
+    df2_filtered = df2[~df2['SKU'].isin(unique_skus)]
+
+    if concat:
+        # Combine the DataFrames
+        result = pd.concat([df1, df2_filtered], ignore_index=True)
+        result.to_excel(output_path, index=False)
+    else:
+        # Write the filtered DataFrame to an Excel file
+        df2_filtered.to_excel(output_path, index=False)
+
+
+# Example usage :
+merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/merged_excel.xlsx')
+merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/supplier_pricelists/ONLY_SEPT2023.xlsx', False)
+
+
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
