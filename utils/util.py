@@ -512,7 +512,7 @@ class Util:
         if not public_categories:
             print(f'{sku}: NO PUBLIC CATEGORIES FOUND')
         else:
-            print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories}')
+            print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories} FROM CATALOG EXCEL')
 
         return public_categories
 
@@ -529,7 +529,7 @@ class Util:
                 if 'SAMSUNG' in product_name and categ in samsung_categs_map:
                     categ = samsung_categs_map[categ]
                 categs.append(categ)
-
+        print(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
         return categs
 
 
