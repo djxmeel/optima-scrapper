@@ -492,3 +492,5 @@ merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembr
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
 #set_all_prices(0)
+
+# TODO extract an excel with all the products that have "Coste" 0 from Odoo 16 (Filter by "standard_price" = 0)
