@@ -529,7 +529,10 @@ class Util:
                 if 'SAMSUNG' in product_name and categ in samsung_categs_map:
                     categ = samsung_categs_map[categ]
                 categs.append(categ)
-        print(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
+
+        if categs:
+            print(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
+
         return categs
 
 
