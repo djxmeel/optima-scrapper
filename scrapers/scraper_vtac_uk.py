@@ -201,10 +201,10 @@ class ScraperVtacUk:
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('en',
                                                       driver.find_element(By.XPATH,
-                                                                          '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
+                                                                          '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text).upper()
 
         # Formateo del titulo
-        item['name'] = Util.get_correctly_translated_product_name(f'[{internal_ref}] {item["name"]}'.upper())
+        item['name'] = f'[{internal_ref}] {item["name"]}'
 
         # Extracción de imágenes
         try:

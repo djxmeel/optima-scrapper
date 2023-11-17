@@ -194,7 +194,7 @@ class DataMerger:
             cls.logger.info(f'\n{sku_spaced}: ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
 
             merged_product = {}
-            merged_media = {"default_code": sku}
+            merged_product_media = {"default_code": sku}
 
             # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:
@@ -223,10 +223,10 @@ class DataMerger:
                 for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
                     if product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
                         if type(product_media[country][field]) is list:
-                            merged_media[field] = copy.deepcopy(product_media[country][field])
+                            merged_product_media[field] = copy.deepcopy(product_media[country][field])
                             cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                             break
-                        merged_media[field] = product_media[country][field]
+                        merged_product_media[field] = product_media[country][field]
                         cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                         break
 
@@ -245,11 +245,14 @@ class DataMerger:
             if not merged_product['public_categories']:
                 merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
 
-            if 'icons' in merged_media:
-                merged_media['icons'] = cls.get_translated_icons(merged_media['icons'])
+            if 'icons' in merged_product_media:
+                merged_product_media['icons'] = cls.get_translated_icons(merged_product_media['icons'])
+
+            if 'name' in merged_product:
+                merged_product['name'] = Util.get_correctly_translated_product_name(merged_product['name'])
 
             cls.merged_data.append(merged_product)
-            cls.merged_media.append(merged_media)
+            cls.merged_media.append(merged_product_media)
 
         return cls.merged_data, cls.merged_media
 
