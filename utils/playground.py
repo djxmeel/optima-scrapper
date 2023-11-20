@@ -479,13 +479,13 @@ merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembr
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 #change_internal_ref_odoo()
 
-#generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+#generate_all_products_info_json(DataMerger.MERGED_PRODUC T_INFO_DIR_PATH)
 
 #correct_allproduct_names()
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-#assign_public_categs_from_name()
+assign_public_categs_from_name()
 
 #assign_public_categories('data/common/excel/PUBLIC_CATEGORY_SKU.xlsx')
 
