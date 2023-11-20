@@ -459,8 +459,9 @@ def merge_excel_files(path1, path2, output_path, concat=True):
 
 
 # Example usage :
-merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/merged_excel.xlsx')
-merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/supplier_pricelists/ONLY_SEPT2023.xlsx', False)
+#merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/merged_excel.xlsx')
+#merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', False)
+merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
 
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
@@ -487,10 +488,8 @@ merge_excel_files('data/common/excel/supplier_pricelists/pricelist_vtac_noviembr
 
 assign_public_categs_from_name()
 
-#assign_public_categories('data/common/excel/PUBLIC_CATEGORY_SKU.xlsx')
+#assign_public_categories('data/common/excel/public_category_sku.xlsx')
 
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
 #set_all_prices(0)
-
-# TODO extract an excel with all the products that have "Coste" 0 from Odoo 16 (Filter by "standard_price" = 0)

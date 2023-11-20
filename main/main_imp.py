@@ -9,7 +9,7 @@ TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 UPLOADED_DATA_DIR_PATH = DataMerger.UPLOADED_DATA_DIR_PATH
 UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
-PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/PUBLIC_CATEGORY_SKU.xlsx'
+PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/public_category_sku.xlsx'
 
 SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/supplier_stock.xlsx'
 SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'

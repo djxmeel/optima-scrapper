@@ -28,7 +28,7 @@ class DataMerger:
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
     # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/PUBLIC_CATEGORY_SKU.xlsx'
+    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/public_category_sku.xlsx'
 
     # Path to json with name -> category mapping
     PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
