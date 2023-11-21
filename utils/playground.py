@@ -459,9 +459,10 @@ def merge_excel_files(path1, path2, output_path, concat=True):
 
 
 # Example usage :
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/merged_excel.xlsx')
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_noviembre_2023.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_septiembre_2023.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', False)
-merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/merged_excel.xlsx')
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', False)
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
+merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jun23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jun23_not_nov23_sept23.xlsx', False)
 
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
@@ -486,7 +487,7 @@ merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sep
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-assign_public_categs_from_name()
+#assign_public_categs_from_name()
 
 #assign_public_categories('data/common/excel/public_category_sku.xlsx')
 
