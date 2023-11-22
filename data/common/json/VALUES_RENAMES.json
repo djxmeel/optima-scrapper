@@ -21,7 +21,17 @@
     ["vidrio", "Cristal"],
     ["ordenador personal", "PC"],
     ["Thermoplastico", "Termoplástico"],
-    ["Die Cast Aluminio", "Aluminio"]
+    ["Nano Plastic", "Nanoplástico"],
+    ["Die Cast Aluminio", "Aluminio"],
+    ["Gips", "Escayola"],
+    ["Fabric", "Tela"],
+    ["Ferro", "Hierro"],
+    ["Aluminiu+PMMA+PS", "Aluminio+PMMA+PS"],
+    ["Aluminium", "Aluminio"],
+    ["Metallo", "Metal"],
+    ["Plastic", "Plástico"],
+    ["Ferro with Electric Copper Paint", "Hierro con barniz conductor de cobre"],
+    ["Ferro with Electric Copper Paint", "Barniz conductor de cobre"]
   ],
   "Sin destellos": [
     ["sin destellos", "Sí"]
@@ -31,7 +41,16 @@
     ["Energía", ""]
   ],
   "Vida útil": [
-    ["ore", "horas"]
+    ["ore", "h."],
+    ["horas", "h."],
+    ["HORAS", "h."],
+    ["Horas", "h."],
+    ["Hours", "h."],
+    [",", ""],
+    [" ", ""],
+    [">", ""],
+    ["<", ""],
+    ["@ Full load", ""]
   ],
   "Tipo de LED": [
     ["Filament", "Filamento"],
@@ -41,7 +60,9 @@
     ["A Plafone", "Plafón"],
     ["Trimless", "Empotrable"],
     ["Suspended", "Colgante"],
-    ["Recessed", "Empotrado"]
+    ["Recessed", "Empotrado"],
+    ["Bulk Head", "Mampara"]
+
   ],
   "Forma": [
       ["Square", "Cuadrado"],
@@ -101,5 +122,30 @@
   ],
   "Tiempo de retado": [
     ["Adjustable", "Ajustable"]
-  ]
+  ],
+  "Potencia": [
+    [" Each Holder", ""],
+    ["75W Max", "Max. 75W"],
+    ["Max. 40", "Max. 40W"],
+    ["PV Set: 600W;Max. power yield / year: upto 1068kWh;max. power yield / day: upto 3kWh;", "PV Set: 600W. Max. potencia de campo / año: hasta 1068kWh ; Max. potencia de campo / dia: hasta 3kWh"],
+    ["Real Watts", "Vatios reales"],
+    ["Solar Panel", "Panel Solar"],
+    ["Max. Input Power", "Max. Potencia de Entrada"],
+    ["Rated Output Power", "Potencia de Salida Nominal"],
+    ["Max. Active Power", "Potencia Activa Máxima"],
+    ["Rated AC Power", "Potencia AC Nominal"],
+    ["Rated Power", "Potencia Nominal"],
+    ["AC Power", "Potencia AC"],
+    ["Recommended Input Power", "Potencia de entrada recomendada"],
+    ["Pieces", "Piezas"]
+  ],
+ "Tensión": [
+    ["Lithium Battery", "Batería de Lítio"],
+    ["Maximum Power Voltage(Vmp)", "Potencia de Voltaje Máxima (VMP)"],
+    ["Open Circuit Voltage(Voc)", "Voltaje en circuito abierto (VOC)"],
+    ["Max. Input", "Voltaje en circuito abierto (VOC)"]
+   ],
+   "Marca del driver": [
+    ["Buenas intenciones", "MEAN WELL"]
+   ]
 }
