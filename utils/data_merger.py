@@ -64,7 +64,11 @@ class DataMerger:
         'Piezas bancales',
         'Product information document (eu fiche)',
         'Se puede pedir en múltiplos de',
-        'Tamaño polo'
+        'Tamaño polo',
+        'Etiqueta energética UE',
+        'Embalaje',
+        'Cantidad por palet',
+        'Unidad de medida'
     ]
 
     # Fields to rename for common naming between data sources

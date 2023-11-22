@@ -14,7 +14,8 @@
     ["Bianco", "Blanco"],
     ["Grigio", "Gris"],
     ["Copper", "Cobre"],
-    ["Champagne Gold", "Oro Champagne"]
+    ["Champagne Gold", "Oro Champagne"],
+    ["Nero", "Negri"],
   ],
   "Material": [
     ["ordenador", "PC"],
@@ -118,6 +119,9 @@
       ["Lithium battery", "Bateria de Litio"]
   ],
   "Rotación": [
+    ["Yes", "Sí"],
+    ["SI", "Sí"],
+    ["Si", "Sí"],
     ["Yes", "Sí"]
   ],
   "Tiempo de retado": [
@@ -146,6 +150,33 @@
     ["Max. Input", "Voltaje en circuito abierto (VOC)"]
    ],
    "Marca del driver": [
-    ["Buenas intenciones", "MEAN WELL"]
-   ]
+      ["Buenas intenciones", "MEAN WELL"]
+   ],
+    "Sistema eléctrico": [
+      ["Tres fases", "Trifásico"]
+    ],
+    "Regulable": [
+      ["SI", "Sí"],
+      ["Si", "Sí"],
+      ["Yes", "Sí"]
+    ],
+    "Tipo de sensor": [
+      ["Microwave", "Microondas"],
+      ["Microwave Sensor", "Microondas"],
+      ["Microonda", "Microondas"],
+      ["Sensor de microondas", "Microondas"],
+      ["Microwave Motion Sensor", "Microondas"],
+      ["Infrared Motion", "Infrarrojo"],
+      ["Infrared Motion Sensor", "Infrarrojo"],
+      ["Motion via Hand", "Movimiento mediante mano"],
+      ["Motion via Dand", "Movimiento mediante puerta"],
+      ["Light Sensor", "Sensor de luz"],
+      ["Photocell", "Sensor de luz"],
+      ["IR movimiento", "Movimiento IR"],
+      ["PIR Motion Sensor", "PIR"],
+      ["Sensor automático de luz de encendido / apagado", "Sensor automático encendido / apagado"],
+      ["Sensor de luz diurna, Auto ON/OFF", "Sensor de luz diurna"],
+      ["Daylight sensor: Day, 2lux, 10lux,50lux optional", "Sensor de luz diurna"]
+      ["WiFi Door", "WiFi Puerta"]
+    ]
 }
