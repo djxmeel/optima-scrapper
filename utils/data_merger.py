@@ -244,10 +244,10 @@ class DataMerger:
                 except KeyError:
                     pass
 
-            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
+            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH, cls.logger)
 
             if not merged_product['public_categories']:
-                merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
+                merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH, cls.logger)
 
             if 'icons' in merged_product_media:
                 merged_product_media['icons'] = cls.get_translated_icons(merged_product_media['icons'])

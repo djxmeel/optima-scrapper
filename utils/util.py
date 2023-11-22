@@ -501,7 +501,7 @@ class Util:
         return chosen_country
 
     @classmethod
-    def get_public_category_from_sku(cls, sku, public_categories_excel_path):
+    def get_public_category_from_sku(cls, sku, public_categories_excel_path, logger):
         categories_sku = Util.load_excel_columns_in_dictionary_list(public_categories_excel_path)
         public_categories = []
 
@@ -510,15 +510,15 @@ class Util:
                 public_categories.append(category_sku['CATEGORY ES'].strip())
 
         if not public_categories:
-            print(f'{sku}: NO PUBLIC CATEGORIES FOUND')
+            logger.warn(f'{sku}: NO PUBLIC CATEGORIES FOUND')
         else:
-            print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories} FROM CATALOG EXCEL')
+            logger.info(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories} FROM CATALOG EXCEL')
 
         return public_categories
 
 
     @classmethod
-    def get_public_category_from_name(cls, product_name, name_to_categ_json_path):
+    def get_public_category_from_name(cls, product_name, name_to_categ_json_path, logger=None):
         name_to_categ = Util.load_json(name_to_categ_json_path)
         samsung_categs_map = Util.load_json('data/common/json/SAMSUNG_CATEGORIES_MAP.json')
 
@@ -531,7 +531,10 @@ class Util:
                 categs.append(categ)
 
         if categs:
-            print(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
+            if logger:
+                logger.info(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
+            else:
+                print(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
 
         return categs
 
