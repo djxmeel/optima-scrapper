@@ -353,7 +353,7 @@ class OdooImport:
             skus_in_odoo.remove(False)
 
         for index, sku in enumerate(sorted(skus_in_odoo[start_from:])):
-            # TODO REMOVE after REDOING the import
+            # FIXME REMOVE after REDOING the import
             atts = attachments_model.search([('res_id', '=', product_model.search([('default_code', '=', sku)])[0])])
             attachments_model.unlink(atts)
 
@@ -441,6 +441,11 @@ class OdooImport:
                                 pass
 
                             image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+
+                            # FIXME remove this when the icons are uploaded
+                            if image_ids:
+                                cls.MEDIA_MODEL.unlink(image_ids)
+                                image_ids = []
 
                             # Product existing images
                             images = cls.MEDIA_MODEL.browse(image_ids)
