@@ -65,9 +65,9 @@ class DataMerger:
         'Product information document (eu fiche)',
         'Se puede pedir en múltiplos de',
         'Tamaño polo',
-        'Etiqueta energética UE',
+        'Etiqueta energética ue',
         'Embalaje',
-        'Cantidad por palet',
+        'Piezas por palet',
         'Unidad de medida'
     ]
 
