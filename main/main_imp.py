@@ -18,6 +18,7 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
+#TODO launch product imp unlinking first the attrs in order to update and delete not used ones
 IF_IMPORT_PRODUCTS = False
 IF_UPDATE_EXISTING = False
 USE_PRIORITY_EXCEL = False
@@ -28,11 +29,11 @@ IF_IMPORT_PDFS = False
 PDF_START_FROM = 0
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
-IF_IMPORT_IMGS = False
+IF_IMPORT_IMGS = True
 #TODO launch icon imp after merge
-IF_IMPORT_ICONS = False
+IF_IMPORT_ICONS = True
 
-IF_IMPORT_SUPPLIER_INFO_AND_COST = True
+IF_IMPORT_SUPPLIER_INFO_AND_COST = False
 IF_UPDATE_MODE = False
 
 # ODOO IMPORT
