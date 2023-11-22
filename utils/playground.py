@@ -438,16 +438,23 @@ def set_all_prices(price):
         print(f"UPDATED SKU: {product.default_code} PRICE: {price}")
 
 
-def merge_excel_files(path1, path2, output_path, concat=True):
+def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_path=None):
     # Read the Excel files
     df1 = pd.read_excel(path1)
     df2 = pd.read_excel(path2)
+
+    df1['SKU'] = [str(d).replace('.0', '') for d in df1['SKU']]
+    df2['SKU'] = [str(d).replace('.0', '') for d in df2['SKU']]
 
     # Extract unique SKUs from the first DataFrame
     unique_skus = set(df1['SKU'])
 
     # Filter the second DataFrame
     df2_filtered = df2[~df2['SKU'].isin(unique_skus)]
+
+    if additional_filter_path:
+        skus_to_skip = [sku for sku in Util.load_json(additional_filter_path)["skus"]]
+        df2_filtered = df2_filtered[~df2_filtered['SKU'].isin(skus_to_skip)]
 
     if concat:
         # Combine the DataFrames
@@ -462,7 +469,8 @@ def merge_excel_files(path1, path2, output_path, concat=True):
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/merged_excel.xlsx')
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', False)
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
-merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jun23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jun23_not_nov23_sept23.xlsx', False)
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23_not_nov23_sept23_jun23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
+merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23_jun23_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22_not_nov23_sept23_jun23_ene23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
