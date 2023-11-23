@@ -54,6 +54,7 @@
     ["@ Full load", ""]
   ],
   "Tipo de LED": [
+    ["Filamentoo", "Filament"],
     ["Filament", "Filamento"],
     ["Plastic", "Plástico"]
   ],
