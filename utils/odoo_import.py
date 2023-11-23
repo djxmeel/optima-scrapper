@@ -442,18 +442,13 @@ class OdooImport:
 
                             image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
 
-                            # FIXME remove this when the icons are uploaded
-                            if image_ids:
-                                cls.MEDIA_MODEL.unlink(image_ids)
-                                image_ids = []
-
                             # Product existing images
                             images = cls.MEDIA_MODEL.browse(image_ids)
                             images = [image.image_1920 for image in images]
 
                             # Iterate over the products 'imgs'
                             for extra_img in product['imgs'][1:]:
-                                if not images.__contains__(extra_img['img64']):
+                                if extra_img['img64'] not in images:
                                     name = f'{product_ids[0]}_{product["imgs"].index(extra_img)}'
 
                                     new_image = {
@@ -479,7 +474,7 @@ class OdooImport:
                             if 'videos' in product:
                                 # Iterate over the products 'videos'
                                 for video_url in product['videos']:
-                                    if not videos.__contains__(video_url):
+                                    if video_url not in videos:
                                         name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
 
                                         new_video = {
