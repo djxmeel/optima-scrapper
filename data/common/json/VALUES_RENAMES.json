@@ -68,7 +68,9 @@
   "Forma": [
       ["Square", "Cuadrado"],
       ["Round", "Redondo"],
-      ["Ovale", "Oval"]
+      ["Ovale", "Oval"],
+      ["Half redondo", "Semi-circular"],
+      ["50 €", "R50"]
   ],
   "Dimensiones de Montaje": [
     ["Height", "Altura"]
