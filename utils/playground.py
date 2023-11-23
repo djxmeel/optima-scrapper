@@ -8,6 +8,7 @@ from io import BytesIO
 import pandas as pd
 
 import odoorpc
+from odoorpc.error import RPCError
 
 from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
@@ -427,6 +428,39 @@ def delete_skus_in_odoo(skus_json_path):
             product_model.unlink(product_id)
             print(f"DELETED SKU: {sku}")
 
+# TODO test (Tipo de casquillo = B22)
+def archive_products_based_on_condition(attribute, condition, value):
+    odoo = login_odoo()
+    # Define yer condition here, e.g., products with low stock
+    products_to_archive = odoo.env['product.template'].search([('stock_level', '<', 10)])  # Example condition
+
+    for product in products_to_archive:
+        product.write({'active': False})  # This archives the product in the database
+
+
+def delete_all_unused_attributes_w_values():
+    odoo = login_odoo()
+    # Delete all product.attribute records
+    attribute_ids = odoo.env['product.attribute'].search([])
+
+    for attr_id in attribute_ids:
+        attribute_value_ids = odoo.env['product.attribute.value'].search([('attribute_id', '=', attr_id)])
+
+        for attr_value_id in attribute_value_ids:
+            try:
+                odoo.env['product.attribute.value'].unlink(attr_value_id)
+                print(f'Deleted attribute.value {attr_value_id}')
+            except RPCError:
+                print(f'Error deleting attribute.value {attr_value_id}.')
+                continue
+
+        try:
+            odoo.env['product.attribute'].unlink(attr_id)
+            print(f'Deleted attribute {attr_id}.')
+        except RPCError:
+            print(f'Error deleting attribute {attr_id}.')
+            continue
+
 
 def set_all_prices(price):
     products = OdooImport.browse_all_products_in_batches()
@@ -470,7 +504,8 @@ def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', False)
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23_not_nov23_sept23_jun23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
-merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23_jun23_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22_not_nov23_sept23_jun23_ene23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23_jun23_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22_not_nov23_sept23_jun23_ene23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
+merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago21.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago21_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
@@ -502,3 +537,5 @@ merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_tod
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
 #set_all_prices(0)
+
+delete_all_unused_attributes_w_values()
