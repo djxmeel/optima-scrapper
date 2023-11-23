@@ -12,8 +12,11 @@ class DataMerger:
     logger = None
 
     JSON_DUMP_FREQUENCY = 25
+
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
+    NEW_DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/NEW/PRODUCT_INFO/MERGED_INFO_{}.json'
+    NEW_MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/NEW/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
 
     MERGED_PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
     MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
@@ -23,9 +26,13 @@ class DataMerger:
 
     MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
     MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA'
+    NEW_MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_INFO'
+    NEW_MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_MEDIA'
 
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
+    NEW_UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_INFO_UPLOADED'
+    NEW_UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_MEDIA_UPLOADED'
 
     # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
     PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/public_category_sku.xlsx'
@@ -261,9 +268,13 @@ class DataMerger:
         return cls.merged_data, cls.merged_media
 
     @classmethod
-    def extract_merged_data(cls, data, media):
-        data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
-        media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
+    def extract_merged_data(cls, data, media, if_only_new=False):
+        if if_only_new:
+            data_path_temp = cls.NEW_DATA_DUMP_PATH_TEMPLATE
+            media_path_temp = cls.NEW_MEDIA_DUMP_PATH_TEMPLATE
+        else:
+            data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
+            media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
 
         def async_task(data_type, path):
             for index in range(0, len(data_type), cls.JSON_DUMP_FREQUENCY):
