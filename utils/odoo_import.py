@@ -165,7 +165,9 @@ class OdooImport:
 
         for attribute_id, value_id in attributes_ids_values.items():
             # Only check if the attribute line already exists
-            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+            #existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+            # FIXME REMOVE AFTER REDOING THE IMPORT
+            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id)])
 
             # Skip if the attribute line already exists
             if existing_lines:
@@ -625,10 +627,12 @@ class OdooImport:
 
         return products
 
+    # TODO test import_supplier_info
     @classmethod
     def import_supplier_info(cls, supplier_stock_excel_path, supplier_pricelist_excel_path, update_mode=False):
         supplier_info_model = cls.odoo.env['product.supplierinfo']
         partner_model = cls.odoo.env['res.partner']
+        partner_id = partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0]
 
         products = cls.browse_all_products_in_batches()
         stock_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_stock_excel_path)
@@ -636,28 +640,31 @@ class OdooImport:
 
         for product in products:
             supplier_prod_name = product.name
-            price = 0
-            cost_price = 0
-
-            for line in stock_excel_dicts:
-                if str(line['SKU']) == product.default_code and line['name']:
-                    supplier_prod_name = line['name']
-                    break
+            purchase_price = 0
 
             for line in pricelist_excel_dicts:
                 if str(line['SKU']) == product.default_code:
-                    price = line['PRECIO COMPRA']
+                    purchase_price = line['PRECIO COMPRA']
+                    supplier_prod_name = line['name']
                     cls.PRODUCT_MODEL.write(product.id, {'standard_price': line['COSTE']})
                     break
 
-            if supplier_info_model.search([('product_tmpl_id', '=', product.id)]):
+            if not supplier_prod_name:
+                for line in stock_excel_dicts:
+                    if str(line['SKU']) == product.default_code and line['name']:
+                        supplier_prod_name = line['name']
+                        break
+
+            product_suppl_info_ids = supplier_info_model.search([('product_tmpl_id', '=', product.id)])
+
+            if product_suppl_info_ids:
                 if update_mode:
-                    supplier_info_model.write(supplier_info_model.search([('product_tmpl_id', '=', product.id)])[0], {
+                    supplier_info_model.write(product_suppl_info_ids[0], {
                         'product_name': supplier_prod_name,
-                        'partner_id': partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0],
+                        'partner_id': partner_id,
                         'product_tmpl_id': product.id,
                         'product_code': product.default_code,
-                        'price': price
+                        'price': purchase_price
                     })
                     cls.logger.info(f"UPDATED SUPPLIER INFO FOR PRODUCT {product.default_code}")
                 else:
@@ -666,10 +673,10 @@ class OdooImport:
 
             supplier_info_model.create({
                 'product_name': supplier_prod_name,
-                'partner_id': partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0],
+                'partner_id': partner_id,
                 'product_tmpl_id': product.id,
                 'product_code': product.default_code,
-                'price': price
+                'price': purchase_price
             })
 
             cls.logger.info(f"CREATED SUPPLIER INFO FOR PRODUCT {product.default_code}")
