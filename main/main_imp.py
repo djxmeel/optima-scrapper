@@ -4,8 +4,9 @@ from utils.util import Util
 
 #TODO 1. Remerge to update public categories in json files
 #TODO 2. launch delete_all_unused_attributes_w_values() in odoo_import.py after reimport
-#TODO 3. launch assign_public_categories() in odoo_import.py after reimport
-#TODO 4. upload new pricelist_compra_coste.xlsx
+#TODO 3. delete public categs and reimport them (IF_IMPORT_PUBLIC_CATEGORIES)
+#TODO 4. launch assign_public_categories() in odoo_import.py after reimport
+#TODO 5. upload new pricelist_compra_coste.xlsx
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
