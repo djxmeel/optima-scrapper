@@ -585,24 +585,26 @@ class OdooImport:
 
     @classmethod
     def import_public_categories(cls, public_categories_path):
-        public_categories = sorted(list(set([e['CATEGORY ES'] for e in Util.load_excel_columns_in_dictionary_list(public_categories_path) if e['CATEGORY ES'] != ''])))
+        public_categories = Util.load_excel_columns_in_dictionary_list(public_categories_path)
         public_categories_model = cls.odoo.env['product.public.category']
 
-        seq = 10000
-
         for category in public_categories:
-            if public_categories_model.search([('name', '=', category)]):
+            if public_categories_model.search([('name', '=', category["name"]), ('parent_id.name', '=', category["parent"])]):
                 cls.logger.info(f'Category {category} already exists in Odoo')
                 continue
 
+            parent_id = public_categories_model.search([('name', '=', category["parent"])])
+
+            if parent_id:
+                parent_id = parent_id[0]
+
             public_categories_model.create({
-                'name': str(category).strip(),
-                'sequence': seq
+                'name': category["name"],
+                'parent_id': parent_id,
+                'sequence': category["sequence"]
             })
 
-            seq += 1
-
-            cls.logger.info("CREATED CATEGORY: " + category)
+            cls.logger.info("CREATED CATEGORY: " + category['name'])
 
     @classmethod
     def browse_all_products_in_batches(cls, batch_size=200):
