@@ -164,15 +164,12 @@ class OdooImport:
         attr_lines = []
 
         for attribute_id, value_id in attributes_ids_values.items():
-            # Only check if the attribute line already exists
-            #existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
-            # FIXME REMOVE AFTER REDOING THE IMPORT
+            # Check if product has ANY attribute lines
             existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id)])
 
-            # Skip if the attribute line already exists
             if existing_lines:
                 if update_mode:
-                    # Delete existing lines with the same attribute and product
+                    # Delete product existing attribute lines
                     cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
                 else:
                     continue
