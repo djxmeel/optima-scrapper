@@ -431,10 +431,13 @@ def delete_skus_in_odoo(skus_json_path):
 # TODO test (Tipo de casquillo = B22)
 def archive_products_based_on_condition(attribute, condition, value):
     odoo = login_odoo()
-    # Define yer condition here, e.g., products with low stock
-    products_to_archive = odoo.env['product.template'].search([('stock_level', '<', 10)])  # Example condition
 
-    for product in products_to_archive:
+    products_to_archive = odoo.env['product.template'].search([
+        ('attribute_line_ids.attribute_id.name', '=', attribute),
+        ('attribute_line_ids.value_ids.name', condition, value)
+    ])
+
+    for product in odoo.env['product.template'].browse(products_to_archive):
         product.write({'active': False})  # This archives the product in the database
 
 
@@ -505,7 +508,7 @@ def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23_not_nov23_sept23_jun23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23_jun23_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22_not_nov23_sept23_jun23_ene23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
-merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago21.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago21_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_mar19_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
@@ -538,4 +541,6 @@ merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_
 
 #set_all_prices(0)
 
-delete_all_unused_attributes_w_values()
+#delete_all_unused_attributes_w_values()
+
+#archive_products_based_on_condition('Unidades por embalaje', 'ilike', '1')
