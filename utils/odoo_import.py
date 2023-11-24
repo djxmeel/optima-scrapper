@@ -81,7 +81,7 @@ class OdooImport:
         for category in public_categories:
                 categ_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', category)])
                 if categ_id:
-                    categ_ids.append(categ_id[0])
+                    categ_ids.extend(categ_id)
 
         try:
             if categ_ids:
