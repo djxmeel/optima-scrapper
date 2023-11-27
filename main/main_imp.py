@@ -3,9 +3,7 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 #TODO 1. Remerge to update public categories in json files
-#TODO 2. launch delete_all_unused_attributes_w_values() in odoo_import.py after reimport
-#TODO 3. delete public categs and reimport them (IF_IMPORT_PUBLIC_CATEGORIES)
-#TODO 4. launch assign_public_categories() in odoo_import.py after reimport
+#TODO 2. VS -> VSD & nota interna = descatalogado to products not on 2024 catalog
 #TODO 5. upload new pricelist_compra_coste.xlsx
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -28,8 +26,8 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
-IF_IMPORT_PRODUCTS = True
-IF_UPDATE_EXISTING = True
+IF_IMPORT_PRODUCTS = False
+IF_UPDATE_EXISTING = False
 IF_ONLY_NEW_PRODUCTS_DATA = False
 USE_PRIORITY_EXCEL = False
 
