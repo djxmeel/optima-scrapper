@@ -3,7 +3,6 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 #TODO 1. Remerge to update public categories in json files
-#TODO 2. VS -> VSD & nota interna = descatalogado to products not on 2024 catalog
 #TODO 5. upload new pricelist_compra_coste.xlsx
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -21,6 +20,8 @@ PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/public_categories_odoo.xlsx'
 
 SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/supplier_stock.xlsx'
 SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'
+
+SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku.xlsx'
 
 IF_IMPORT_FIELDS = False
 
@@ -44,6 +45,8 @@ IF_ONLY_NEW_PRODUCTS_MEDIA = False
 
 IF_IMPORT_SUPPLIER_INFO_AND_COST = False
 IF_UPDATE_MODE = False
+
+IF_IMPORT_DESCATALOGADOS = True
 
 # ODOO IMPORT
 if IF_IMPORT_FIELDS:
@@ -98,3 +101,8 @@ if IF_IMPORT_SUPPLIER_INFO_AND_COST:
     OdooImport.logger.info(f'BEGINNING SUPPLIER INFO IMPORT')
     OdooImport.import_supplier_info(SUPPLIER_STOCK_EXCEL_FILE_PATH, SUPPLIER_PRICELIST_EXCEL_FILE_PATH, IF_UPDATE_MODE)
     OdooImport.logger.info(f'FINISHED SUPPLIER INFO IMPORT')
+
+if IF_IMPORT_DESCATALOGADOS:
+    OdooImport.logger.info(f'BEGINNING DESCATALOGADOS IMPORT')
+    OdooImport.import_descatalogados(SKUS_CATALOGO_Q12024_FILE_PATH)
+    OdooImport.logger.info(f'FINISHED DESCATALOGADOS IMPORT')
