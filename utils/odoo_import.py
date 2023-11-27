@@ -678,3 +678,16 @@ class OdooImport:
             })
 
             cls.logger.info(f"CREATED SUPPLIER INFO FOR PRODUCT {product.default_code}")
+
+    @classmethod
+    def import_descatalogados(cls, skus_catalogo_file_path):
+        skus = [str(entry['SKU']) for entry in Util.load_excel_columns_in_dictionary_list(skus_catalogo_file_path)]
+
+        products = cls.browse_all_products_in_batches()
+
+        for product in products:
+            if product.default_code not in skus:
+                cls.PRODUCT_MODEL.write(product.id, {'description_purchase': 'DESCATALOGADO', 'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD')})
+                cls.logger.info(f"{product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
+            else:
+                cls.logger.info(f"{product.default_code} SKIPPING BECAUSE IT IS IN CATALOGO")
