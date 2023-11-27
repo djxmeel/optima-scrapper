@@ -9,6 +9,7 @@ import pandas as pd
 
 import odoorpc
 from odoorpc.error import RPCError
+from selenium import webdriver
 
 from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
@@ -428,7 +429,7 @@ def delete_skus_in_odoo(skus_json_path):
             product_model.unlink(product_id)
             print(f"DELETED SKU: {sku}")
 
-# TODO test (Tipo de casquillo = B22)
+# TODO test (Tipo de casquillo = B22) - automate this to be done after importing products (use a json to store conditions)
 def archive_products_based_on_condition(attribute, condition, value):
     odoo = login_odoo()
 
@@ -501,6 +502,49 @@ def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_
         # Write the filtered DataFrame to an Excel file
         df2_filtered.to_excel(output_path, index=False)
 
+def skus_extractor():
+    driver = webdriver.Firefox()
+
+    # IF ES JSON NOT GENERATED
+    extracted_links_es = Util.load_json('data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json')
+    extracted_links_skus_es = [{'url': link, 'sku': Util.get_sku_from_link_es(driver, link)} for link in extracted_links_es]
+    Util.dump_to_json(extracted_links_skus_es, 'data/vtac_spain/LINKS/extracted_links_skus_es.json')
+
+    # IF ES JSON ALREADY GENERATED
+    #extracted_links_skus_es = Util.load_json('data/vtac_spain/LINKS/extracted_links_skus_es.json')
+
+    # IF UK JSON NOT GENERATED
+    extracted_links_uk = Util.load_json('data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json')
+    extracted_links_skus_uk = [{'url': link, 'sku': Util.get_sku_from_link_uk(driver, link)} for link in extracted_links_uk]
+    extracted_links_skus_uk = [entry for entry in extracted_links_skus_uk if entry['sku']] # remove empty entries
+    Util.dump_to_json(extracted_links_skus_uk, 'data/vtac_uk/LINKS/extracted_links_skus_uk.json')
+
+    # IF UK JSON ALREADY GENERATED
+    #extracted_skus_uk = Util.load_json('data/vtac_uk/LINKS/extracted_skus_uk.json')
+
+    # FIXME ita link extraction
+    # IF ITA JSON NOT GENERATED
+    #extracted_links_ita = Util.load_json('data/vtac_ita/LINKS/PRODUCTS_LINKS_ITA.json')
+    #extracted_skus_ita = [Util.get_sku_from_link_ita(driver, link) for link in extracted_links_ita]
+    #Util.dump_to_json(extracted_skus_ita, 'data/vtac_ita/LINKS/extracted_skus_ita.json')
+
+    # IF ITA JSON ALREADY GENERATED
+    #extracted_skus_ita = Util.load_json('data/vtac_ita/LINKS/extracted_skus_ita.json')
+
+    driver.close()
+
+    skus_in_odoo16 = [prod.default_code for prod in OdooImport.browse_all_products_in_batches()]
+    Util.dump_to_json(skus_in_odoo16, 'data/vtac_merged/skus_in_odoo16.json')
+
+    new_links_from_es = [entry['url'] for entry in extracted_links_skus_es if entry['sku'] not in skus_in_odoo16]
+    new_from_uk = [entry['url'] for entry in extracted_links_skus_uk if entry['sku'] not in skus_in_odoo16]
+    #new_from_ita = [entry['url'] for entry in extracted_links_skus_ita if entry['sku'] not in skus_in_odoo16]
+
+    Util.dump_to_json(new_links_from_es, 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json')
+    Util.dump_to_json(new_from_uk, 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json')
+    #Util.dump_to_json(new_from_ita, 'data/vtac_ita/LINKS/NEW_PRODUCTS_LINKS_ITA.json')
+
+
 
 # Example usage :
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/merged_excel.xlsx')
@@ -508,7 +552,7 @@ def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23_not_nov23_sept23_jun23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23_jun23_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22_not_nov23_sept23_jun23_ene23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_mar19_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
+#merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago18.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago18_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2_mar19.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
 #delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
@@ -544,3 +588,5 @@ def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_
 #delete_all_unused_attributes_w_values()
 
 #archive_products_based_on_condition('Unidades por embalaje', 'ilike', '1')
+
+skus_extractor()
