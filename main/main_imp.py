@@ -3,7 +3,8 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 #TODO 1. Remerge to update public categories in json files
-#TODO 5. upload new pricelist_compra_coste.xlsx
+#TODO 2. Launch categs_from_name assignment after updating PUBLIC_CATEGORY_FROM_NAME.json
+#TODO 3. upload new pricelist_compra_coste.xlsx
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
