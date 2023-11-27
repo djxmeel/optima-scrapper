@@ -388,6 +388,11 @@ def assign_public_categories(public_categories_path):
         if categ_ids and product_id:
             print("ASSIGNING CATEGORY: " + category_row['CATEGORY ES'] + " TO SKU: " + str(category_row['SKU']))
             product_model.write(product_id[0], {'public_categ_ids': [(6, 0, categ_ids)]})
+        else:
+            if not categ_ids:
+                print("CATEGORY NOT FOUND: " + category_row['CATEGORY ES'])
+            if not product_id:
+                print("SKU NOT FOUND: " + str(category_row['SKU']))
 
 
 def delete_excel_rows(excel_file_path):
@@ -547,11 +552,6 @@ def skus_extractor():
 
 
 # Example usage :
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/merged_excel.xlsx')
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_nov23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', False)
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_sept23_not_nov23.xlsx', 'data/common/excel/productos_sin_coste_odoo16.xlsx', 'data/common/excel/vtac_supplier_pricelists/PRODUCTOS_COSTE_CERO_SIN_ONLY_SEPT2023.xlsx', False)
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ene23_not_nov23_sept23_jun23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/pricelist_vtac_todo_nov23_sept23_jun23_ene23.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_jul22_not_nov23_sept23_jun23_ene23.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago18.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago18_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2_mar19.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
