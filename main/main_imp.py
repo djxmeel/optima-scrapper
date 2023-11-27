@@ -2,9 +2,10 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-#TODO 1. Remerge to update public categories in json files
-#TODO 2. Launch categs_from_name assignment after updating PUBLIC_CATEGORY_FROM_NAME.json
-#TODO 3. upload new pricelist_compra_coste.xlsx
+#TODO 1. use NEW_LINKS of UK and ES generated from playground.skus_extractor() then scrape new links
+#TODO 2. Remerge to update public categories in json files
+#TODO 3. Launch categs_from_name assignment after updating PUBLIC_CATEGORY_FROM_NAME.json
+#TODO 4. upload new pricelist
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
