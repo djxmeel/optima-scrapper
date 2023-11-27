@@ -148,7 +148,10 @@ class Util:
         if link:
             time.sleep(1)
             driver.get(link)
-        return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+        try:
+            return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+        except NoSuchElementException:
+            return None
 
     @staticmethod
     def get_sku_from_link_es(driver, link=None):
