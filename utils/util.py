@@ -137,17 +137,24 @@ class Util:
             raise Exception(f'Invalid country: {country}')
 
     @staticmethod
-    def get_sku_from_link_ita(driver):
-        link = driver.current_url
-        return str(link).split('/')[6]
+    def get_sku_from_link_ita(driver, link=None):
+        if link:
+            time.sleep(1)
+            driver.get(link)
+        return str(driver.current_url).split('/')[6]
 
     @staticmethod
-    def get_sku_from_link_uk(driver):
-            return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+    def get_sku_from_link_uk(driver, link=None):
+        if link:
+            time.sleep(1)
+            driver.get(link)
+        return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
 
     @staticmethod
-    def get_sku_from_link_es(driver):
+    def get_sku_from_link_es(driver, link=None):
         try:
+            if link:
+                driver.get(link)
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
             from scrapers.scraper_vtac_es import ScraperVtacSpain
