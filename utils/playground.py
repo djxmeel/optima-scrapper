@@ -539,7 +539,7 @@ def skus_extractor():
     driver.close()
 
     skus_in_odoo16 = [prod.default_code for prod in OdooImport.browse_all_products_in_batches()]
-    Util.dump_to_json(skus_in_odoo16, 'data/vtac_merged/skus_in_odoo16.json')
+    Util.dump_to_json(skus_in_odoo16, 'data/common/json/skus_in_odoo16.json')
 
     new_links_from_es = [entry['url'] for entry in extracted_links_skus_es if entry['sku'] not in skus_in_odoo16]
     new_links_from_uk = [entry['url'] for entry in extracted_links_skus_uk if entry['sku'] not in skus_in_odoo16]
