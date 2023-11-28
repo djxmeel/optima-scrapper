@@ -251,7 +251,8 @@ class OdooImport:
                     cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
                     cls.assign_public_categories(product_id, public_categs)
                 else:
-                    cls.logger.info(f'Product {product["default_code"]} with origin URL {product["url"]} already exists')
+
+                    cls.logger.info(f'Product {product["default_code"]} already exists with origin URL {url}')
 
                 cls.logger.info(f"PROCESSED: {counter} products\n")
 
