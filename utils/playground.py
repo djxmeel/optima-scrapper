@@ -507,7 +507,9 @@ def merge_excel_files(path1, path2, output_path, concat=True, additional_filter_
         # Write the filtered DataFrame to an Excel file
         df2_filtered.to_excel(output_path, index=False)
 
-def skus_extractor():
+
+# Used if you need only new products links but you don't have the last links file by comparing with Odoo skus
+def new_links_only_odoo_comparator():
     driver = webdriver.Firefox()
 
     # IF ES JSON NOT GENERATED
@@ -516,39 +518,45 @@ def skus_extractor():
     #Util.dump_to_json(extracted_links_skus_es, 'data/vtac_spain/LINKS/extracted_links_skus_es.json')
 
     # IF ES JSON ALREADY GENERATED
-    extracted_links_skus_es = Util.load_json('data/vtac_spain/LINKS/extracted_links_skus_es.json')
+    #extracted_links_skus_es = Util.load_json('data/vtac_spain/LINKS/extracted_links_skus_es.json')
+
 
     # IF UK JSON NOT GENERATED
     #extracted_links_uk = Util.load_json('data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json')
-   #extracted_links_skus_uk = [{'url': link, 'sku': Util.get_sku_from_link_uk(driver, link)} for link in extracted_links_uk]
+    #extracted_links_skus_uk = [{'url': link, 'sku': Util.get_sku_from_link_uk(driver, link)} for link in extracted_links_uk]
     #extracted_links_skus_uk = [entry for entry in extracted_links_skus_uk if entry['sku']] # remove empty entries
     #Util.dump_to_json(extracted_links_skus_uk, 'data/vtac_uk/LINKS/extracted_links_skus_uk.json')
 
     # IF UK JSON ALREADY GENERATED
-    extracted_links_skus_uk = Util.load_json('data/vtac_uk/LINKS/extracted_links_skus_uk.json')
+    #extracted_links_skus_uk = Util.load_json('data/vtac_uk/LINKS/extracted_links_skus_uk.json')
 
-    # FIXME ita link extraction (logging error?)
+
     # IF ITA JSON NOT GENERATED
-    #extracted_links_ita = Util.load_json('data/vtac_ita/LINKS/PRODUCTS_LINKS_ITA.json')
-    #extracted_links_skus_ita = [Util.get_sku_from_link_ita(driver, link) for link in extracted_links_ita]
-    #Util.dump_to_json(extracted_links_skus_ita, 'data/vtac_italia/LINKS/extracted_skus_ita.json')
+    extracted_links_ita = Util.load_json('data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json')
+    extracted_links_skus_ita = [{'url': link, 'sku': Util.get_sku_from_link_ita(driver, link)} for link in extracted_links_ita]
+    Util.dump_to_json(extracted_links_skus_ita, 'data/vtac_italia/LINKS/extracted_links_skus_ita.json')
 
     # IF ITA JSON ALREADY GENERATED
-    #extracted_skus_ita = Util.load_json('data/vtac_italia/LINKS/extracted_skus_ita.json')
+    #extracted_links_skus_ita = Util.load_json('data/vtac_italia/LINKS/extracted_skus_ita.json')
+
+
+    # IF skus_in_odoo16.json NOT GENERATED
+    #skus_in_odoo16 = [prod.default_code for prod in OdooImport.browse_all_products_in_batches()]
+    #Util.dump_to_json(skus_in_odoo16, 'data/common/json/skus_in_odoo16.json')
+
+    # IF skus_in_odoo16.json ALREADY GENERATED
+    skus_in_odoo16 = Util.load_json('data/common/json/skus_in_odoo16.json')
+
+
+    #new_links_from_es = [entry['url'] for entry in extracted_links_skus_es if entry['sku'] not in skus_in_odoo16]
+    #new_links_from_uk = [entry['url'] for entry in extracted_links_skus_uk if entry['sku'] not in skus_in_odoo16]
+    new_links_from_ita = [entry['url'] for entry in extracted_links_skus_ita if entry['sku'] not in skus_in_odoo16]
+
+    #Util.dump_to_json(new_links_from_es, 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json')
+    #Util.dump_to_json(new_links_from_uk, 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json')
+    Util.dump_to_json(new_links_from_ita, 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json')
 
     driver.close()
-
-    skus_in_odoo16 = [prod.default_code for prod in OdooImport.browse_all_products_in_batches()]
-    Util.dump_to_json(skus_in_odoo16, 'data/common/json/skus_in_odoo16.json')
-
-    new_links_from_es = [entry['url'] for entry in extracted_links_skus_es if entry['sku'] not in skus_in_odoo16]
-    new_links_from_uk = [entry['url'] for entry in extracted_links_skus_uk if entry['sku'] not in skus_in_odoo16]
-    #new_links_from_ita = [entry['url'] for entry in extracted_links_skus_ita if entry['sku'] not in skus_in_odoo16]
-
-    Util.dump_to_json(new_links_from_es, 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json')
-    Util.dump_to_json(new_links_from_uk, 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json')
-    #Util.dump_to_json(new_links_from_ita, 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json')
-
 
 
 # Example usage :
@@ -589,4 +597,4 @@ def skus_extractor():
 
 #archive_products_based_on_condition('Unidades por embalaje', 'ilike', '1')
 
-skus_extractor()
+new_links_only_odoo_comparator()
