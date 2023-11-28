@@ -279,11 +279,12 @@ class ScraperVtacSpain:
             data = json.load(f)
 
         substring = base_link.split('/')[-1]
+        basestring = "/".join(base_link.split('/')[2:-1])
 
         links = []
 
         for link in data:
-            if substring in link:
+            if substring in link and basestring not in link:
                 print('FOUND DUPLICATE ->', link)
                 links.append(link)
 
