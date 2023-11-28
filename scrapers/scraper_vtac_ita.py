@@ -71,8 +71,12 @@ class ScraperVtacItalia:
 
         subcategories_elements = []
 
-        for subcat in subcategories:
-            subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
+        try:
+            for subcat in subcategories:
+                subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
+        except NoSuchElementException:
+            cls.logger.error(f'Enlace de producto no encontrado {url}.')
+            return None
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
