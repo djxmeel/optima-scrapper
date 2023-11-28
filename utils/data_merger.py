@@ -140,7 +140,7 @@ class DataMerger:
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_data[country] = cls.load_data_for_country(country, if_only_new)
+            cls.country_data[country] = cls.load_data_for_country(country, False, if_only_new)
 
         for country in cls.COUNTRY_SCRAPERS.keys():
             if cls.country_media.get(country):
