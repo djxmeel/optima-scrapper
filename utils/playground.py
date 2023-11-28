@@ -511,30 +511,30 @@ def skus_extractor():
     driver = webdriver.Firefox()
 
     # IF ES JSON NOT GENERATED
-    extracted_links_es = Util.load_json('data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json')
-    extracted_links_skus_es = [{'url': link, 'sku': Util.get_sku_from_link_es(driver, link)} for link in extracted_links_es]
-    Util.dump_to_json(extracted_links_skus_es, 'data/vtac_spain/LINKS/extracted_links_skus_es.json')
+    #extracted_links_es = Util.load_json('data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json')
+    #extracted_links_skus_es = [{'url': link, 'sku': Util.get_sku_from_link_es(driver, link)} for link in extracted_links_es]
+    #Util.dump_to_json(extracted_links_skus_es, 'data/vtac_spain/LINKS/extracted_links_skus_es.json')
 
     # IF ES JSON ALREADY GENERATED
-    #extracted_links_skus_es = Util.load_json('data/vtac_spain/LINKS/extracted_links_skus_es.json')
+    extracted_links_skus_es = Util.load_json('data/vtac_spain/LINKS/extracted_links_skus_es.json')
 
     # IF UK JSON NOT GENERATED
-    extracted_links_uk = Util.load_json('data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json')
-    extracted_links_skus_uk = [{'url': link, 'sku': Util.get_sku_from_link_uk(driver, link)} for link in extracted_links_uk]
-    extracted_links_skus_uk = [entry for entry in extracted_links_skus_uk if entry['sku']] # remove empty entries
-    Util.dump_to_json(extracted_links_skus_uk, 'data/vtac_uk/LINKS/extracted_links_skus_uk.json')
+    #extracted_links_uk = Util.load_json('data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json')
+   #extracted_links_skus_uk = [{'url': link, 'sku': Util.get_sku_from_link_uk(driver, link)} for link in extracted_links_uk]
+    #extracted_links_skus_uk = [entry for entry in extracted_links_skus_uk if entry['sku']] # remove empty entries
+    #Util.dump_to_json(extracted_links_skus_uk, 'data/vtac_uk/LINKS/extracted_links_skus_uk.json')
 
     # IF UK JSON ALREADY GENERATED
-    #extracted_skus_uk = Util.load_json('data/vtac_uk/LINKS/extracted_skus_uk.json')
+    extracted_links_skus_uk = Util.load_json('data/vtac_uk/LINKS/extracted_links_skus_uk.json')
 
-    # FIXME ita link extraction
+    # FIXME ita link extraction (logging error?)
     # IF ITA JSON NOT GENERATED
-    extracted_links_ita = Util.load_json('data/vtac_ita/LINKS/PRODUCTS_LINKS_ITA.json')
-    extracted_links_skus_ita = [Util.get_sku_from_link_ita(driver, link) for link in extracted_links_ita]
-    Util.dump_to_json(extracted_links_skus_ita, 'data/vtac_ita/LINKS/extracted_skus_ita.json')
+    #extracted_links_ita = Util.load_json('data/vtac_ita/LINKS/PRODUCTS_LINKS_ITA.json')
+    #extracted_links_skus_ita = [Util.get_sku_from_link_ita(driver, link) for link in extracted_links_ita]
+    #Util.dump_to_json(extracted_links_skus_ita, 'data/vtac_italia/LINKS/extracted_skus_ita.json')
 
     # IF ITA JSON ALREADY GENERATED
-    #extracted_skus_ita = Util.load_json('data/vtac_ita/LINKS/extracted_skus_ita.json')
+    #extracted_skus_ita = Util.load_json('data/vtac_italia/LINKS/extracted_skus_ita.json')
 
     driver.close()
 
@@ -543,11 +543,11 @@ def skus_extractor():
 
     new_links_from_es = [entry['url'] for entry in extracted_links_skus_es if entry['sku'] not in skus_in_odoo16]
     new_links_from_uk = [entry['url'] for entry in extracted_links_skus_uk if entry['sku'] not in skus_in_odoo16]
-    new_links_from_ita = [entry['url'] for entry in extracted_links_skus_ita if entry['sku'] not in skus_in_odoo16]
+    #new_links_from_ita = [entry['url'] for entry in extracted_links_skus_ita if entry['sku'] not in skus_in_odoo16]
 
     Util.dump_to_json(new_links_from_es, 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json')
     Util.dump_to_json(new_links_from_uk, 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json')
-    Util.dump_to_json(new_links_from_ita, 'data/vtac_ita/LINKS/NEW_PRODUCTS_LINKS_ITA.json')
+    #Util.dump_to_json(new_links_from_ita, 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json')
 
 
 
