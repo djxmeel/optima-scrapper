@@ -391,6 +391,8 @@ class Util:
         # Load links from JSON file
         links = Util.load_json(links_path)
 
+        skipped = 0
+
         products_data = []
         counter = start_from
 
@@ -402,7 +404,7 @@ class Util:
                 # Skip duplicate links for ES
                 if scraper.COUNTRY == 'es':
                     if link in duplicate_links:
-                        counter += 1
+                        skipped += 1
                         continue
 
                     for dup in scraper.get_duplicate_product_links(links_path, link):
@@ -412,7 +414,7 @@ class Util:
 
                 # If product is None, it's SKU contains letters (Not V-TAC)
                 if not product:
-                    counter+=1
+                    skipped+=1
                     logger.warn(f'Failed to scrape product with link: {link}. Skipping...')
                     continue
 
@@ -421,7 +423,7 @@ class Util:
                 logger.info(f'{counter}/{len(links)}\n')
 
                 # Save each X to a JSON
-                if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
+                if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links) - skipped:
                     data_filename = f'{data_extraction_dir}/{Util.PRODUCT_INFO_FILENAME_TEMPLATE.format(counter)}'
                     media_filename = f'{media_extraction_dir}/{Util.PRODUCT_MEDIA_FILENAME_TEMPLATE.format(counter)}'
 
