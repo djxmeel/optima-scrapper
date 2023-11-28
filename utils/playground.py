@@ -413,10 +413,11 @@ def delete_excel_rows(excel_file_path):
 
 
 def assign_public_categs_from_name():
-    products = OdooImport.browse_all_products_in_batches()
+    products = OdooImport.browse_all_products_in_batches('public_categ_ids;=;False')
 
     for product in products:
         if product.public_categ_ids:
+            print(f"SKIPPING SKU: {product.default_code} - ALREADY HAS PUBLIC CATEGORIES")
             continue
 
         categs_names = Util.get_public_category_from_name(product.name, DataMerger.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
@@ -585,7 +586,7 @@ def new_links_only_odoo_comparator():
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-#assign_public_categs_from_name()
+assign_public_categs_from_name()
 
 #assign_public_categories('data/common/excel/public_category_sku.xlsx')
 
@@ -597,4 +598,4 @@ def new_links_only_odoo_comparator():
 
 #archive_products_based_on_condition('Unidades por embalaje', 'ilike', '1')
 
-new_links_only_odoo_comparator()
+#new_links_only_odoo_comparator()
