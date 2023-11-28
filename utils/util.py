@@ -139,8 +139,7 @@ class Util:
     @staticmethod
     def get_sku_from_link_ita(driver, link=None):
         if link:
-            time.sleep(1)
-            driver.get(link)
+            return str(link).split('/')[6]
         return str(driver.current_url).split('/')[6]
 
     @staticmethod
