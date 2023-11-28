@@ -468,13 +468,16 @@ def delete_all_unused_attributes_w_values():
             continue
 
 
-def set_all_prices(price):
+def set_all_prices(price, cost_also=False):
     products = OdooImport.browse_all_products_in_batches()
     odoo = login_odoo()
     product_model = odoo.env['product.template']
 
     for product in products:
-        product_model.write(product.id, {'list_price': price})
+        if cost_also:
+            product_model.write(product.id, {'list_price': price, 'standard_price': price})
+        else:
+            product_model.write(product.id, {'list_price': price})
         print(f"UPDATED SKU: {product.default_code} PRICE: {price}")
 
 
@@ -582,13 +585,13 @@ def new_links_only_odoo_comparator():
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-assign_public_categs_from_name()
+#assign_public_categs_from_name()
 
 #assign_public_categories('data/common/excel/public_category_sku.xlsx')
 
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
-#set_all_prices(0)
+set_all_prices(0, True)
 
 #delete_all_unused_attributes_w_values()
 
