@@ -413,13 +413,9 @@ def delete_excel_rows(excel_file_path):
 
 
 def assign_public_categs_from_name():
-    products = OdooImport.browse_all_products_in_batches('public_categ_ids;=;False')
+    products = OdooImport.browse_all_products_in_batches('public_categ_ids', '=', False)
 
     for product in products:
-        if product.public_categ_ids:
-            print(f"SKIPPING SKU: {product.default_code} - ALREADY HAS PUBLIC CATEGORIES")
-            continue
-
         categs_names = Util.get_public_category_from_name(product.name, DataMerger.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH)
         OdooImport.assign_public_categories(product.id, categs_names)
 
