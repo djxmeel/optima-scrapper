@@ -171,7 +171,10 @@ class Util:
         except ValueError:
             if "-" in sku:
                 sku_split = sku.split('-')
-                return f'VS{int(sku_split[0]) * 2}-{sku_split[1]}'
+                if sku_split[0].isdigit():
+                    return f'VS{int(sku_split[0]) * 2}-{sku_split[1]}'
+                elif sku_split[1].isdigit():
+                    return f'VS{int(sku_split[1]) * 2}-{sku_split[0]}'
             return None
 
     @staticmethod
