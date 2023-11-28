@@ -169,6 +169,9 @@ class Util:
         try:
             return f'VS{int(sku) * 2}'
         except ValueError:
+            if "-" in sku:
+                sku_split = sku.split('-')
+                return f'VS{int(sku_split[0]) * 2}-{sku_split[1]}'
             return None
 
     @staticmethod
@@ -396,15 +399,18 @@ class Util:
                 # Skip duplicate links for ES
                 if scraper.COUNTRY == 'es':
                     if link in duplicate_links:
+                        counter += 1
                         continue
 
-                    for dup in scraper.get_duplicate_product_links(scraper.PRODUCTS_LINKS_PATH, link):
+                    for dup in scraper.get_duplicate_product_links(links_path, link):
                         duplicate_links.append(dup)
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES)
 
                 # If product is None, it's SKU contains letters (Not V-TAC)
                 if not product:
+                    counter+=1
+                    logger.warn(f'Failed to scrape product with link: {link}. Skipping...')
                     continue
 
                 products_data.append(product)
