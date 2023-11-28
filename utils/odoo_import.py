@@ -607,15 +607,11 @@ class OdooImport:
             cls.logger.info("CREATED CATEGORY: " + category['name'])
 
     @classmethod
-    def browse_all_products_in_batches(cls, condition_exp=None):
+    def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
         # Fetch records in batches to avoid RPCerror
         batch_size = 200
         offset = 0
         products = []
-        condition_exp_split = condition_exp.split(';')
-        field = condition_exp_split[0]
-        operator = condition_exp_split[1]
-        value = condition_exp_split[2]
 
         while True:
             product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
