@@ -591,19 +591,17 @@ def hardcode_field_odoo(field, value):
 
 #generate_all_products_info_json(DataMerger.MERGED_PRODUC T_INFO_DIR_PATH)
 
-#correct_allproduct_names()
-
 #delete_attachments('x_url', 'ilike', 'italia')
 
-#assign_public_categs_from_name()
-
-#assign_public_categories('data/common/excel/public_category_sku.xlsx')
+correct_allproduct_names()
+assign_public_categories('data/common/excel/public_category_sku.xlsx')
+assign_public_categs_from_name()
 
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
-set_all_prices(0, True)
+#set_all_prices(0, True)
 
-hardcode_field_odoo('x_marca', 'V-TAC')
+#hardcode_field_odoo('x_marca', 'V-TAC')
 
 #delete_all_unused_attributes_w_values()
 
