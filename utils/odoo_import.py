@@ -629,7 +629,6 @@ class OdooImport:
 
         return products
 
-    # TODO test import_supplier_info
     @classmethod
     def import_supplier_info(cls, supplier_stock_excel_path, supplier_pricelist_excel_path, update_mode=False):
         supplier_info_model = cls.odoo.env['product.supplierinfo']

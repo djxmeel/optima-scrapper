@@ -1,9 +1,9 @@
 from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
-# TODO Field marca (always vtac)
+
 # TODO 2. Remerge to update public categories in json files
-# TODO 4. upload new pricelist
+
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
