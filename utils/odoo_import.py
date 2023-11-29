@@ -63,7 +63,7 @@ class OdooImport:
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
 
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
-    PRIORITY_EXCEL_SKUS = Util.get_priority_excel_skus('data/common/excel/Productos Comprados o Vendidos VTAC.xlsx', 'A')
+    PRIORITY_EXCEL_SKUS_PATH = 'data/common/excel/Productos Comprados o Vendidos VTAC.xlsx'
 
     @classmethod
     def create_internal_category(cls, internal_category):
@@ -195,13 +195,15 @@ class OdooImport:
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
+        PRIORITY_SKUS = Util.get_priority_excel_skus('data/common/excel/Productos Comprados o Vendidos VTAC.xlsx', 'A') if use_priority_excel else []
+
         for file_path in sorted(file_list):
             products = Util.load_json(file_path)
 
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
             for product in products:
-                if use_priority_excel and product['default_code'] not in cls.PRIORITY_EXCEL_SKUS:
+                if use_priority_excel and product['default_code'] and product['default_code'] not in PRIORITY_SKUS:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
 
@@ -689,7 +691,7 @@ class OdooImport:
         products = cls.browse_all_products_in_batches()
 
         for product in products:
-            if product.default_code not in skus:
+            if str(product.default_code) not in skus:
                 cls.PRODUCT_MODEL.write(product.id, {'description_purchase': 'DESCATALOGADO', 'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD')})
                 cls.logger.info(f"{product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
             else:
