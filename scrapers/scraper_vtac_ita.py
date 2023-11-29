@@ -12,8 +12,8 @@ from utils.util import Util
 # VTAC ITALIA SCRAPER
 class ScraperVtacItalia:
     COUNTRY = 'ita'
-
     WEBSITE_NAME = 'V-TAC Italia'
+    BRAND_NAME = 'V-TAC'
 
     DRIVER = None
     logger = None
@@ -192,6 +192,9 @@ class ScraperVtacItalia:
 
         # Formateo del titulo
         item['name'] = f'[{internal_ref}] {item["name"]}'
+
+        # Hardcoded fields
+        item['Marca'] = cls.BRAND_NAME
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

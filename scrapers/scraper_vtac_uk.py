@@ -13,8 +13,8 @@ from utils.util import Util
 # VTAC UK SCRAPER
 class ScraperVtacUk:
     COUNTRY = 'uk'
-
     WEBSITE_NAME = 'V-TAC UK'
+    BRAND_NAME = 'V-TAC'
 
     DRIVER = None
     logger = None
@@ -236,6 +236,9 @@ class ScraperVtacUk:
         if 'Peso bruto (kg)' in item:
             item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
             del item['Peso bruto (kg)']
+
+        # Hardcoded fields
+        item['Marca'] = cls.BRAND_NAME
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

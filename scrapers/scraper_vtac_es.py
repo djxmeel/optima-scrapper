@@ -13,6 +13,7 @@ from utils.util import Util
 class ScraperVtacSpain:
     COUNTRY = 'es'
     WEBSITE_NAME = 'V-TAC España'
+    BRAND_NAME = 'V-TAC'
 
     DRIVER = None
     logger = None
@@ -152,6 +153,9 @@ class ScraperVtacSpain:
         if 'Peso del artículo' in item.keys():
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
+
+        # Hardcoded fields
+        item['Marca'] = cls.BRAND_NAME
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"].encode("utf-8")}')
 
