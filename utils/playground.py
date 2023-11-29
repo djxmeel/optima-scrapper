@@ -559,6 +559,16 @@ def new_links_only_odoo_comparator():
     driver.close()
 
 
+def hardcode_field_odoo(field, value):
+    odoo = login_odoo()
+    products = OdooImport.browse_all_products_in_batches()
+    product_model = odoo.env['product.template']
+
+    for product in products:
+        product_model.write(product.id, {field: value})
+        print(f"UPDATED SKU: {product.default_code} {field}: {value}")
+
+
 # Example usage :
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago18.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago18_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2_mar19.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
@@ -592,6 +602,8 @@ def new_links_only_odoo_comparator():
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
 set_all_prices(0, True)
+
+hardcode_field_odoo('x_marca', 'V-TAC')
 
 #delete_all_unused_attributes_w_values()
 
