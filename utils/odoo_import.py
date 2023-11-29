@@ -617,7 +617,7 @@ class OdooImport:
         products = []
 
         while True:
-            if not field or not operator or not value:
+            if not field or not operator:
                 product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
             else:
                 product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
