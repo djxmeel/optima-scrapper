@@ -1,7 +1,7 @@
 from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
-
+# TODO Field marca (always vtac)
 # TODO 2. Remerge to update public categories in json files
 # TODO 4. upload new pricelist
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
@@ -19,7 +19,7 @@ NEW_UPLOADED_MEDIA_DIR_PATH = DataMerger.NEW_UPLOADED_MEDIA_DIR_PATH
 PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/public_categories_odoo.xlsx'
 
 SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/supplier_stock.xlsx'
-SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_sept23_hasta_ago18.xlsx'
+SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'
 
 SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku.xlsx'
 
