@@ -570,7 +570,7 @@ def hardcode_field_odoo(field, value):
 
 
 # Example usage :
-#merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago18.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago18_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2_mar19.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
+#merge_excel_files('data/common/excel/productos_odoo_16.xlsx', 'data/common/excel/productos_odoo_15.xlsx', 'data/common/excel/SOLO_EN_ODOO15.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
@@ -589,13 +589,13 @@ def hardcode_field_odoo(field, value):
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 #change_internal_ref_odoo()
 
-#generate_all_products_info_json(DataMerger.MERGED_PRODUC T_INFO_DIR_PATH)
+#generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-correct_allproduct_names()
-assign_public_categories('data/common/excel/public_category_sku.xlsx')
-assign_public_categs_from_name()
+#correct_allproduct_names()
+#assign_public_categories('data/common/excel/public_category_sku.xlsx')
+#assign_public_categs_from_name()
 
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 

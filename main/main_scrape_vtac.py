@@ -21,7 +21,7 @@ IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 IF_EXTRACT_TO_TEST = False
 
 # PDFs productos
-IF_DL_ITEM_PDF = True
+IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
