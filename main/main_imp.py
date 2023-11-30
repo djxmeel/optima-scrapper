@@ -3,7 +3,6 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 # TODO 1. Install missing modules in Odoo 16
-# TODO 2. Linea proveedor : Cantidad -> 1
 # TODO 3. Set show_availabilty = True
 # TODO 4. Set out_of_stock_message = copy from Discord
 # TODO 5. Set allow_out_of_stock_order = True
