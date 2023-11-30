@@ -431,7 +431,7 @@ def delete_skus_in_odoo(skus_json_path):
             product_model.unlink(product_id)
             print(f"DELETED SKU: {sku}")
 
-# TODO test (Tipo de casquillo = B22) - automate this to be done after importing products (use a json to store conditions)
+
 def archive_products_based_on_condition(attribute, condition, value):
     odoo = login_odoo()
 
@@ -602,7 +602,7 @@ def hardcode_field_odoo(field, value):
 #correct_allproduct_names()
 #assign_public_categories('data/common/excel/public_category_sku.xlsx')
 #assign_public_categs_from_name()
-assign_public_categories('data/common/excel/public_category_manual.xlsx')
+#assign_public_categories('data/common/excel/public_category_manual.xlsx')
 
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
@@ -612,6 +612,6 @@ assign_public_categories('data/common/excel/public_category_manual.xlsx')
 
 #delete_all_unused_attributes_w_values()
 
-#archive_products_based_on_condition('Unidades por embalaje', 'ilike', '1')
+archive_products_based_on_condition('Tipo de casquillo', '=', 'B22')
 
 #new_links_only_odoo_comparator()
