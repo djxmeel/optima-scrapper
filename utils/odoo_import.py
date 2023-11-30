@@ -42,6 +42,7 @@ class OdooImport:
 
     MEDIA_MODEL = odoo.env['product.image']
     PRODUCT_MODEL = odoo.env['product.template']
+    BRAND_MODEL = odoo.env['product.brand']
 
     PRODUCT_PUBLIC_CATEGORIES_MODEL = odoo.env['product.public.category']
     PRODUCT_INTERNAL_CATEGORY_MODEL = odoo.env['product.category']
@@ -148,6 +149,13 @@ class OdooImport:
             cls.logger.warn("DETAILED TYPE WAS NOT UPDATED TO 'Storable product'")
 
     @classmethod
+    def assign_brand(cls, product_id, product_brand_id):
+        try:
+            cls.PRODUCT_MODEL.write(product_id, {'product_brand_id': product_brand_id})
+        except RPCError:
+            cls.logger.warn(f"ID {product_id} : BRAND WAS NOT UPDATED")
+
+    @classmethod
     def assign_internal_category(cls, product_id, product_internal_category):
         product_internal_category_id = cls.PRODUCT_INTERNAL_CATEGORY_MODEL.search([('name', '=', product_internal_category)])
 
@@ -215,6 +223,13 @@ class OdooImport:
 
                 public_categs = product['public_categories']
 
+                brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
+                if brand_id:
+                    product['product_brand_id'] = brand_id[0]
+                else:
+                    del product['product_brand_id']
+                    cls.logger.warn(f"PRODUCT BRAND {product['product_brand_id']} NOT FOUND IN ODOO")
+
                 url = product["url"]
 
                 for key in temp_keys:
@@ -252,8 +267,10 @@ class OdooImport:
                     cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
                     cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
                     cls.assign_public_categories(product_id, public_categs)
-                else:
 
+                    if 'product_brand_id' in product:
+                        cls.assign_brand(product_id, product['product_brand_id'])
+                else:
                     cls.logger.info(f'Product {product["default_code"]} already exists with origin URL {url}')
 
                 cls.logger.info(f"PROCESSED: {counter} products\n")
@@ -696,3 +713,15 @@ class OdooImport:
                 cls.logger.info(f"{product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
             else:
                 cls.logger.info(f"{product.default_code} SKIPPING BECAUSE IT IS IN CATALOGO")
+
+    @classmethod
+    def import_brands(cls, brands_excel_file_path):
+        brand_names = [str(entry['name']) for entry in Util.load_excel_columns_in_dictionary_list(brands_excel_file_path)]
+
+        for brand_name in brand_names:
+            if cls.BRAND_MODEL.search([('name', '=', brand_name)]):
+                cls.logger.info(f"BRAND {brand_name} ALREADY EXISTS IN ODOO")
+                continue
+
+            cls.BRAND_MODEL.create({'name': brand_name})
+            cls.logger.info(f"CREATED BRAND {brand_name}")

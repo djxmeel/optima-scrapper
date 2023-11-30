@@ -194,7 +194,7 @@ class ScraperVtacItalia:
         item['name'] = f'[{internal_ref}] {item["name"]}'
 
         # Hardcoded fields
-        item['Marca'] = cls.BRAND_NAME
+        item['product_brand_id'] = cls.BRAND_NAME
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

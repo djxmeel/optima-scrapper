@@ -35,9 +35,9 @@ class Util:
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('url', 'Código de familia')
     # Default fields supported by Odoo (not custom)
-    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode')
+    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode', 'product_brand_id')
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
