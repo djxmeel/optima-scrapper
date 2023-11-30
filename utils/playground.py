@@ -570,13 +570,13 @@ def hardcode_field_odoo(field, value):
 
 
 # Example usage :
-merge_excel_files(
-    'data/common/excel/modules_odoo_16.xlsx',
-    'data/common/excel/modules_odoo_15.xlsx',
-    'data/common/excel/MODULES_SOLO_EN_ODOO15.xlsx',
-    'Nombre técnico', False,
-    "data/common/json/SKUS_TO_SKIP.json"
-)
+# merge_excel_files(
+#     'data/common/excel/modules_odoo_16.xlsx',
+#     'data/common/excel/modules_odoo_15.xlsx',
+#     'data/common/excel/MODULES_SOLO_EN_ODOO15.xlsx',
+#     'Nombre técnico', False,
+#     "data/common/json/SKUS_TO_SKIP.json"
+# )
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
@@ -602,13 +602,13 @@ merge_excel_files(
 #correct_allproduct_names()
 #assign_public_categories('data/common/excel/public_category_sku.xlsx')
 #assign_public_categs_from_name()
-#assign_public_categories('data/common/excel/public_category_manual.xlsx')
+assign_public_categories('data/common/excel/public_category_manual.xlsx')
 
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
 #set_all_prices(0, True)
 
-hardcode_field_odoo('product_brand_id', 1)
+#hardcode_field_odoo('product_brand_id', 1)
 
 #delete_all_unused_attributes_w_values()
 
