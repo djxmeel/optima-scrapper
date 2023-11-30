@@ -3,8 +3,12 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 # TODO 1. Install missing modules in Odoo 16
-# TODO 2. Do a separate import for product to archive
-# TODO 3. Remerge to update public categories in json files
+# TODO 2. Linea proveedor : Cantidad -> 1
+# TODO 3. Set show_availabilty = True
+# TODO 4. Set out_of_stock_message = copy from Discord
+# TODO 5. Set allow_out_of_stock_order = True
+# TODO 6. Do a separate import for product to archive
+# TODO 7. Remerge to update public categories in json files
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -50,8 +54,8 @@ IF_IMPORT_IMGS = False
 IF_IMPORT_ICONS = False
 IF_ONLY_NEW_PRODUCTS_MEDIA = False
 
-IF_IMPORT_SUPPLIER_INFO_AND_COST = False
-IF_UPDATE_MODE = False
+IF_IMPORT_SUPPLIER_INFO_AND_COST = True
+IF_UPDATE_MODE = True
 
 IF_IMPORT_DESCATALOGADOS = False
 
