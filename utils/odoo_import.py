@@ -684,7 +684,8 @@ class OdooImport:
                         'partner_id': partner_id,
                         'product_tmpl_id': product.id,
                         'product_code': product.default_code,
-                        'price': purchase_price
+                        'price': purchase_price,
+                        'min_qty': 1
                     })
                     cls.logger.info(f"UPDATED SUPPLIER INFO FOR PRODUCT {product.default_code}")
                 else:
@@ -696,7 +697,8 @@ class OdooImport:
                 'partner_id': partner_id,
                 'product_tmpl_id': product.id,
                 'product_code': product.default_code,
-                'price': purchase_price
+                'price': purchase_price,
+                'min_qty': 1
             })
 
             cls.logger.info(f"CREATED SUPPLIER INFO FOR PRODUCT {product.default_code}")
