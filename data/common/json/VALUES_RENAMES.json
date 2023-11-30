@@ -42,6 +42,7 @@
     ["Energía", ""]
   ],
   "Vida útil": [
+    [".", ""],
     ["ore", "h."],
     ["horas", "h."],
     ["HORAS", "h."],
