@@ -1,6 +1,8 @@
 from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
+
+# TODO 1. Install missing modules in Odoo 16
 # TODO 2. Remerge to update public categories in json files
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH

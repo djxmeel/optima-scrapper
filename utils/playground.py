@@ -569,7 +569,6 @@ def hardcode_field_odoo(field, value):
         print(f"UPDATED SKU: {product.default_code} {field}: {value}")
 
 
-# TODO test
 # Example usage :
 merge_excel_files(
     'data/common/excel/modules_odoo_16.xlsx',
@@ -609,7 +608,7 @@ merge_excel_files(
 
 #set_all_prices(0, True)
 
-#hardcode_field_odoo('x_marca', 'V-TAC')
+hardcode_field_odoo('product_brand_id', 1)
 
 #delete_all_unused_attributes_w_values()
 
