@@ -725,3 +725,21 @@ class OdooImport:
 
             cls.BRAND_MODEL.create({'name': brand_name})
             cls.logger.info(f"CREATED BRAND {brand_name}")
+
+    @classmethod
+    def archive_products_from_json(cls, product_to_archive_conditions_json_path):
+        product_to_archive_conditions = Util.load_json(product_to_archive_conditions_json_path)
+
+        for attr, value in product_to_archive_conditions.items():
+            cls.archive_products_based_on_condition(attr, '=', value)
+
+
+    @classmethod
+    def archive_products_based_on_condition(cls, attribute, condition, value):
+        products_to_archive = cls.PRODUCT_MODEL.search([
+            ('attribute_line_ids.attribute_id.name', '=', attribute),
+            ('attribute_line_ids.value_ids.name', condition, value)
+        ])
+
+        for product in cls.PRODUCT_MODEL.browse(products_to_archive):
+            product.write({'active': False})  # This archives the product in the database

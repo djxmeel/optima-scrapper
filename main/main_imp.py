@@ -27,6 +27,9 @@ SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.
 
 BRANDS_EXCEL_FILE_PATH = 'data/common/excel/product_brands.xlsx'
 
+PRODUCT_TO_ARCHIVE_CONDITIONS_JSON_PATH = 'data/common/json/PRODUCT_TO_ARCHIVE_CONDITIONS.json'
+
+
 IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
@@ -52,7 +55,9 @@ IF_UPDATE_MODE = False
 
 IF_IMPORT_DESCATALOGADOS = False
 
-IF_IMPORT_BRANDS = True
+IF_IMPORT_BRANDS = False
+
+IF_ARCHIVE_PRODUCTS_FROM_JSON = False
 
 # ODOO IMPORT
 if IF_IMPORT_FIELDS:
@@ -116,4 +121,9 @@ if IF_IMPORT_DESCATALOGADOS:
 if IF_IMPORT_BRANDS:
     OdooImport.logger.info(f'BEGINNING BRANDS IMPORT')
     OdooImport.import_brands(BRANDS_EXCEL_FILE_PATH)
+    OdooImport.logger.info(f'FINISHED BRANDS IMPORT')
+
+if IF_ARCHIVE_PRODUCTS_FROM_JSON:
+    OdooImport.logger.info(f'BEGINNING BRANDS IMPORT')
+    OdooImport.archive_products_from_json(PRODUCT_TO_ARCHIVE_CONDITIONS_JSON_PATH)
     OdooImport.logger.info(f'FINISHED BRANDS IMPORT')
