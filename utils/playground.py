@@ -573,7 +573,7 @@ def hardcode_field_odoo(field, value):
 #merge_excel_files('data/common/excel/vtac_supplier_pricelists/stacked/pricelist_vtac_todo_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene20_2_mar19.xlsx', 'data/common/excel/vtac_supplier_pricelists/pricelist_vtac_ago18.xlsx', 'data/common/excel/vtac_supplier_pricelists/filtered/pricelist_vtac_ago18_not_nov23_sept23_jun23_ene23_jul22_abr22_feb22_ago21_jul21_ene20_ene_20_2_mar19.xlsx', False, "data/common/json/SKUS_TO_SKIP.json")
 
 
-#delete_excel_rows("data/common/excel/productos_odoo-15.xlsx")
+#delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
 
 #get_distinct_b64_imgs_from_json('data/vtac_merged/PRODUCT_MEDIA', 'data/unique_icons', 'icons')
 # Util.dump_to_json(get_distinct_categs(), Util.PUBLIC_CATEGORIES_TRANSLATION_PATH)
