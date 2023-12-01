@@ -40,6 +40,8 @@ class DataMerger:
     # Path to json with name -> category mapping
     PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
 
+    EU_STOCK_EXCEL_PATH = 'data/common/excel/eu_stock/eu_stock.xlsx'
+
     COUNTRY_SCRAPERS = {
         'es': ScraperVtacSpain,
         'uk': ScraperVtacUk,
@@ -182,7 +184,7 @@ class DataMerger:
         return product
 
     @classmethod
-    def merge_data(cls):
+    def merge_data(cls, if_update_eu_stock_attributes):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
         skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
 
@@ -265,6 +267,10 @@ class DataMerger:
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_product_media)
 
+        if if_update_eu_stock_attributes:
+            # Update "Stock europeo" and "Entrada de nuevas unidades"
+            cls.merged_data = cls.update_european_stock_attributes(cls.merged_data)
+
         return cls.merged_data, cls.merged_media
 
     @classmethod
@@ -305,3 +311,35 @@ class DataMerger:
                 print("REPLACED ICON WITH TRANSLATED VERSION")
 
         return icons
+
+    @classmethod
+    def update_european_stock_attributes(cls, merged_data):
+        # Load EU stock excel
+        eu_stock = Util.load_excel_columns_in_dictionary_list(cls.EU_STOCK_EXCEL_PATH)
+
+        sku_dict = {}
+
+        for row in eu_stock:
+            sku_dict[str(row['SKU'])] = row
+
+        eu_stock = sku_dict
+
+        # Update stock attributes
+        for product in merged_data:
+            if product['default_code'] in eu_stock:
+                try:
+                    if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
+                        product['stock_europeo'] = eu_stock[product['default_code']]['AVAILABLE']
+                except ValueError:
+                    cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
+
+
+                if eu_stock[product['default_code']]['UNDELIVERED ORDER']:
+                    product['entrada_nuevas_unidades'] = 'Próximamente'
+
+                    if eu_stock[product['default_code']]['next delivery'] and '/' in str(eu_stock[product['default_code']]['next delivery']):
+                        product['entrada_nuevas_unidades'] = eu_stock[product["default_code"]]["next delivery"]
+                else:
+                    del product['entrada_nuevas_unidades']
+
+        return merged_data
