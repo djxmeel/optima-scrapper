@@ -35,7 +35,7 @@ class DataMerger:
     NEW_UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_MEDIA_UPLOADED'
 
     # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/public_category_sku.xlsx'
+    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
 
     # Path to json with name -> category mapping
     PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
@@ -341,7 +341,5 @@ class DataMerger:
 
                     if eu_stock[product['default_code']]['next delivery'] != nan and '-' in str(eu_stock[product['default_code']]['next delivery']):
                         product['entrada_nuevas_unidades'] = str(eu_stock[product["default_code"]]["next delivery"])[:10]
-                else:
-                    del product['entrada_nuevas_unidades']
 
         return merged_data
