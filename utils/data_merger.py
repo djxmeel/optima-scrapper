@@ -334,11 +334,12 @@ class DataMerger:
                 except ValueError:
                     cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
 
+                nan = float('nan')
 
-                if len(str(eu_stock[product['default_code']]['UNDELIVERED ORDER']).strip()) > 0:
+                if eu_stock[product['default_code']]['UNDELIVERED ORDER'] != nan:
                     product['entrada_nuevas_unidades'] = 'Próximamente'
 
-                    if eu_stock[product['default_code']]['next delivery'] and '-' in str(eu_stock[product['default_code']]['next delivery']):
+                    if eu_stock[product['default_code']]['next delivery'] != nan and '-' in str(eu_stock[product['default_code']]['next delivery']):
                         product['entrada_nuevas_unidades'] = str(eu_stock[product["default_code"]]["next delivery"])[:10]
                 else:
                     del product['entrada_nuevas_unidades']
