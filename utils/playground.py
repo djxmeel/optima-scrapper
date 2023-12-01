@@ -570,13 +570,15 @@ def hardcode_field_odoo(field, value):
 
 
 # Example usage :
-# merge_excel_files(
-#     'data/common/excel/modules_odoo_16.xlsx',
-#     'data/common/excel/modules_odoo_15.xlsx',
-#     'data/common/excel/MODULES_SOLO_EN_ODOO15.xlsx',
-#     'Nombre técnico', False,
-#     "data/common/json/SKUS_TO_SKIP.json"
-# )
+merge_excel_files(
+    'data/common/excel/eu_stock/stock_gen_alicante.xlsx',
+    'data/common/excel/eu_stock/SOLO_EN_ODOO15_-_copia.xlsx',
+    'data/common/excel/eu_stock/SOLO_EN_ODOO15_CON_CANTIDAD.xlsx',
+    'SKU', False,
+    "data/common/json/SKUS_TO_SKIP.json"
+)
+
+
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
@@ -612,6 +614,6 @@ def hardcode_field_odoo(field, value):
 
 #delete_all_unused_attributes_w_values()
 
-archive_products_based_on_condition('Tipo de casquillo', '=', 'B22')
+#archive_products_based_on_condition('Tipo de casquillo', '=', 'B22')
 
 #new_links_only_odoo_comparator()
