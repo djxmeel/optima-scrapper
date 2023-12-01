@@ -75,7 +75,7 @@ class ScraperVtacSpain:
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'Stock europeo': 0, 'Entrada de nuevas unidades': ''}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'Stock europeo': '0 (5-9 días hábiles)', 'Entrada de nuevas unidades': ''}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
