@@ -77,7 +77,8 @@ class DataMerger:
         'Etiqueta energética ue',
         'Embalaje',
         'Piezas por palet',
-        'Unidad de medida'
+        'Unidad de medida',
+        'SAMSUNG'
     ]
 
     # Fields to rename for common naming between data sources
@@ -329,16 +330,16 @@ class DataMerger:
             if product['default_code'] in eu_stock:
                 try:
                     if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                        product['stock_europeo'] = eu_stock[product['default_code']]['AVAILABLE']
+                        product['stock_europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} (5-9 días hábiles)"
                 except ValueError:
                     cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
 
 
-                if eu_stock[product['default_code']]['UNDELIVERED ORDER']:
+                if len(str(eu_stock[product['default_code']]['UNDELIVERED ORDER']).strip()) > 0:
                     product['entrada_nuevas_unidades'] = 'Próximamente'
 
-                    if eu_stock[product['default_code']]['next delivery'] and '/' in str(eu_stock[product['default_code']]['next delivery']):
-                        product['entrada_nuevas_unidades'] = eu_stock[product["default_code"]]["next delivery"]
+                    if eu_stock[product['default_code']]['next delivery'] and '-' in str(eu_stock[product['default_code']]['next delivery']):
+                        product['entrada_nuevas_unidades'] = str(eu_stock[product["default_code"]]["next delivery"])[:10]
                 else:
                     del product['entrada_nuevas_unidades']
 
