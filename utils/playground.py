@@ -481,7 +481,7 @@ def set_all_prices(price, cost_also=False):
         print(f"UPDATED SKU: {product.default_code} PRICE: {price}")
 
 
-def merge_excel_files(path1, path2, output_path, field, concat=True, additional_sku_filter_path=None):
+def merge_excel_files(path1, path2, output_path, field, is_in=False, concat=True, additional_sku_filter_path=None):
     # Read the Excel files
     df1 = pd.read_excel(path1)
     df2 = pd.read_excel(path2)
@@ -493,7 +493,10 @@ def merge_excel_files(path1, path2, output_path, field, concat=True, additional_
     unique_skus = set(df1[field])
 
     # Filter the second DataFrame
-    df2_filtered = df2[~df2[field].isin(unique_skus)]
+    if is_in:
+        df2_filtered = df2[df2[field].isin(unique_skus)]
+    else:
+        df2_filtered = df2[~df2[field].isin(unique_skus)]
 
     if additional_sku_filter_path and field == 'SKU':
         skus_to_skip = [sku for sku in Util.load_json(additional_sku_filter_path)["skus"]]
@@ -571,10 +574,12 @@ def hardcode_field_odoo(field, value):
 
 # Example usage :
 merge_excel_files(
-    'data/common/excel/eu_stock/stock_gen_alicante.xlsx',
-    'data/common/excel/eu_stock/SOLO_EN_ODOO15_-_copia.xlsx',
+    'data/common/excel/public_category_sku_Q1_2024.xlsx',
     'data/common/excel/eu_stock/SOLO_EN_ODOO15_CON_CANTIDAD.xlsx',
-    'SKU', False,
+    'data/common/excel/eu_stock/no_en_catalog_2024.xlsx',
+    'SKU',
+    False,
+    False,
     "data/common/json/SKUS_TO_SKIP.json"
 )
 
@@ -602,7 +607,7 @@ merge_excel_files(
 #delete_attachments('x_url', 'ilike', 'italia')
 
 #correct_allproduct_names()
-#assign_public_categories('data/common/excel/public_category_sku.xlsx')
+#assign_public_categories('data/common/excel/public_category_sku_Q1_2024.xlsx')
 #assign_public_categs_from_name()
 #assign_public_categories('data/common/excel/public_category_manual.xlsx')
 
