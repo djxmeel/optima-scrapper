@@ -223,7 +223,14 @@ class OdooImport:
 
                 public_categs = product['public_categories']
 
+
+                #TODO remove this when all products have brand (after scrape)
+                if 'product_brand_id' not in product:
+                    product['product_brand_id'] = 'V-TAC'
+
                 brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
+
+
                 if brand_id:
                     product['product_brand_id'] = brand_id[0]
                 else:
