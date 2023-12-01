@@ -3,7 +3,7 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 # TODO 1. Install missing modules in Odoo 16
-# TODO 2. Put Bulgarian stock messages as a new attribute ALWAYS ON TOP
+# TODO 2. Put Bulgarian stock messages as a new attribute ALWAYS ON TOP ( Stock Europeo = int, Entrada de nuevas unidades = date OR "Próximamente" OR None)
 # TODO 3. Set show_availabilty = True
 # TODO 4. Set out_of_stock_message = copy from Discord
 # TODO 5. Set allow_out_of_stock_order = True
