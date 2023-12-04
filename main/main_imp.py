@@ -4,10 +4,9 @@ from utils.util import Util
 
 # TODO 1. Do a separate import for product to archive
 # TODO 2. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
-# TODO 3. Find way to include NEW products merge into weekly merge
-# TODO 4. Merge new products to apply Stock Attributes
-#TODO 5. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
-#TODO 6. Scrape descatalogados from spain and upload to Odoo 16
+# TODO 3. Find way to include NEW products merge into weekly merge (load all then reextract in !NEW folder)
+# TODO 4. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
+# TODO 5. Scrape descatalogados from spain and upload to Odoo 16
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -39,9 +38,9 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
-IF_IMPORT_PRODUCTS = True
-IF_UPDATE_EXISTING = True
-IF_ONLY_NEW_PRODUCTS_DATA = True
+IF_IMPORT_PRODUCTS = False
+IF_UPDATE_EXISTING = False
+IF_ONLY_NEW_PRODUCTS_DATA = False
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
