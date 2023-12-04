@@ -75,7 +75,17 @@ class ScraperVtacSpain:
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'Stock europeo': '0 (Disponible en un plazo de 5 a 9 días hábiles)'}
+        item = {'url': driver.current_url, 'list_price': 0,
+                'imgs': [], 'icons': [],
+                'website_description': '',
+                'videos': [],
+                'Stock europeo': '0 (Disponible en un plazo de 5 a 9 días hábiles)',
+                'invoice_policy': 'Delivered quantities',
+                'detailed_type': 'Storable product',
+                'show_availability': True,
+                'allow_out_of_stock_order': True,
+                'available_threshold': 100000,
+                'out_of_stock_message': Util.OOS_MESSAGES_PATH[cls.BRAND_NAME]}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
