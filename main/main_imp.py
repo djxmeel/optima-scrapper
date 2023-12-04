@@ -11,6 +11,7 @@ from utils.util import Util
 # TODO 8. Remerge to update public categories in json files
 # TODO 9. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
 # TODO 10. Find way to include NEW products merge into weekly merge
+# TODO 10. Merge new products to apply Stock Attributes
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -42,8 +43,8 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
-IF_IMPORT_PRODUCTS = False
-IF_UPDATE_EXISTING = False
+IF_IMPORT_PRODUCTS = True
+IF_UPDATE_EXISTING = True
 IF_ONLY_NEW_PRODUCTS_DATA = False
 USE_PRIORITY_EXCEL = False
 
