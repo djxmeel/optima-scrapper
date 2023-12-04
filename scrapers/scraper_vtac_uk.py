@@ -153,7 +153,7 @@ class ScraperVtacUk:
                 'imgs': [], 'icons': [],
                 'website_description': '',
                 'videos': [],
-                'Stock europeo': '0 (Disponible en un plazo de 5 a 9 días hábiles)',
+                'Stock europeo': '0 unidades (Disponible en un plazo de 5 a 9 días hábiles)',
                 'invoice_policy': 'delivery',
                 'detailed_type': 'product',
                 'show_availability': True,

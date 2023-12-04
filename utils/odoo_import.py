@@ -245,10 +245,6 @@ class OdooImport:
                 elif if_update_existing:
                     product_id = product_ids[0]
 
-                    # TODO remove after new merge
-                    product['invoice_policy'] = 'delivery'
-                    product['detailed_type'] = 'product'
-
                     cls.PRODUCT_MODEL.write(product_id, product)
 
                     cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')

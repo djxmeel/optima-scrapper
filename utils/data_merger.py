@@ -341,7 +341,7 @@ class DataMerger:
             if product['default_code'] in eu_stock:
                 try:
                     if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                        product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} (Disponible en un plazo de 5 a 9 días hábiles)"
+                        product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
                 except ValueError:
                     cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
 

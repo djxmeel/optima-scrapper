@@ -7,6 +7,7 @@ from utils.util import Util
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 4. Merge new products to apply Stock Attributes
 #TODO 5. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
+#TODO 6. Scrape descatalogados from spain and upload to Odoo 16
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -40,7 +41,7 @@ IF_IMPORT_PUBLIC_CATEGORIES = False
 
 IF_IMPORT_PRODUCTS = True
 IF_UPDATE_EXISTING = True
-IF_ONLY_NEW_PRODUCTS_DATA = False
+IF_ONLY_NEW_PRODUCTS_DATA = True
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
