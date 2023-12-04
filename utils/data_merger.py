@@ -265,6 +265,8 @@ class DataMerger:
             if 'name' in merged_product:
                 merged_product['name'] = Util.get_correctly_translated_product_name(merged_product['name'])
 
+
+
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_product_media)
 
@@ -330,16 +332,16 @@ class DataMerger:
             if product['default_code'] in eu_stock:
                 try:
                     if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                        product['stock_europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} (5-9 días hábiles)"
+                        product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} (5-9 días hábiles)"
                 except ValueError:
                     cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
 
                 nan = float('nan')
 
                 if eu_stock[product['default_code']]['UNDELIVERED ORDER'] != nan:
-                    product['entrada_nuevas_unidades'] = 'Próximamente'
+                    product['Entrada de nuevas unidades'] = 'Próximamente'
 
                     if eu_stock[product['default_code']]['next delivery'] != nan and '-' in str(eu_stock[product['default_code']]['next delivery']):
-                        product['entrada_nuevas_unidades'] = str(eu_stock[product["default_code"]]["next delivery"])[:10]
+                        product['Entrada de nuevas unidades'] = str(eu_stock[product["default_code"]]["next delivery"])[:10]
 
         return merged_data
