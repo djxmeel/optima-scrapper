@@ -267,7 +267,7 @@ class DataMerger:
 
 
 
-            #TODO remove this after merge
+            #TODO remove this after new scrape
             merged_product['product_brand_id'] = 'V-TAC'
             merged_product['invoice_policy'] = 'delivery'
             merged_product['detailed_type'] = 'product'
@@ -351,6 +351,7 @@ class DataMerger:
                     product['Entrada de nuevas unidades'] = 'Próximamente'
 
                     if eu_stock[product['default_code']]['next delivery'] != nan and '-' in str(eu_stock[product['default_code']]['next delivery']):
-                        product['Entrada de nuevas unidades'] = str(eu_stock[product["default_code"]]["next delivery"])[:10]
+                        date_unformatted = str(eu_stock[product["default_code"]]["next delivery"])[:10]
+                        product['Entrada de nuevas unidades'] = '/'.join(date_unformatted.split('-')[::-1])
 
         return merged_data

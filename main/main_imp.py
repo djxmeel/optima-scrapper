@@ -2,10 +2,11 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# TODO 7. Do a separate import for product to archive
-# TODO 9. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
-# TODO 10. Find way to include NEW products merge into weekly merge
-# TODO 10. Merge new products to apply Stock Attributes
+# TODO 1. Do a separate import for product to archive
+# TODO 2. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
+# TODO 3. Find way to include NEW products merge into weekly merge
+# TODO 4. Merge new products to apply Stock Attributes
+#TODO 5. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
