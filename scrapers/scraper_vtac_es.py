@@ -174,6 +174,9 @@ class ScraperVtacSpain:
 
             inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH,
                                                                                                 "/html/body/div[1]/div/section[3]/div/main/div/div[2]/div[2]/div/section//h4//a")]
+            # Add the "Descatalogados" category manually since it's hidden in website
+            inner_categories_links.append("https://v-tac.es/descatalogados.html")
+
 
             for inner_cat in inner_categories_links:
                 driver.get(f'{inner_cat}?limit=9999')
