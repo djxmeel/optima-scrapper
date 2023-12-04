@@ -147,7 +147,7 @@ class ScraperVtacUk:
                 continue
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'Stock europeo': '0 (5-9 días hábiles)'}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': [], 'Stock europeo': '0 (Disponible en un plazo de 5 a 9 días hábiles)'}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
