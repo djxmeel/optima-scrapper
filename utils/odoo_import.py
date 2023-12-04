@@ -52,7 +52,7 @@ class OdooImport:
                         'ita': 'data/vtac_italia/PROD/PRODUCT_PDF'}
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'invoice_policy', 'detailed_type')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories')
 
     # Invoice policy (delivery ; order)
     CURRENT_INVOICE_POLICY = 'delivery'
@@ -244,6 +244,13 @@ class OdooImport:
                     cls.assign_public_categories(product_id, public_categs)
                 elif if_update_existing:
                     product_id = product_ids[0]
+
+                    # TODO remove after new merge
+                    product['invoice_policy'] = 'delivery'
+                    product['detailed_type'] = 'product'
+
+                    cls.PRODUCT_MODEL.write(product_id, product)
+
                     cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
 
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)

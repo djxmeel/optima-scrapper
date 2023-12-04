@@ -269,8 +269,8 @@ class DataMerger:
 
             #TODO remove this after merge
             merged_product['product_brand_id'] = 'V-TAC'
-            merged_product['invoice_policy'] = 'Delivered quantities'
-            merged_product['detailed_type'] = 'Storable product'
+            merged_product['invoice_policy'] = 'delivery'
+            merged_product['detailed_type'] = 'product'
             merged_product['show_availability'] = True
             merged_product['allow_out_of_stock_order'] = True
             merged_product['available_threshold'] = 100000

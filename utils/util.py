@@ -37,7 +37,7 @@ class Util:
     # The fields kept in ODOO as custom fields
     ODOO_CUSTOM_FIELDS = ('url', 'Código de familia')
     # Default fields supported by Odoo (not custom)
-    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode', 'product_brand_id')
+    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode', 'product_brand_id', 'invoice_policy', 'detailed_type', 'show_availability', 'allow_out_of_stock_order', 'available_threshold', 'out_of_stock_message')
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
