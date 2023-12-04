@@ -2,13 +2,7 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# TODO 1. Install missing modules in Odoo 16
-# TODO 3. Set show_availabilty = True
-# TODO 4. Set out_of_stock_message = copy from Discord
-# TODO 5. Set allow_out_of_stock_order = True
-# TODO 6. Set available_threshold = 100.000
 # TODO 7. Do a separate import for product to archive
-# TODO 8. Remerge to update public categories in json files
 # TODO 9. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
 # TODO 10. Find way to include NEW products merge into weekly merge
 # TODO 10. Merge new products to apply Stock Attributes
