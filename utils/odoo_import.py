@@ -27,8 +27,6 @@ class OdooImport:
     #odoo_login = 'itprotrial@outlook.com'
     #odoo_pass = 'itprotrial'
 
-
-    #odoo = odoorpc.ODOO(odoo_host, port=odoo_port)
     odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
     print("CONNECTED TO ODOO")
 
