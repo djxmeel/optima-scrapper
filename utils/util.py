@@ -625,9 +625,10 @@ class Util:
                 name = name.replace(incorrect, replacement)
 
         # Remove "VT-XXXX"
+        name = re.sub(r'VT-\d{1,7}-N', '', name)
         name = re.sub(r'VT-\d{1,7}', '', name)
 
-        return name
+        return name.replace('  ', ' ')
 
     @classmethod
     def attachment_naming_replacements(cls, attachment_name):
