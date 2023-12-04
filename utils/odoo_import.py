@@ -135,20 +135,6 @@ class OdooImport:
         return created_attrs_values_ids
 
     @classmethod
-    def assign_invoice_policy(cls, product_id, invoice_policy):
-        try:
-            cls.PRODUCT_MODEL.write(product_id, {'invoice_policy': invoice_policy})
-        except RPCError:
-            cls.logger.warn("INVOICE POLICY WAS NOT UPDATED TO 'Delivered quantities'")
-
-    @classmethod
-    def assign_detailed_type(cls, product_id, detailed_type):
-        try:
-            cls.PRODUCT_MODEL.write(product_id, {'detailed_type': detailed_type})
-        except RPCError:
-            cls.logger.warn("DETAILED TYPE WAS NOT UPDATED TO 'Storable product'")
-
-    @classmethod
     def assign_brand(cls, product_id, product_brand_id):
         try:
             cls.PRODUCT_MODEL.write(product_id, {'product_brand_id': product_brand_id})
@@ -223,11 +209,6 @@ class OdooImport:
 
                 public_categs = product['public_categories']
 
-
-                #TODO remove this when all products have brand (after scrape)
-                if 'product_brand_id' not in product:
-                    product['product_brand_id'] = 'V-TAC'
-
                 brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
 
 
@@ -259,8 +240,6 @@ class OdooImport:
                         continue
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
-                    cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
                     cls.assign_attribute_values(product_id, product, created_attrs_ids_values, False)
                     cls.assign_public_categories(product_id, public_categs)
                 elif if_update_existing:
@@ -268,11 +247,9 @@ class OdooImport:
                     cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
 
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
-                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, True)
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_invoice_policy(product_id, cls.CURRENT_INVOICE_POLICY)
-                    cls.assign_detailed_type(product_id, cls.PRODUCT_DETAILED_TYPE)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, True)
                     cls.assign_public_categories(product_id, public_categs)
 
                     if 'product_brand_id' in product:
