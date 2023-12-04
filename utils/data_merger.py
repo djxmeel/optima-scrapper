@@ -274,7 +274,7 @@ class DataMerger:
             merged_product['show_availability'] = True
             merged_product['allow_out_of_stock_order'] = True
             merged_product['available_threshold'] = 100000
-            merged_product['out_of_stock_message'] = Util.OOS_MESSAGES_PATH["V-TAC"]
+            merged_product['out_of_stock_message'] = Util.load_json(Util.OOS_MESSAGES_PATH)['V-TAC']
 
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_product_media)

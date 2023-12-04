@@ -55,6 +55,8 @@ class ScraperVtacSpain:
         'https://v-tac.es/el%C3%A9ctrico.html',
     )
 
+    OOS_MESSAGE = Util.load_json(Util.OOS_MESSAGES_PATH)[BRAND_NAME]
+
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
@@ -85,7 +87,7 @@ class ScraperVtacSpain:
                 'show_availability': True,
                 'allow_out_of_stock_order': True,
                 'available_threshold': 100000,
-                'out_of_stock_message': Util.OOS_MESSAGES_PATH[cls.BRAND_NAME]}
+                'out_of_stock_message': cls.OOS_MESSAGE}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
