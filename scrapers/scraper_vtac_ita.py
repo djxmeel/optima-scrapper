@@ -248,7 +248,7 @@ class ScraperVtacItalia:
 
                     time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
                     articles_in_page = driver.find_elements(By.XPATH,
-                                                            '/html/body/main/div/div/div[2]/div[3]/div[2]/div/a')
+                                                            '/html/body/main/div/div/div[2]/div[2]/div[2]/div/a')
 
                     before = len(extracted)
 
