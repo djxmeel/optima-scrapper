@@ -6,9 +6,7 @@ from utils.util import Util
 # TODO 2. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 5. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
-# TODO 6. Scrape descatalogados from spain and upload to Odoo 16
 # TODO 7. Do a merge that omits media
-# TODO 8. "Descatalogado web" for products that are in descatalogados category in ES
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
