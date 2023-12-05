@@ -91,8 +91,6 @@ class ScraperVtacSpain:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        item['description_purchase'] = "DESCATALOGADO WEB" if driver.find_elements(By.XPATH, "//img[@alt='badge_category']") else ""
-
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
 
@@ -159,6 +157,11 @@ class ScraperVtacSpain:
 
         # Extracción del título
         item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'.upper()
+
+        item['description_purchase'] = "DESCATALOGADO WEB" if driver.find_elements(By.XPATH, "//img[@alt='badge_category']") else ""
+
+        if item['description_purchase']:
+            item['name'] = item['name'].replace('[VS', '[VSD')
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
