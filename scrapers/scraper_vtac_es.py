@@ -49,6 +49,12 @@ class ScraperVtacSpain:
     PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     CATEGORIES_LINKS = (
+        "https://v-tac.es/descatalogados.html?limit=500",
+        "https://v-tac.es/descatalogados.html?limit=500&start=499",
+        "https://v-tac.es/descatalogados.html?limit=500&start=998",
+        "https://v-tac.es/descatalogados.html?limit=500&start=1497",
+        "https://v-tac.es/descatalogados.html?limit=500&start=1996",
+        "https://v-tac.es/descatalogados.html?limit=500&start=2495"
         'https://v-tac.es/sistemas-solares.html',
         'https://v-tac.es/iluminaci%C3%B3n.html',
         'https://v-tac.es/smart-digital.html',
@@ -176,16 +182,6 @@ class ScraperVtacSpain:
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
         extracted = []
-        inner_categories_links = []
-        # FIXME
-        # Add the "Descatalogados" category manually since it's hidden in website
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500")
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500&start=499")
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500&start=998")
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500&start=1497")
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500&start=1996")
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500&start=2495")
-        inner_categories_links.append("https://v-tac.es/descatalogados.html?limit=500&start=2994")
 
         for cat in categories:
             try:
@@ -195,8 +191,10 @@ class ScraperVtacSpain:
                 ScraperVtacSpain.extract_all_links(driver, categories, update)
                 return
 
-            inner_categories_links.extend([cat.get_attribute("href") for cat in driver.find_elements(By.XPATH,
-                                                                                                "/html/body/div[1]/div/section[3]/div/main/div/div[2]/div[2]/div/section//h4//a")])
+            inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH, "/html/body/div[1]/div/section[3]/div/main/div/div[2]/div[2]/div/section//h4//a")]
+
+            if not inner_categories_links:
+                inner_categories_links.append(cat)
 
             for inner_cat in inner_categories_links:
                 if 'limit=' in inner_cat:
