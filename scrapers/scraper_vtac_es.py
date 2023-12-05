@@ -97,7 +97,7 @@ class ScraperVtacSpain:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        item['description_purchase'] = "DESCATALOGADO WEB" if 'descatalogados' in driver.current_url else ""
+        item['description_purchase'] = "DESCATALOGADO WEB" if driver.find_elements(By.XPATH, "//img[@alt='badge_category']") else ""
 
         # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
