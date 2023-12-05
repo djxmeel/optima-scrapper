@@ -8,6 +8,7 @@ from utils.util import Util
 # TODO 5. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 # TODO 6. Scrape descatalogados from spain and upload to Odoo 16
 # TODO 7. Do a merge that omits media
+# TODO 8. "Descatalogado web" for products that are in descatalogados category in ES
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -41,7 +42,7 @@ IF_IMPORT_PUBLIC_CATEGORIES = False
 
 IF_IMPORT_PRODUCTS = True
 IF_UPDATE_EXISTING = True
-IF_ONLY_NEW_PRODUCTS_DATA = False
+IF_ONLY_NEW_PRODUCTS_DATA = True
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
@@ -118,7 +119,7 @@ if IF_IMPORT_SUPPLIER_INFO_AND_COST:
 
 if IF_IMPORT_DESCATALOGADOS:
     OdooImport.logger.info(f'BEGINNING DESCATALOGADOS IMPORT')
-    OdooImport.import_descatalogados(SKUS_CATALOGO_Q12024_FILE_PATH)
+    OdooImport.import_descatalogados_catalogo(SKUS_CATALOGO_Q12024_FILE_PATH)
     OdooImport.logger.info(f'FINISHED DESCATALOGADOS IMPORT')
 
 if IF_IMPORT_BRANDS:
