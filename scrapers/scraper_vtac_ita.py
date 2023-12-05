@@ -84,13 +84,7 @@ class ScraperVtacItalia:
         item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
                 'website_description': '',
                 'imgs': [], 'icons': [],
-                'Stock europeo': '0 unidades (Disponible en un plazo de 5 a 9 días hábiles)',
-                'invoice_policy': 'delivery',
-                'detailed_type': 'product',
-                'show_availability': True,
-                'allow_out_of_stock_order': True,
-                'available_threshold': 100000,
-                'out_of_stock_message': cls.OOS_MESSAGE}
+                'product_brand_id': cls.BRAND_NAME}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -201,9 +195,6 @@ class ScraperVtacItalia:
 
         # Formateo del titulo
         item['name'] = f'[{internal_ref}] {item["name"]}'
-
-        # Hardcoded fields
-        item['product_brand_id'] = cls.BRAND_NAME
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 

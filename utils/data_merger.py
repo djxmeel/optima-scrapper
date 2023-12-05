@@ -190,6 +190,7 @@ class DataMerger:
     def merge_data(cls, if_update_eu_stock_attributes):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
         skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
+        oos_messages = Util.load_json(Util.OOS_MESSAGES_PATH)
 
         for sku in unique_product_skus:
             if sku in skus_to_skip['skus']:
@@ -267,16 +268,13 @@ class DataMerger:
             if 'name' in merged_product:
                 merged_product['name'] = Util.get_correctly_translated_product_name(merged_product['name'])
 
-
-
-            #TODO remove this after new scrape
-            merged_product['product_brand_id'] = 'V-TAC'
+            # ASSIGNING DEFAULT V-TAC VALUES
             merged_product['invoice_policy'] = 'delivery'
             merged_product['detailed_type'] = 'product'
             merged_product['show_availability'] = True
             merged_product['allow_out_of_stock_order'] = True
             merged_product['available_threshold'] = 100000
-            merged_product['out_of_stock_message'] = Util.load_json(Util.OOS_MESSAGES_PATH)['V-TAC']
+            merged_product['out_of_stock_message'] = oos_messages['V-TAC']
 
             if if_update_eu_stock_attributes:
                 # Update "Stock europeo" and "Entrada de nuevas unidades"
@@ -340,7 +338,6 @@ class DataMerger:
 
         eu_stock = sku_dict
 
-        # FIXME remove after new scrape
         product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
 
         # Update stock attributes

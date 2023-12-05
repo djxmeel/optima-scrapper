@@ -87,13 +87,7 @@ class ScraperVtacSpain:
                 'imgs': [], 'icons': [],
                 'website_description': '',
                 'videos': [],
-                'Stock europeo': '0 unidades (Disponible en un plazo de 5 a 9 días hábiles)',
-                'invoice_policy': 'delivery',
-                'detailed_type': 'product',
-                'show_availability': True,
-                'allow_out_of_stock_order': True,
-                'available_threshold': 100000,
-                'out_of_stock_message': cls.OOS_MESSAGE}
+                'product_brand_id': cls.BRAND_NAME}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -173,9 +167,6 @@ class ScraperVtacSpain:
         if 'Peso del artículo' in item.keys():
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
             del item['Peso del artículo']
-
-        # Hardcoded fields
-        item['product_brand_id'] = cls.BRAND_NAME
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"].encode("utf-8")}')
 
