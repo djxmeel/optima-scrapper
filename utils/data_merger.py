@@ -340,17 +340,17 @@ class DataMerger:
 
         eu_stock = sku_dict
 
+        product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+
         # Update stock attributes
         if product['default_code'] in eu_stock:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
                     product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
             except ValueError:
-                product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
                 cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
 
             if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
-                print(str(eu_stock[product['default_code']]['UNDELIVERED ORDER']))
                 product['Entrada de nuevas unidades'] = 'Próximamente'
 
                 if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(eu_stock[product['default_code']]['next delivery']):
