@@ -340,6 +340,7 @@ class DataMerger:
 
         eu_stock = sku_dict
 
+        # FIXME remove after new scrape
         product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
 
         # Update stock attributes
