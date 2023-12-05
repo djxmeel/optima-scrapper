@@ -155,19 +155,17 @@ class OdooImport:
     def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
         attr_lines = []
 
+        #TODO TEST
+        if update_mode:
+            cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id)]))
+
         for attribute_id, value_id in attributes_ids_values.items():
             # Only check if the attribute line already exists
-            #existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
-            # TODO remove
-            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id)])
+            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
             # Skip if the attribute line already exists
             if existing_lines:
-                if update_mode:
-                    # Delete existing lines with the same attribute and product
-                    cls.ATTRIBUTE_LINE_MODEL.unlink(existing_lines)
-                else:
-                    continue
+                continue
 
             # Create the attribute line
             attr_lines.append({
