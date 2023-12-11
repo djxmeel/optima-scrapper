@@ -183,7 +183,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, if_update_existing, use_priority_excel=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -240,7 +240,7 @@ class OdooImport:
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_attribute_values(product_id, product, created_attrs_ids_values, False)
                     cls.assign_public_categories(product_id, public_categs)
-                elif if_update_existing:
+                elif not skip_existing:
                     product_id = product_ids[0]
 
                     cls.PRODUCT_MODEL.write(product_id, product)

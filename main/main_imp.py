@@ -2,8 +2,7 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# TODO 1. Do a separate import for product to archive
-# TODO 2. Automatically generate excel with product not in Odoo & with qty > 0 after uploading weekly European Stock
+# TODO 2. Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 5. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 # TODO 7. Do a merge that omits media
@@ -39,8 +38,8 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
 IF_IMPORT_PRODUCTS = True
-IF_UPDATE_EXISTING = True
-IF_ONLY_NEW_PRODUCTS_DATA = True
+IF_SKIP_EXISTING = True
+IF_ONLY_NEW_PRODUCTS_DATA = False
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
@@ -50,8 +49,8 @@ IF_IMPORT_PDFS = False
 PDF_START_FROM = 0
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
-IF_IMPORT_IMGS = False
-IF_IMPORT_ICONS = False
+IF_IMPORT_IMGS = True
+IF_IMPORT_ICONS = True
 IF_ONLY_NEW_PRODUCTS_MEDIA = False
 
 IF_IMPORT_SUPPLIER_INFO_AND_COST = False
@@ -76,9 +75,9 @@ if IF_IMPORT_PUBLIC_CATEGORIES:
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
     if IF_ONLY_NEW_PRODUCTS_DATA:
-        OdooImport.import_products(NEW_TARGET_DATA_DIR_PATH, NEW_UPLOADED_DATA_DIR_PATH, IF_UPDATE_EXISTING, USE_PRIORITY_EXCEL)
+        OdooImport.import_products(NEW_TARGET_DATA_DIR_PATH, NEW_UPLOADED_DATA_DIR_PATH, IF_SKIP_EXISTING, USE_PRIORITY_EXCEL)
     else:
-        OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, IF_UPDATE_EXISTING, USE_PRIORITY_EXCEL)
+        OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, IF_SKIP_EXISTING, USE_PRIORITY_EXCEL)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:
