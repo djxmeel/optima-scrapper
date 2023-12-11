@@ -165,7 +165,7 @@ class ScraperVtacSpain:
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
-            item['volume'] = float(item['Volumen del artículo'].replace(',', '.'))
+            item['volume'] = float(item['Volumen del artículo'].replace(',', '.').replace(' ', ''))
             del item['Volumen del artículo']
         if 'Peso del artículo' in item.keys():
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
