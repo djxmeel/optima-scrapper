@@ -573,15 +573,15 @@ def hardcode_field_odoo(field, value):
 
 
 # Example usage :
-merge_excel_files(
-    'data/common/excel/public_category_sku_Q1_2024.xlsx',
-    'data/common/excel/eu_stock/SOLO_EN_ODOO15_CON_CANTIDAD.xlsx',
-    'data/common/excel/eu_stock/no_en_catalog_2024.xlsx',
-    'SKU',
-    False,
-    False,
-    "data/common/json/SKUS_TO_SKIP.json"
-)
+# merge_excel_files(
+#     'data/common/excel/public_category_sku_Q1_2024.xlsx',
+#     'data/common/excel/eu_stock/SOLO_EN_ODOO15_CON_CANTIDAD.xlsx',
+#     'data/common/excel/eu_stock/no_en_catalog_2024.xlsx',
+#     'SKU',
+#     False,
+#     False,
+#     "data/common/json/SKUS_TO_SKIP.json"
+# )
 
 
 
@@ -614,6 +614,8 @@ merge_excel_files(
 #delete_skus_in_odoo('data/common/json/SKUS_TO_SKIP.json')
 
 #set_all_prices(0, True)
+
+#upper_allproduct_names()
 
 #hardcode_field_odoo('product_brand_id', 1)
 

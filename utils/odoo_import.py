@@ -158,7 +158,6 @@ class OdooImport:
     def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
         attr_lines = []
 
-        #TODO TEST
         if update_mode:
             cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id)]))
 
