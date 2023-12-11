@@ -6,6 +6,7 @@ from urllib.error import HTTPError
 import odoorpc
 import base64
 
+import pandas as pd
 from odoorpc.error import RPCError
 
 from utils.loggers import Loggers
@@ -64,6 +65,7 @@ class OdooImport:
 
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
     PRIORITY_EXCEL_SKUS_PATH = 'data/common/excel/Productos Comprados o Vendidos VTAC.xlsx'
+    EU_STOCK_EXCEL_PATH = 'data/common/excel/eu_stock/eu_stock.xlsx'
 
     @classmethod
     def create_internal_category(cls, internal_category):
@@ -184,7 +186,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False, update_eu_stock_attributes=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -199,6 +201,12 @@ class OdooImport:
                 if use_priority_excel and product['default_code'] and product['default_code'] not in PRIORITY_SKUS:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
+
+                # Get "Stock europeo" and "Entrada de nuevas unidades" attributes from EU stock excel
+                if update_eu_stock_attributes:
+                    product = cls.update_european_stock_attributes(product)
+                    # TODO remove after testing
+                    print(f'SKU: {product["default_code"]} Stock europeo: {product["Stock europeo"]} Entrada de nuevas unidades: {product["Entrada de nuevas unidades"]}')
 
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
@@ -737,3 +745,36 @@ class OdooImport:
 
         for product in cls.PRODUCT_MODEL.browse(products_to_archive):
             product.write({'active': False})  # This archives the product in the database
+
+    @classmethod
+    def update_european_stock_attributes(cls, product):
+        # Load EU stock excel
+        eu_stock = Util.load_excel_columns_in_dictionary_list(cls.EU_STOCK_EXCEL_PATH)
+
+        sku_dict = {}
+
+        for row in eu_stock:
+            sku_dict[str(row['SKU'])] = row
+
+        eu_stock = sku_dict
+
+        product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+
+        # Update stock attributes
+        if product['default_code'] in eu_stock:
+            try:
+                if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
+                    product[
+                        'Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+            except ValueError:
+                cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
+
+            if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
+                product['Entrada de nuevas unidades'] = 'Próximamente'
+
+                if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(
+                        eu_stock[product['default_code']]['next delivery']):
+                    date_unformatted = str(eu_stock[product["default_code"]]["next delivery"])[:10]
+                    product['Entrada de nuevas unidades'] = '/'.join(date_unformatted.split('-')[::-1])
+
+        return product

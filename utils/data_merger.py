@@ -42,8 +42,6 @@ class DataMerger:
     # Path to json with name -> category mapping
     PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
 
-    EU_STOCK_EXCEL_PATH = 'data/common/excel/eu_stock/eu_stock.xlsx'
-
     COUNTRY_SCRAPERS = {
         'es': ScraperVtacSpain,
         'uk': ScraperVtacUk,
@@ -188,7 +186,7 @@ class DataMerger:
         return product
 
     @classmethod
-    def merge_data(cls, if_update_eu_stock_attributes):
+    def merge_data(cls):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
         skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
         oos_messages = Util.load_json(Util.OOS_MESSAGES_PATH)
@@ -277,14 +275,8 @@ class DataMerger:
             merged_product['available_threshold'] = 100000
             merged_product['out_of_stock_message'] = oos_messages['V-TAC']
 
-            if if_update_eu_stock_attributes:
-                # Update "Stock europeo" and "Entrada de nuevas unidades"
-                merged_product = cls.update_european_stock_attributes(merged_product)
-
             cls.merged_data.append(merged_product)
             cls.merged_media.append(merged_product_media)
-
-
 
         return cls.merged_data, cls.merged_media
 
@@ -326,34 +318,3 @@ class DataMerger:
                 print("REPLACED ICON WITH TRANSLATED VERSION")
 
         return icons
-
-    @classmethod
-    def update_european_stock_attributes(cls, product):
-        # Load EU stock excel
-        eu_stock = Util.load_excel_columns_in_dictionary_list(cls.EU_STOCK_EXCEL_PATH)
-
-        sku_dict = {}
-
-        for row in eu_stock:
-            sku_dict[str(row['SKU'])] = row
-
-        eu_stock = sku_dict
-
-        product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
-
-        # Update stock attributes
-        if product['default_code'] in eu_stock:
-            try:
-                if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                    product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
-            except ValueError:
-                cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
-
-            if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
-                product['Entrada de nuevas unidades'] = 'Próximamente'
-
-                if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(eu_stock[product['default_code']]['next delivery']):
-                    date_unformatted = str(eu_stock[product["default_code"]]["next delivery"])[:10]
-                    product['Entrada de nuevas unidades'] = '/'.join(date_unformatted.split('-')[::-1])
-
-        return product
