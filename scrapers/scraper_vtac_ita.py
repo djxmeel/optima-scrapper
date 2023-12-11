@@ -170,7 +170,7 @@ class ScraperVtacItalia:
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',
                                                       driver.find_element(By.XPATH,
-                                                                          '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text).upper()
+                                                                          '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
 
         # Extracción de iconos
         try:
