@@ -1,4 +1,5 @@
 import os.path
+import random
 import time
 from urllib.error import HTTPError
 
@@ -243,8 +244,14 @@ class OdooImport:
                 elif not skip_existing:
                     product_id = product_ids[0]
 
-                    cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
-                    cls.PRODUCT_MODEL.write(product_id, product)
+                    try:
+                        cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
+                        cls.PRODUCT_MODEL.write(product_id, product)
+                    except RPCError:
+                        randint = random.randrange(99)
+                        product['barcode'] = f"{product['barcode']}-{randint}"
+                        cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url} with different barcode {product["barcode"]}')
+                        cls.PRODUCT_MODEL.write(product_id, product)
 
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
