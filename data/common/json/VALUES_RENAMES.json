@@ -87,6 +87,9 @@
   "Ampolla exterior": [
     ["Candle", "Vela"]
   ],
+  "No flicker": [
+    ["sin destellos", "Sí"]
+  ],
   "Factor del mantenimiento de los lúmenes al final de la vida nominal": [
     ["V-TAC Floodlights", "V-TAC Focos"]
   ],
@@ -187,5 +190,12 @@
       ["Sensor de luz diurna, Auto ON/OFF", "Sensor de luz diurna"],
       ["Daylight sensor: Day, 2lux, 10lux,50lux optional", "Sensor de luz diurna"],
       ["WiFi Door", "WiFi Puerta"]
+    ],
+    "Autonomía": [
+      [" ore", "h."],
+      [" horas", "h."],
+      [" Nights", " noches"],
+      ["(depending on use)", "(dependiendo del uso)"],
+      [" h ", "h."]
     ]
 }

@@ -67,6 +67,7 @@
 "El ahorro de energía": "Ahorro de energía",
 "FP": "Factor de Potencia",
 "Factor de potencia (FP)": "Factor de Potencia",
+"Factor de potencia (pf)": "Factor de Potencia",
 "Cri": "CRI",
 "IRC": "CRI",
 "Temperatura de color (cti)": "Temperatura del color",
@@ -136,6 +137,8 @@
 "Vatios en espera de emergencia": "Vatios en espera",
 "Versión": "Color",
 "Vision nocturna": "Alcance en visión nocturna",
-  "Corriente de descarga de la batería": "Corriente de descarga",
-  "Corriente de carga de la batería": "Corriente de carga"
+"Corriente de descarga de la batería": "Corriente de descarga",
+"Corriente de carga de la batería": "Corriente de carga",
+"Tiempo de trabajo": "Autonomía",
+"Autonomia": "Autonomía"
 }

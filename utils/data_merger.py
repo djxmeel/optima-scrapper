@@ -78,6 +78,7 @@ class DataMerger:
         'Etiqueta energética ue',
         'Embalaje',
         'Piezas por palet',
+        'Cantidad por palet',
         'Unidad de medida',
         'SAMSUNG'
     ]
