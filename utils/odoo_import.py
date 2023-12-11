@@ -205,8 +205,11 @@ class OdooImport:
                 # Get "Stock europeo" and "Entrada de nuevas unidades" attributes from EU stock excel
                 if update_eu_stock_attributes:
                     product = cls.update_european_stock_attributes(product)
-                    # TODO remove after testing
-                    print(f'SKU: {product["default_code"]} Stock europeo: {product["Stock europeo"]} Entrada de nuevas unidades: {product["Entrada de nuevas unidades"]}')
+
+                    if 'Entrada de nuevas unidades' in product:
+                        cls.logger.info(f'SKU: {product["default_code"]} Stock europeo: {product["Stock europeo"]} Entrada de nuevas unidades: {product["Entrada de nuevas unidades"]}')
+                    else:
+                        cls.logger.info(f'SKU: {product["default_code"]} Stock europeo: {product["Stock europeo"]}')
 
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
@@ -764,10 +767,9 @@ class OdooImport:
         if product['default_code'] in eu_stock:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                    product[
-                        'Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+                    product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
             except ValueError:
-                cls.logger.warn(f"VALUE ERROR WHEN UPDATING 'Stock europeo' FOR {product['default_code']}")
+                pass
 
             if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
                 product['Entrada de nuevas unidades'] = 'Próximamente'
