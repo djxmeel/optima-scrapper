@@ -243,9 +243,8 @@ class OdooImport:
                 elif not skip_existing:
                     product_id = product_ids[0]
 
-                    cls.PRODUCT_MODEL.write(product_id, product)
-
                     cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
+                    cls.PRODUCT_MODEL.write(product_id, product)
 
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
