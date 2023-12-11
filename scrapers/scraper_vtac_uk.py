@@ -157,7 +157,7 @@ class ScraperVtacUk:
                                                                           '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text).upper()
 
         # Formateo del titulo
-        item['name'] = f'[{internal_ref}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'.upper()
 
         # Extracción de imágenes
         try:

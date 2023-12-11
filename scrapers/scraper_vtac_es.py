@@ -161,7 +161,7 @@ class ScraperVtacSpain:
         item['description_purchase'] = "DESCATALOGADO WEB" if driver.find_elements(By.XPATH, "//img[@alt='badge_category']") else ""
 
         if item['description_purchase']:
-            item['name'] = item['name'].replace('[VS', '[VSD')
+            item['name'] = item['name'].replace('[VS', '[VSD').upper()
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():

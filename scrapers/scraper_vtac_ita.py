@@ -194,7 +194,7 @@ class ScraperVtacItalia:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Formateo del titulo
-        item['name'] = f'[{internal_ref}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'.upper()
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
