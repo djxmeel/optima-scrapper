@@ -38,12 +38,6 @@ class ScraperEfectoLed:
     PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/PRODUCTS_LINKS_EFECTOLED.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/efectoled/LINKS/NEW_PRODUCTS_LINKS_EFECTOLED.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/efectoled/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/efectoled/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
     CATEGORIES_LINKS = (
         'https://www.efectoled.com/es/6-comprar-bombillas-lamparas-led',
         'https://www.efectoled.com/es/7-comprar-tubos-pantallas-y-lineal-led',

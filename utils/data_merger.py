@@ -20,12 +20,6 @@ class DataMerger:
     NEW_DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/NEW/PRODUCT_INFO/MERGED_INFO_{}.json'
     NEW_MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/NEW/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
 
-    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
-    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
     MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
     MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA'
     NEW_MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_INFO'
@@ -139,7 +133,7 @@ class DataMerger:
         return data
 
     @classmethod
-    def load_all(cls, if_only_new):
+    def load_all(cls, if_only_new, if_omit_media):
         for country in cls.COUNTRY_SCRAPERS.keys():
             if cls.country_data.get(country):
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
@@ -147,12 +141,13 @@ class DataMerger:
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
             cls.country_data[country] = cls.load_data_for_country(country, False, if_only_new)
 
-        for country in cls.COUNTRY_SCRAPERS.keys():
-            if cls.country_media.get(country):
-                if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
-                    continue
-                cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_media[country] = cls.load_data_for_country(country, True, if_only_new)
+        if not if_omit_media:
+            for country in cls.COUNTRY_SCRAPERS.keys():
+                if cls.country_media.get(country):
+                    if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
+                        continue
+                    cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
+                cls.country_media[country] = cls.load_data_for_country(country, True, if_only_new)
         return cls
 
     @classmethod
@@ -187,7 +182,7 @@ class DataMerger:
         return product
 
     @classmethod
-    def merge_data(cls):
+    def merge_data(cls, if_omit_media):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
         skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
         oos_messages = Util.load_json(Util.OOS_MESSAGES_PATH)
@@ -200,10 +195,12 @@ class DataMerger:
             product_data = {'es': cls.get_product_data_from_country_sku(sku, 'es'),
                             'uk': cls.get_product_data_from_country_sku(sku, 'uk'),
                             'ita': cls.get_product_data_from_country_sku(sku, 'ita')}
-
-            product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
-                                'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
-                                'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
+            if not if_omit_media:
+                product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
+                                    'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
+                                    'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
+            else:
+                product_media = None
 
             # Add empty spaces to sku to make it 8 characters long for better readability
             sku_spaced = sku + ' ' * (8 - len(sku))
@@ -238,7 +235,7 @@ class DataMerger:
             # Then, merge MEDIA fields in priority order
             for field in cls.MEDIA_FIELDS_PRIORITIES.keys():
                 for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
-                    if product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
+                    if product_media and product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
                         if type(product_media[country][field]) is list:
                             merged_product_media[field] = copy.deepcopy(product_media[country][field])
                             cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
@@ -277,7 +274,10 @@ class DataMerger:
             merged_product['out_of_stock_message'] = oos_messages['V-TAC']
 
             cls.merged_data.append(merged_product)
-            cls.merged_media.append(merged_product_media)
+
+            # Only add media if product has more entries than just default_code
+            if not if_omit_media:
+                cls.merged_media.append(merged_product_media)
 
         return cls.merged_data, cls.merged_media
 
@@ -291,19 +291,21 @@ class DataMerger:
             media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
 
         def async_task(data_type, path):
-            for index in range(0, len(data_type), cls.JSON_DUMP_FREQUENCY):
-                counter = index + cls.JSON_DUMP_FREQUENCY
+            if data_type:
+                for index in range(0, len(data_type), cls.JSON_DUMP_FREQUENCY):
+                    counter = index + cls.JSON_DUMP_FREQUENCY
 
-                if index + cls.JSON_DUMP_FREQUENCY > len(data_type):
-                    counter = len(data_type)
+                    if index + cls.JSON_DUMP_FREQUENCY > len(data_type):
+                        counter = len(data_type)
 
-                Util.dump_to_json(data_type[index:counter], path.format(counter))
+                    Util.dump_to_json(data_type[index:counter], path.format(counter))
 
         t1 = threading.Thread(target=async_task, args=(data, data_path_temp), name='t1')
-        t2 = threading.Thread(target=async_task, args=(media, media_path_temp), name='t2')
-
         t1.start()
+
+        t2 = threading.Thread(target=async_task, args=(media, media_path_temp), name='t2')
         t2.start()
+
         t1.join()
         t2.join()
 
