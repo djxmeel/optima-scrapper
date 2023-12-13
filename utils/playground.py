@@ -572,7 +572,22 @@ def hardcode_field_odoo(field, value):
         print(f"UPDATED SKU: {product.default_code} {field}: {value}")
 
 
+def find_duplicate_in_excel(excel_path, primary_key, output_path):
+    # Read the Excel file
+    df = pd.read_excel(excel_path)
+
+    # Find duplicate SKUs. Keep='False' marks all duplicates as True
+    duplicates = df[df.duplicated(primary_key, keep=False)]
+
+    # Save the duplicates to a new Excel file
+    duplicates.to_excel(output_path, index=False)
+
+    return output_path
+
+
 # Example usage :
+find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
+
 # merge_excel_files(
 #     'data/common/excel/public_category_sku_Q1_2024.xlsx',
 #     'data/common/excel/eu_stock/SOLO_EN_ODOO15_CON_CANTIDAD.xlsx',
