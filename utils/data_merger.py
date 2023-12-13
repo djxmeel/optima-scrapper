@@ -265,6 +265,9 @@ class DataMerger:
             if 'name' in merged_product:
                 merged_product['name'] = Util.get_correctly_translated_product_name(merged_product['name'])
 
+            if 'volume' in merged_product and merged_product['volume'] and type(merged_product['volume']) is str:
+                merged_product['volume'] = float(merged_product['volume'].replace(',', '.'))
+
             # ASSIGNING DEFAULT V-TAC VALUES
             merged_product['invoice_policy'] = 'delivery'
             merged_product['detailed_type'] = 'product'

@@ -256,6 +256,12 @@ class OdooImport:
 
                     try:
                         cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
+
+                        # FIXME remove on next merge
+                        if 'volume' in product and product['volume']:
+                            if type(product['volume']) is str:
+                                product['volume'] = float(product['volume'].replace(',', '.'))
+
                         cls.PRODUCT_MODEL.write(product_id, product)
                     except RPCError:
                         randint = random.randrange(99)
