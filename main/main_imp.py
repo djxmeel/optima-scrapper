@@ -6,7 +6,6 @@ from utils.util import Util
 # TODO 2. Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 4. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
-# TODO 5. Do a merge that omits media
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
