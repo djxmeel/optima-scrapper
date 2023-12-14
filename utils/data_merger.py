@@ -2,8 +2,6 @@ import json
 import copy
 import threading
 
-import pandas as pd
-
 from utils.util import Util
 from scrapers.scraper_vtac_es import ScraperVtacSpain
 from scrapers.scraper_vtac_ita import ScraperVtacItalia
@@ -185,7 +183,6 @@ class DataMerger:
     def merge_data(cls, if_omit_media):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
         skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
-        oos_messages = Util.load_json(Util.OOS_MESSAGES_PATH)
 
         for sku in unique_product_skus:
             if sku in skus_to_skip['skus']:
@@ -274,7 +271,6 @@ class DataMerger:
             merged_product['show_availability'] = True
             merged_product['allow_out_of_stock_order'] = True
             merged_product['available_threshold'] = 100000
-            merged_product['out_of_stock_message'] = oos_messages['V-TAC']
 
             cls.merged_data.append(merged_product)
 
