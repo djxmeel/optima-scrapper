@@ -808,18 +808,18 @@ class OdooImport:
     @classmethod
     def update_availability_related_fields(cls, product, product_dict):
         stock_europeo = product_dict['Stock europeo'].split(" ")[0]
-        allow_out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
+        out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
 
         website_published = True
         allow_out_of_stock_order = True
-        allow_out_of_stock_msg = allow_out_of_stock_messages[3]
+        out_of_stock_msg = out_of_stock_messages[3]
 
         if stock_europeo == '0':
             if 'Entrada de nuevas unidades' in product_dict:
                 if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
-                    allow_out_of_stock_msg = allow_out_of_stock_messages[2]
+                    out_of_stock_msg = out_of_stock_messages[2]
                 else:
-                    allow_out_of_stock_msg = allow_out_of_stock_messages[1]
+                    out_of_stock_msg = out_of_stock_messages[1]
 
             if product.qty_available == 0:
                 allow_out_of_stock_order = False
@@ -827,8 +827,8 @@ class OdooImport:
                 if '[VSD' in product.name:
                     website_published = False
         else:
-            allow_out_of_stock_msg = allow_out_of_stock_messages[0]
+            out_of_stock_msg = out_of_stock_messages[0]
 
         cls.PRODUCT_MODEL.write(product.id, {'website_published': website_published,
                                               'allow_out_of_stock_order': allow_out_of_stock_order,
-                                              'allow_out_of_stock_msg': allow_out_of_stock_msg})
+                                              'out_of_stock_message': out_of_stock_msg})
