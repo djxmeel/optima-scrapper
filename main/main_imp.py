@@ -2,7 +2,6 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# TODO 1. Do an import that only updates EU Stock attributes
 # TODO 2. Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 4. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
