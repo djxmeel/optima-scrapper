@@ -44,8 +44,6 @@ class Util:
     PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/PRODUCT_NAME_RENAMES.json'
     ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/ATTACHMENT_NAME_RENAMES.json'
 
-    OOS_MESSAGES_PATH = 'data/common/json/BRAND_OUT_OF_STOCK_MESSAGE.json'
-
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
         """
