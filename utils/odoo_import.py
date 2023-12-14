@@ -185,7 +185,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False, update_eu_stock_attributes=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -200,15 +200,6 @@ class OdooImport:
                 if use_priority_excel and product['default_code'] and product['default_code'] not in PRIORITY_SKUS:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
-
-                # Get "Stock europeo" and "Entrada de nuevas unidades" attributes from EU stock excel
-                if update_eu_stock_attributes:
-                    product = cls.update_european_stock_attributes(product)
-
-                    if 'Entrada de nuevas unidades' in product:
-                        cls.logger.info(f'SKU: {product["default_code"]} Stock europeo: {product["Stock europeo"]} Entrada de nuevas unidades: {product["Entrada de nuevas unidades"]}')
-                    else:
-                        cls.logger.info(f'SKU: {product["default_code"]} Stock europeo: {product["Stock europeo"]}')
 
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
@@ -755,10 +746,7 @@ class OdooImport:
             product.write({'active': False})  # This archives the product in the database
 
     @classmethod
-    def update_european_stock_attributes(cls, product):
-        # Load EU stock excel
-        eu_stock = Util.load_excel_columns_in_dictionary_list(cls.EU_STOCK_EXCEL_PATH)
-
+    def update_product_availability(cls, product, eu_stock):
         sku_dict = {}
 
         for row in eu_stock:
@@ -772,7 +760,7 @@ class OdooImport:
         if product['default_code'] in eu_stock:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                    product['Stock europeo'] = f"{eu_stock[product['default_code']]['AVAILABLE']} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+                    product['Stock europeo'] = f"{int(eu_stock[product['default_code']]['AVAILABLE'])} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
             except ValueError:
                 pass
 
@@ -785,3 +773,62 @@ class OdooImport:
                     product['Entrada de nuevas unidades'] = '/'.join(date_unformatted.split('-')[::-1])
 
         return product
+
+    @classmethod
+    def clear_availability_attributes(cls, product_id, eu_stock_attr_id, entradas_attr_id):
+        cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', eu_stock_attr_id), ('product_tmpl_id', '=', product_id)]) +
+                                        cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
+
+    # TODO TEST
+    @classmethod
+    def import_availability(cls, eu_stock_excel_path):
+        products = cls.browse_all_products_in_batches()
+        eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
+        eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
+        entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
+
+        for product in products:
+            cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
+
+            product_dict = {'default_code': product.default_code}
+
+            product_dict = cls.update_product_availability(product_dict, eu_stock)
+
+            if 'Entrada de nuevas unidades' in product_dict:
+                attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo'], 'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades']})
+            else:
+                attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo']})
+
+            cls.assign_attribute_values(product.id, product, attr_ids_values, False)
+
+            cls.update_availability_related_fields(product, product_dict)
+
+            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY")
+
+    @classmethod
+    def update_availability_related_fields(cls, product, product_dict):
+        stock_europeo = product_dict['Stock europeo'].split(" ")[0]
+        allow_out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
+
+        website_published = True
+        allow_out_of_stock_order = True
+        allow_out_of_stock_msg = allow_out_of_stock_messages[3]
+
+        if stock_europeo == '0':
+            if 'Entrada de nuevas unidades' in product_dict:
+                if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
+                    allow_out_of_stock_msg = allow_out_of_stock_messages[2]
+                else:
+                    allow_out_of_stock_msg = allow_out_of_stock_messages[1]
+
+            if product.qty_available == 0:
+                allow_out_of_stock_order = False
+
+                if '[VSD' in product.name:
+                    website_published = False
+        else:
+            allow_out_of_stock_msg = allow_out_of_stock_messages[0]
+
+        cls.PRODUCT_MODEL.write(product.id, {'website_published': website_published,
+                                              'allow_out_of_stock_order': allow_out_of_stock_order,
+                                              'allow_out_of_stock_msg': allow_out_of_stock_msg})
