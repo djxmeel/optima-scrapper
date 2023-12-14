@@ -55,8 +55,6 @@ class ScraperVtacSpain:
         'https://v-tac.es/el%C3%A9ctrico.html',
     )
 
-    OOS_MESSAGE = Util.load_json(Util.OOS_MESSAGES_PATH)[BRAND_NAME]
-
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()

@@ -48,8 +48,6 @@ class ScraperVtacItalia:
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
     )
 
-    OOS_MESSAGE = Util.load_json(Util.OOS_MESSAGES_PATH)[BRAND_NAME]
-
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()

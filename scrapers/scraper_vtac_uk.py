@@ -55,8 +55,6 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/top-products.html'
     ]
 
-    OOS_MESSAGE = Util.load_json(Util.OOS_MESSAGES_PATH)[BRAND_NAME]
-
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
