@@ -585,8 +585,41 @@ def find_duplicate_in_excel(excel_path, primary_key, output_path):
     return output_path
 
 
-# Example usage :
-find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
+def get_price_variations_and_new_products_excel(old_pricelist, new_pricelist, output_file):
+    # Read the Excel files
+    df1 = pd.read_excel(old_pricelist)
+    df2 = pd.read_excel(new_pricelist)
+
+    # Merge the dataframes on 'SKU' with a left join
+    merged_df = pd.merge(df1, df2, on='SKU', how='right', suffixes=('_file1', '_file2'), indicator=True)
+
+    # Filter to keep rows with new SKUs and rows with different 'price' or 'promotions'
+    filtered_df = merged_df[
+        (merged_df['_merge'] == 'right_only') |
+        ((merged_df['price_file1'] != merged_df['price_file2']) & pd.notna(merged_df['price_file2'])) |
+        ((merged_df['promotions_file1'] != merged_df['promotions_file2']) & pd.notna(merged_df['promotions_file2']))
+        ]
+
+    # Select columns from the second file only (excluding the merge indicator)
+    relevant_columns = [col for col in merged_df.columns if '_file2' in col or col == 'SKU']
+    final_df = filtered_df[relevant_columns]
+
+    # Rename columns to remove suffix
+    final_df.columns = final_df.columns.str.replace('_file2', '')
+
+    # Write the result to a new Excel file
+    final_df.to_excel(output_file, index=False)
+
+
+# Example usage
+get_price_variations_and_new_products_excel(
+    'data/common/excel/vtac_supplier_pricelists/filtered/01.Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023_ANTIGUO.xlsx',
+    'data/common/excel/vtac_supplier_pricelists/filtered/02.Pricelist_V-TAC_Europe_Ltd_promotions_November_2023_NUEVO.xlsx',
+    'data/common/excel/vtac_supplier_pricelists/filtered/output_file.xlsx')
+
+
+
+#find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
 # merge_excel_files(
 #     'data/common/excel/public_category_sku_Q1_2024.xlsx',
@@ -597,8 +630,6 @@ find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data
 #     False,
 #     "data/common/json/SKUS_TO_SKIP.json"
 # )
-
-
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
