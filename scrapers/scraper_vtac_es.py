@@ -103,16 +103,6 @@ class ScraperVtacSpain:
         else:
             item['default_code'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        # Extracción de las dimensiones gráficas
-        try:
-            graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
-            item['imgs'].append({
-                'src': graph_dimensions_src,
-                'img64': Util.src_to_base64(graph_dimensions_src)
-            })
-        except NoSuchElementException:
-            pass
-
         # Extracción de imágenes
         try:
             # Find the image elements and extract their data
@@ -123,6 +113,16 @@ class ScraperVtacSpain:
                 item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
+
+        # Extracción de las dimensiones gráficas
+        try:
+            graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
+            item['imgs'].append({
+                'src': graph_dimensions_src,
+                'img64': Util.src_to_base64(graph_dimensions_src)
+            })
+        except NoSuchElementException:
+            pass
 
         # Extracción de video
         try:
