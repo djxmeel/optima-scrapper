@@ -168,7 +168,7 @@ class ScraperVtacSpain:
         return item
 
     @classmethod
-    def extract_all_links(cls, driver, categories, update=False):
+    def extract_all_links(cls, driver, categories, update):
         extracted = []
 
         for cat in categories:
@@ -213,6 +213,7 @@ class ScraperVtacSpain:
                 with open(links_path, 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
+                    cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
                     return extracted, new_links
 
         return extracted, None

@@ -24,9 +24,9 @@ IF_EXTRACT_TO_TEST = False
 IF_DL_ITEM_PDF = False
 
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 
-chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES)
+chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF)
 scraper = country_scrapers[chosen_country]
 scraper.logger = Loggers.setup_vtac_logger(chosen_country)
 

@@ -309,7 +309,7 @@ def upper_allproduct_names():
     for product in products:
         name = product.name.upper()
         product_model.write(product.id, {'name': name})
-        print(f"UPDATED OLD: {product.name}\n NEW: {name}")
+        print(f"UPDATED OLD: {product.name}\n NEW: {name}\n")
 
 
 def delete_attachments(field, condition, value):
@@ -334,7 +334,7 @@ def correct_allproduct_names():
 
         product_model.write(product.id, {'name': name})
         if name != product.name:
-            print(f"UPDATED OLD: {product.name}\n NEW: {name}")
+            print(f"UPDATED OLD: {product.name}\n NEW: {name}\n")
 
 
 def decode_and_save_b64_image(b64_string, output_folder, image_name):
@@ -618,7 +618,8 @@ get_price_variations_and_new_products_excel(
     'data/common/excel/vtac_supplier_pricelists/filtered/output_file.xlsx')
 
 
-
+# Example usage :
+#find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
 # merge_excel_files(

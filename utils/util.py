@@ -430,7 +430,7 @@ class Util:
             " \\____/|_|      |_|  |_____|_|  |_/_/    \\_\\ |_____/ \\_____|_|  \\_/_/    \\_|_|    |_|    |______|_|  \\_\\\n")
 
     @staticmethod
-    def get_chosen_country_from_menu(country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
+    def get_chosen_country_from_menu(country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf):
         Util.print_title()
         # Prompt user to choose country
         while True:
@@ -439,8 +439,7 @@ class Util:
                   f"Extraer NOVEDADES: {if_update}\n"
                   f"\nScrapear información productos: {if_extract_item_info}\n"
                   f"Sólamente NOVEDADES: {if_only_new_items}\n"
-                  f"\nScrapear descargables productos: {if_dl_item_pdf}\n"
-                  f"\nExtraer campos: {if_extract_distinct_items_fields}\n")
+                  f"\nScrapear descargables productos: {if_dl_item_pdf}\n")
             chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) : ').strip().lower()
             if chosen_country in country_scrapers:
                 if input(
@@ -554,6 +553,7 @@ class Util:
 
         # Remove "VT-XXXX"
         name = re.sub(r'VT-\d{1,7}-N', '', name)
+        name = re.sub(r'VT-\d{1,7}-\d{1,7}', '', name)
         name = re.sub(r'VT-\d{1,7}', '', name)
 
         return name.replace('  ', ' ')
