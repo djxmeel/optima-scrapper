@@ -709,7 +709,6 @@ class OdooImport:
 
         for product in products:
             if str(product.default_code) not in skus:
-                # TODO TEST
                 cls.PRODUCT_MODEL.write(product.id, {'description_purchase': f'DESCATALOGADO - {product.description_purchase}', 'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD')})
                 cls.logger.info(f"{product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
             else:
@@ -781,7 +780,7 @@ class OdooImport:
 
     # TODO TEST
     @classmethod
-    def import_availability(cls, eu_stock_excel_path):
+    def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel):
         products = cls.browse_all_products_in_batches()
         eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]

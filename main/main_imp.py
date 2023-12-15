@@ -2,7 +2,6 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# TODO 2. Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 4. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 
@@ -41,12 +40,14 @@ IF_SKIP_EXISTING = False
 IF_ONLY_NEW_PRODUCTS_DATA = False
 USE_PRIORITY_EXCEL = False
 
-IF_IMPORT_SUPPLIER_INFO_AND_COST = True
-IF_UPDATE_MODE = True
+IF_IMPORT_SUPPLIER_INFO_AND_COST = False
+IF_UPDATE_MODE = False
 
-IF_IMPORT_DESCATALOGADOS_CATALOGO = True
+IF_IMPORT_DESCATALOGADOS_CATALOGO = False
 
+# TODO Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
 IF_IMPORT_AVAILABILITY = False
+IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 
 IF_IMPORT_ACC = False
 IF_ONLY_NEW_PRODUCTS_ACC = False
