@@ -311,7 +311,7 @@ class Util:
             Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
+    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new=False, start_from=0):
         """
         Begins item info extraction.
 
@@ -364,12 +364,16 @@ class Util:
                     Util.dump_to_json(products_media_only, media_filename)
 
                     products_data.clear()
-        except Exception as e:
+
+            if if_only_new:
+                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_INFO_PATH, scraper.NEW_PRODUCTS_INFO_PATH, Util.PRODUCT_INFO_FILENAME_TEMPLATE, exclude=Util.MEDIA_FIELDS)
+                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_MEDIA_PATH, scraper.NEW_PRODUCTS_MEDIA_PATH, Util.PRODUCT_MEDIA_FILENAME_TEMPLATE)
+        except (TimeoutError, TimeoutException) as e:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
             logger.error(e.with_traceback(None))
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
+            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
     # Replace <use> tags with the referenced element for cairosvg to work
@@ -567,3 +571,39 @@ class Util:
                 attachment_name = attachment_name.replace(incorrect, replacement)
 
         return attachment_name
+
+    @classmethod
+    def append_new_scrape_to_old_scrape(cls, product_data_path, new_product_data_path, file_template, exclude=None):
+        all_products_data_filenames = Util.get_all_files_in_directory(product_data_path)
+
+        if all_products_data_filenames:
+            last_products_data_file = all_products_data_filenames[-1]
+            new_products_data = Util.load_json(last_products_data_file) + Util.load_data_in_dir(new_product_data_path)
+            old_product_count = (len(all_products_data_filenames) - 1) * Util.JSON_DUMP_FREQUENCY
+            os.remove(last_products_data_file)
+        else:
+            new_products_data = Util.load_data_in_dir(new_product_data_path)
+            old_product_count = 0
+
+        counter = 0
+
+        print(f'Appending {len(new_products_data)} new products to old scrape...')
+
+        while True:
+            if len(new_products_data) > Util.JSON_DUMP_FREQUENCY:
+                counter += Util.JSON_DUMP_FREQUENCY
+                data_filename = f'{product_data_path}/{file_template.format(old_product_count + counter)}'
+                Util.dump_to_json(new_products_data[:Util.JSON_DUMP_FREQUENCY], data_filename, exclude=exclude)
+                new_products_data = new_products_data[Util.JSON_DUMP_FREQUENCY:]
+            else:
+                data_filename = f'{product_data_path}/{file_template.format(old_product_count + counter + len(new_products_data))}'
+                Util.dump_to_json(new_products_data, data_filename, exclude=exclude)
+                break
+
+        # Remove new products files
+        for file_name in os.listdir(new_product_data_path):
+            # construct full file path
+            file = new_product_data_path +'/'+ file_name
+            if os.path.isfile(file):
+                print('Deleting file:', file)
+                os.remove(file)
