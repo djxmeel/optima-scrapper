@@ -11,8 +11,7 @@ from utils.util import Util
 # 5 is for removing all linked records (similar to 3, but for all).
 # 6 is for setting a new set of records.
 
-# TODO 3. Find way to include NEW products merge into weekly merge
-# TODO 4. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
+# TODO 1. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
