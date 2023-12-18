@@ -9,6 +9,8 @@ import pandas as pd
 
 import odoorpc
 from odoorpc.error import RPCError
+from openpyxl.reader.excel import load_workbook
+from openpyxl.styles import PatternFill
 from selenium import webdriver
 
 from utils.data_merger import DataMerger
@@ -585,13 +587,13 @@ def find_duplicate_in_excel(excel_path, primary_key, output_path):
     return output_path
 
 
-def get_price_variations_and_new_products_excel(old_pricelist, new_pricelist, output_file):
+def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pricelist, output_file):
     # Read the Excel files
     df1 = pd.read_excel(old_pricelist)
     df2 = pd.read_excel(new_pricelist)
 
     # Merge the dataframes on 'SKU' with a left join
-    merged_df = pd.merge(df1, df2, on='SKU', how='right', suffixes=('_file1', '_file2'), indicator=True)
+    merged_df = pd.merge(df1, df2, on=primary_k, how='right', suffixes=('_file1', '_file2'), indicator=True)
 
     # Filter to keep rows with new SKUs and rows with different 'price' or 'promotions'
     filtered_df = merged_df[
@@ -601,21 +603,36 @@ def get_price_variations_and_new_products_excel(old_pricelist, new_pricelist, ou
         ]
 
     # Select columns from the second file only (excluding the merge indicator)
-    relevant_columns = [col for col in merged_df.columns if '_file2' in col or col == 'SKU']
-    final_df = filtered_df[relevant_columns]
+    relevant_columns = [col for col in merged_df.columns if '_file2' in col or col == 'SKU' or col == '_merge']
+    filtered_df = filtered_df[relevant_columns]
 
     # Rename columns to remove suffix
-    final_df.columns = final_df.columns.str.replace('_file2', '')
+    filtered_df.columns = filtered_df.columns.str.replace('_file2', '')
 
     # Write the result to a new Excel file
-    final_df.to_excel(output_file, index=False)
+    filtered_df.to_excel(output_file, index=False)
 
+    # Open the Excel file for formatting
+    workbook = load_workbook(output_file)
+    worksheet = workbook.active
+
+    red_fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
+
+    # Apply conditional formatting
+    for row in range(2, worksheet.max_row + 1):
+        if worksheet[f'I{row}'].value == 'both':
+            worksheet[f'I{row}'].fill = red_fill
+            worksheet[f'I{row}'] = 'CAMBIO DE PRECIO O PROMOCIONES'
+
+    # Save the workbook
+    workbook.save(output_file)
 
 # Example usage
 get_price_variations_and_new_products_excel(
-    'data/common/excel/vtac_supplier_pricelists/filtered/01.Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023_ANTIGUO.xlsx',
-    'data/common/excel/vtac_supplier_pricelists/filtered/02.Pricelist_V-TAC_Europe_Ltd_promotions_November_2023_NUEVO.xlsx',
-    'data/common/excel/vtac_supplier_pricelists/filtered/output_file.xlsx')
+    'SKU',
+    'data/common/excel/vtac_supplier_pricelists/stacked/01.Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023_ANTIGUO.xlsx',
+    'data/common/excel/vtac_supplier_pricelists/stacked/02.Pricelist_V-TAC_Europe_Ltd_promotions_November_2023_NUEVO.xlsx',
+    'data/common/excel/vtac_supplier_pricelists/stacked/output_file2.xlsx')
 
 
 # Example usage :
