@@ -366,7 +366,7 @@ class Util:
                     products_data.clear()
         except Exception as e:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
-            logger.error(e.with_traceback())
+            logger.error(e.with_traceback(None))
             time.sleep(2)
             products_data.clear()
             Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,

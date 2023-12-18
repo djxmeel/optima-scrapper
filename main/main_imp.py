@@ -2,6 +2,15 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
+# write() method of the Odoo API
+# 0 is for creating a new record.
+# 1 is for updating an existing record.
+# 2 is for deleting a record (unlink).
+# 3 is for removing a relationship link (but not deleting the related record).
+# 4 is for adding an existing record.
+# 5 is for removing all linked records (similar to 3, but for all).
+# 6 is for setting a new set of records.
+
 # TODO 3. Find way to include NEW products merge into weekly merge
 # TODO 4. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 
@@ -129,7 +138,7 @@ if IF_IMPORT_DESCATALOGADOS_CATALOGO:
 
 if IF_IMPORT_AVAILABILITY:
     OdooImport.logger.info(f'BEGINNING AVAILABILITY IMPORT')
-    OdooImport.import_availability(OdooImport.EU_STOCK_EXCEL_PATH)
+    OdooImport.import_availability(OdooImport.EU_STOCK_EXCEL_PATH, IF_GENERATE_MISSING_PRODUCTS_EXCEL)
     OdooImport.logger.info(f'FINISHED AVAILABILITY IMPORT')
 
 if IF_ARCHIVE_PRODUCTS_FROM_JSON:
