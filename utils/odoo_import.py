@@ -155,7 +155,7 @@ class OdooImport:
         cls.logger.info(f"ASSIGNED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
 
     @classmethod
-    def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode='soft'):
+    def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode='no'):
         attr_lines = []
 
         if update_mode == 'deep':
@@ -188,7 +188,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False, attrs_update_mode='no'):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -243,7 +243,7 @@ class OdooImport:
                         continue
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, False)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, attrs_update_mode)
                     cls.assign_public_categories(product_id, public_categs)
                 elif not skip_existing:
                     product_id = product_ids[0]
@@ -261,7 +261,7 @@ class OdooImport:
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, True)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, attrs_update_mode)
                     cls.assign_public_categories(product_id, public_categs)
 
                     if 'product_brand_id' in product:
@@ -813,7 +813,7 @@ class OdooImport:
                                                                 'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
                                                                 'Disponibilidad': product_dict['Disponibilidad']})
 
-            cls.assign_attribute_values(product.id, product, attr_ids_values, False)
+            cls.assign_attribute_values(product.id, product, attr_ids_values, 'soft')
 
             cls.update_availability_related_fields(product_dict)
 
