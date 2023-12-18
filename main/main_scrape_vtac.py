@@ -17,8 +17,6 @@ country_scrapers = {
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
-# Extraer a directorio de test o de producción
-IF_EXTRACT_TO_TEST = False
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
@@ -53,27 +51,15 @@ if IF_EXTRACT_ITEM_INFO:
     scraper.instantiate_driver()
     start_time = time.time()
 
-    # Determine whether to extract to TEST env or PROD env
-    if IF_EXTRACT_TO_TEST:
-        # Determine whether to extract to default or new products files
-        if IF_ONLY_NEW_PRODUCTS:
-            products_info_path = scraper.NEW_PRODUCTS_INFO_PATH_TEST
-            products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH_TEST
-            links_path = scraper.NEW_PRODUCTS_LINKS_PATH
-        else:
-            products_info_path = scraper.PRODUCTS_INFO_PATH_TEST
-            products_media_path = scraper.PRODUCTS_MEDIA_PATH_TEST
-            links_path = scraper.PRODUCTS_LINKS_PATH
+    # Determine whether to extract to default or new products files
+    if IF_ONLY_NEW_PRODUCTS:
+        products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
+        products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
+        links_path = scraper.NEW_PRODUCTS_LINKS_PATH
     else:
-        # Determine whether to extract to default or new products files
-        if IF_ONLY_NEW_PRODUCTS:
-            products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
-            products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
-            links_path = scraper.NEW_PRODUCTS_LINKS_PATH
-        else:
-            products_info_path = scraper.PRODUCTS_INFO_PATH
-            products_media_path = scraper.PRODUCTS_MEDIA_PATH
-            links_path = scraper.PRODUCTS_LINKS_PATH
+        products_info_path = scraper.PRODUCTS_INFO_PATH
+        products_media_path = scraper.PRODUCTS_MEDIA_PATH
+        links_path = scraper.PRODUCTS_LINKS_PATH
 
     scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION')
 

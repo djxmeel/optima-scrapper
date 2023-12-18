@@ -15,18 +15,12 @@ class DataMerger:
 
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
-    NEW_DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/NEW/PRODUCT_INFO/MERGED_INFO_{}.json'
-    NEW_MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/NEW/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
 
     MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
     MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA'
-    NEW_MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_INFO'
-    NEW_MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_MEDIA'
 
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
-    NEW_UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_INFO_UPLOADED'
-    NEW_UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/NEW/PRODUCT_MEDIA_UPLOADED'
 
     # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
     PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
@@ -103,18 +97,12 @@ class DataMerger:
     }
 
     @classmethod
-    def load_data_for_country(cls, country, only_media=False, if_only_new=False):
-        if if_only_new:
-            directory_path = cls.COUNTRY_SCRAPERS[country].NEW_PRODUCTS_INFO_PATH
-        else:
-            directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_INFO_PATH
+    def load_data_for_country(cls, country, only_media=False):
+        directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_INFO_PATH
         data = []
 
         if only_media:
-            if if_only_new:
-                directory_path = cls.COUNTRY_SCRAPERS[country].NEW_PRODUCTS_MEDIA_PATH
-            else:
-                directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_MEDIA_PATH
+            directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_MEDIA_PATH
 
         # Load data
         file_list = Util.get_all_files_in_directory(directory_path)
@@ -131,13 +119,13 @@ class DataMerger:
         return data
 
     @classmethod
-    def load_all(cls, if_only_new, if_omit_media):
+    def load_all(cls, if_omit_media):
         for country in cls.COUNTRY_SCRAPERS.keys():
             if cls.country_data.get(country):
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_data[country] = cls.load_data_for_country(country, False, if_only_new)
+            cls.country_data[country] = cls.load_data_for_country(country, False)
 
         if not if_omit_media:
             for country in cls.COUNTRY_SCRAPERS.keys():
@@ -145,7 +133,7 @@ class DataMerger:
                     if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
                         continue
                     cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
-                cls.country_media[country] = cls.load_data_for_country(country, True, if_only_new)
+                cls.country_media[country] = cls.load_data_for_country(country, True)
         return cls
 
     @classmethod
@@ -281,13 +269,9 @@ class DataMerger:
         return cls.merged_data, cls.merged_media
 
     @classmethod
-    def extract_merged_data(cls, data, media, if_only_new=False):
-        if if_only_new:
-            data_path_temp = cls.NEW_DATA_DUMP_PATH_TEMPLATE
-            media_path_temp = cls.NEW_MEDIA_DUMP_PATH_TEMPLATE
-        else:
-            data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
-            media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
+    def extract_merged_data(cls, data, media):
+        data_path_temp = cls.DATA_DUMP_PATH_TEMPLATE
+        media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
 
         def async_task(data_type, path):
             if data_type:
