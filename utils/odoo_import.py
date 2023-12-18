@@ -100,7 +100,7 @@ class OdooImport:
             existing_attr_ids = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
 
             # Skip empty values
-            if str(value).strip() == '':
+            if not str(value).strip():
                 continue
 
             # Skip if the attribute already exists
@@ -155,19 +155,22 @@ class OdooImport:
         cls.logger.info(f"ASSIGNED INTERNAL CATEGORY {product_internal_category} WITH ID {product_internal_category_id[0]}")
 
     @classmethod
-    def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode=False):
+    def assign_attribute_values(cls, product_id, product, attributes_ids_values, update_mode='soft'):
         attr_lines = []
 
-        if update_mode:
+        if update_mode == 'deep':
             cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id)]))
 
         for attribute_id, value_id in attributes_ids_values.items():
-            # Only check if the attribute line already exists
-            existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+            if update_mode == 'soft':
+                cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)]))
+            else:
+                # Only check if the attribute line already exists
+                existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
-            # Skip if the attribute line already exists
-            if existing_lines:
-                continue
+                # Skip if the attribute line already exists
+                if existing_lines:
+                    continue
 
             # Create the attribute line
             attr_lines.append({
@@ -247,11 +250,6 @@ class OdooImport:
 
                     try:
                         cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
-
-                        # FIXME remove on next merge
-                        if 'volume' in product and product['volume']:
-                            if type(product['volume']) is str:
-                                product['volume'] = float(product['volume'].replace(',', '.'))
 
                         cls.PRODUCT_MODEL.write(product_id, product)
                     except RPCError:
@@ -705,11 +703,20 @@ class OdooImport:
     def import_descatalogados_catalogo(cls, skus_catalogo_file_path):
         skus = [str(entry['SKU']) for entry in Util.load_excel_columns_in_dictionary_list(skus_catalogo_file_path)]
 
-        products = cls.browse_all_products_in_batches()
+        products = cls.browse_all_products_in_batches('default_code', '!=', False)
+        descatalogados_category_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', 'DESCATALOGADOS')])[0]
 
         for product in products:
             if str(product.default_code) not in skus:
-                cls.PRODUCT_MODEL.write(product.id, {'description_purchase': f'DESCATALOGADO - {product.description_purchase}', 'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD')})
+                if "WEB" in product.description_purchase:
+                    description_purchase = "DESCATALOGADO CATALOGO - DESCATALOGADO WEB"
+                else:
+                    description_purchase = "DESCATALOGADO CATALOGO"
+
+                cls.PRODUCT_MODEL.write(product.id,
+                                        {'description_purchase': description_purchase,
+                                         'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD'),
+                                         'public_categ_ids': [(4, descatalogados_category_id)]})
                 cls.logger.info(f"{product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
             else:
                 cls.logger.info(f"{product.default_code} SKIPPING BECAUSE IT IS IN CATALOGO")
@@ -753,18 +760,24 @@ class OdooImport:
 
         eu_stock = sku_dict
 
-        product['Stock europeo'] = f"0 unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+        product['Stock europeo'] = f"0 unidades"
+        product['Entrada de nuevas unidades'] = ''
+
+        if 'DESCATALOGADO -' in product['description_purchase']:
+            product['Disponibilidad'] = "PRODUCTO DESCATALOGADO (Sin opción de compra. Seleccione otro articulo similar.)"
 
         # Update stock attributes
         if product['default_code'] in eu_stock:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
+                    product['Disponibilidad'] = ''
                     product['Stock europeo'] = f"{int(eu_stock[product['default_code']]['AVAILABLE'])} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
             except ValueError:
                 pass
 
             if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
                 product['Entrada de nuevas unidades'] = 'Próximamente'
+                product['Disponibilidad'] = ''
 
                 if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(
                         eu_stock[product['default_code']]['next delivery']):
@@ -789,29 +802,30 @@ class OdooImport:
         for product in products:
             cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
 
-            product_dict = {'default_code': product.default_code}
+            product_dict = {'default_code': product.default_code,
+                            'description_purchase': product.description_purchase,
+                            'qty_available': product.qty_available,
+                            'id': product.id}
 
             product_dict = cls.update_product_availability(product_dict, eu_stock)
 
-            if 'Entrada de nuevas unidades' in product_dict:
-                attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo'], 'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades']})
-            else:
-                attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo']})
+            attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo'],
+                                                                'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
+                                                                'Disponibilidad': product_dict['Disponibilidad']})
 
             cls.assign_attribute_values(product.id, product, attr_ids_values, False)
 
-            cls.update_availability_related_fields(product, product_dict)
+            cls.update_availability_related_fields(product_dict)
 
             cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY")
 
     @classmethod
-    def update_availability_related_fields(cls, product, product_dict):
+    def update_availability_related_fields(cls, product_dict):
         stock_europeo = product_dict['Stock europeo'].split(" ")[0]
         out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
 
-        website_published = True
         allow_out_of_stock_order = True
-        out_of_stock_msg = out_of_stock_messages[3]
+        out_of_stock_msg = out_of_stock_messages[4] if 'DESCATALOGADO CATALOGO' in product_dict['description_purchase'] else out_of_stock_messages[3]
 
         if stock_europeo == '0':
             if 'Entrada de nuevas unidades' in product_dict:
@@ -820,14 +834,10 @@ class OdooImport:
                 else:
                     out_of_stock_msg = out_of_stock_messages[1]
 
-            if product.qty_available == 0:
+            if product_dict["qty_available"] == 0:
                 allow_out_of_stock_order = False
-
-                if '[VSD' in product.name:
-                    website_published = False
         else:
             out_of_stock_msg = out_of_stock_messages[0]
 
-        cls.PRODUCT_MODEL.write(product.id, {'website_published': website_published,
-                                              'allow_out_of_stock_order': allow_out_of_stock_order,
+        cls.PRODUCT_MODEL.write(product_dict["id"], {'allow_out_of_stock_order': allow_out_of_stock_order,
                                               'out_of_stock_message': out_of_stock_msg})
