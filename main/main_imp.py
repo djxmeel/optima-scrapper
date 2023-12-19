@@ -14,6 +14,7 @@ from utils.util import Util
 # TODO WEEKLY 1. New products link extraction and scraping
 # TODO WEEKLY 2. Compare pricelists when new pricelist is available
 # TODO WEEKLY 3. Upload stock when new stock is available
+# TODO WEEKLY 4. Delete unused attributes and values
 
 # TODO 1. Extract GEN/Alicante stock from Odoo 15 and upload to Odoo 16
 
@@ -41,11 +42,13 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
-IF_IMPORT_PRODUCTS = False
+IF_IMPORT_PRODUCTS = True
+# When False, products with changed origin URL to ES will be updated anyway
+# When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
+# True if you want to update products even if their origin URL is the same
+IF_FORCE_UPDATE = False
 USE_PRIORITY_EXCEL = False
-# 'no' | 'soft' | 'deep'
-ATTRS_UPDATE_MODE = 'no'
 
 IF_IMPORT_SUPPLIER_INFO_AND_COST = False
 IF_UPDATE_MODE = False
@@ -87,7 +90,7 @@ if IF_IMPORT_BRANDS:
 
 if IF_IMPORT_PRODUCTS:
     OdooImport.logger.info(f'BEGINNING PRODUCTS IMPORT')
-    OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, IF_SKIP_EXISTING, USE_PRIORITY_EXCEL, ATTRS_UPDATE_MODE)
+    OdooImport.import_products(TARGET_DATA_DIR_PATH, UPLOADED_DATA_DIR_PATH, IF_SKIP_EXISTING, USE_PRIORITY_EXCEL, IF_FORCE_UPDATE)
     OdooImport.logger.info(f'FINISHED PRODUCTS IMPORT')
 
 if IF_IMPORT_ACC:

@@ -188,7 +188,7 @@ class OdooImport:
         cls.logger.info(f"FINISHED ASSIGNING SKU {product['default_code']} ATTRIBUTES")
 
     @classmethod
-    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False, attrs_update_mode='no'):
+    def import_products(cls, target_dir_path, uploaded_dir_path, skip_existing, use_priority_excel=False, force_update=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
         counter = 0
 
@@ -239,29 +239,35 @@ class OdooImport:
                         product_id = cls.PRODUCT_MODEL.create(product)
                         cls.logger.info(f'Created product {product["default_code"]} with origin URL : {url}')
                     except RPCError:
-                        cls.logger.info(f'Product {product["default_code"]} with origin URL : {url} NOT CREATED')
-                        continue
+                        product['barcode'] = Util.randomize_barcode(product['barcode'])
+                        product_id = cls.PRODUCT_MODEL.create(product)
+                        cls.logger.info(f'Created product {product["default_code"]} with origin URL {url} with different barcode {product["barcode"]}')
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, attrs_update_mode)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values)
                     cls.assign_public_categories(product_id, public_categs)
                 elif not skip_existing:
                     product_id = product_ids[0]
+
+                    current_origin_url = cls.PRODUCT_MODEL.browse(product_id).x_url
+
+                    if (current_origin_url == url or 'https://v-tac.es/' in current_origin_url) and not force_update:
+                        cls.logger.info(f'FORCE SKIPPING Product {product["default_code"]} for it\'s origin didn\'t change')
+                        continue
 
                     try:
                         cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url}')
 
                         cls.PRODUCT_MODEL.write(product_id, product)
                     except RPCError:
-                        randint = random.randrange(99)
-                        product['barcode'] = f"{product['barcode']}-{randint}"
+                        product['barcode'] = Util.randomize_barcode(product['barcode'])
                         cls.logger.info(f'Updating existing product {product["default_code"]} with origin URL {url} with different barcode {product["barcode"]}')
                         cls.PRODUCT_MODEL.write(product_id, product)
 
                     created_attrs_ids_values = cls.create_attributes_and_values(attrs_to_create)
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
-                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, attrs_update_mode)
+                    cls.assign_attribute_values(product_id, product, created_attrs_ids_values, 'deep')
                     cls.assign_public_categories(product_id, public_categs)
 
                     if 'product_brand_id' in product:
