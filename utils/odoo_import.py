@@ -47,9 +47,9 @@ class OdooImport:
     PRODUCT_PUBLIC_CATEGORIES_MODEL = odoo.env['product.public.category']
     PRODUCT_INTERNAL_CATEGORY_MODEL = odoo.env['product.category']
 
-    PRODUCT_PDF_DIRS = {'es': 'data/vtac_spain/PROD/PRODUCT_PDF',
-                        'uk': 'data/vtac_uk/PROD/PRODUCT_PDF',
-                        'ita': 'data/vtac_italia/PROD/PRODUCT_PDF'}
+    PRODUCT_PDF_DIRS = {'es': 'data/vtac_spain/PRODUCT_PDF',
+                        'uk': 'data/vtac_uk/PRODUCT_PDF',
+                        'ita': 'data/vtac_italia/PRODUCT_PDF'}
 
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories')

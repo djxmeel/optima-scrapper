@@ -23,13 +23,13 @@ class ScraperVtacSpain:
 
     SPECS_SUBCATEGORIES = ()
 
-    PRODUCTS_INFO_PATH = 'data/vtac_spain/PROD/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PROD/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_spain/PROD/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_spain/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_spain/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_spain/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_spain/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_spain/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json'

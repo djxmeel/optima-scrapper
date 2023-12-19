@@ -24,13 +24,13 @@ class ScraperVtacUk:
 
     SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
-    PRODUCTS_INFO_PATH = 'data/vtac_uk/PROD/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PROD/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_uk/PROD/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_uk/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_uk/PROD/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PROD/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_uk/PROD/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_uk/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_uk/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_uk/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json'
