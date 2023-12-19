@@ -42,7 +42,7 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
-IF_IMPORT_PRODUCTS = True
+IF_IMPORT_PRODUCTS = False
 # When False, products with changed origin URL to ES will be updated anyway
 # When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
@@ -66,8 +66,9 @@ IF_IMPORT_PDFS = False
 PDF_START_FROM = 0
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
-IF_IMPORT_IMGS = False
-IF_IMPORT_ICONS = False
+IF_IMPORT_IMGS = True
+IF_IMPORT_ICONS = True
+#FIXME
 IF_ONLY_NEW_PRODUCTS_MEDIA = False
 
 IF_ARCHIVE_PRODUCTS_FROM_JSON = False
