@@ -441,7 +441,7 @@ class OdooImport:
                         continue
 
     @classmethod
-    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path):
+    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
@@ -463,6 +463,10 @@ class OdooImport:
                                 pass
 
                             image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+
+                            if image_ids and skip_products_with_images:
+                                cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
+                                continue
 
                             # Product existing images
                             images = cls.MEDIA_MODEL.browse(image_ids)
