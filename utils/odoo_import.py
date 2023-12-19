@@ -251,7 +251,7 @@ class OdooImport:
 
                     current_origin_url = cls.PRODUCT_MODEL.browse(product_id).x_url
 
-                    if (current_origin_url == url or 'https://v-tac.es/' in current_origin_url) and not force_update:
+                    if (current_origin_url == url or 'v-tac.es' in current_origin_url or 'v-tac.es' not in url) and not force_update:
                         cls.logger.info(f'FORCE SKIPPING Product {product["default_code"]} for it\'s origin didn\'t change')
                         continue
 
