@@ -54,6 +54,7 @@ class DataMerger:
         'Id eprel',
         'Informe emc',
         'Informe lvd',
+        'Licencia lvd',
         'Informe rohs',
         'Inmóvil',
         'Ordenable en múltiplos de',
@@ -65,6 +66,7 @@ class DataMerger:
         'Embalaje',
         'Piezas por palet',
         'Cantidad por palet',
+        'Cantidad por caja',
         'Unidad de medida',
         'SAMSUNG'
     ]
