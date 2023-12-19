@@ -2,6 +2,7 @@ import base64
 import copy
 import json
 import os
+import random
 import re
 import time
 import shutil
@@ -571,6 +572,10 @@ class Util:
                 attachment_name = attachment_name.replace(incorrect, replacement)
 
         return attachment_name
+
+    @classmethod
+    def randomize_barcode(cls, barcode):
+        return f"{barcode}-{random.randrange(99)}"
 
     @classmethod
     def append_new_scrape_to_old_scrape(cls, product_data_path, new_product_data_path, file_template, new_links_path, exclude=None):
