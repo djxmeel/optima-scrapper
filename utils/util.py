@@ -366,8 +366,8 @@ class Util:
                     products_data.clear()
 
             if if_only_new:
-                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_INFO_PATH, scraper.NEW_PRODUCTS_INFO_PATH, Util.PRODUCT_INFO_FILENAME_TEMPLATE, exclude=Util.MEDIA_FIELDS)
-                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_MEDIA_PATH, scraper.NEW_PRODUCTS_MEDIA_PATH, Util.PRODUCT_MEDIA_FILENAME_TEMPLATE)
+                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_INFO_PATH, scraper.NEW_PRODUCTS_INFO_PATH, Util.PRODUCT_INFO_FILENAME_TEMPLATE, scraper.NEW_PRODUCTS_LINKS_PATH, exclude=Util.MEDIA_FIELDS)
+                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_MEDIA_PATH, scraper.NEW_PRODUCTS_MEDIA_PATH, Util.PRODUCT_MEDIA_FILENAME_TEMPLATE, scraper.NEW_PRODUCTS_LINKS_PATH)
         except (TimeoutError, TimeoutException) as e:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
             logger.error(e.with_traceback(None))
@@ -573,7 +573,7 @@ class Util:
         return attachment_name
 
     @classmethod
-    def append_new_scrape_to_old_scrape(cls, product_data_path, new_product_data_path, file_template, exclude=None):
+    def append_new_scrape_to_old_scrape(cls, product_data_path, new_product_data_path, file_template, new_links_path, exclude=None):
         all_products_data_filenames = Util.get_all_files_in_directory(product_data_path)
 
         if all_products_data_filenames:
@@ -601,6 +601,8 @@ class Util:
                 break
 
         # Remove new products files
+        os.remove(new_links_path)
+
         for file_name in os.listdir(new_product_data_path):
             # construct full file path
             file = new_product_data_path +'/'+ file_name
