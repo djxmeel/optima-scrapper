@@ -15,14 +15,14 @@ country_scrapers = {
     'ita': ScraperVtacItalia
 }
 
+# Enlaces productos en la página de origen
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
+
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = True, True
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
-
-# Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF)
 scraper = country_scrapers[chosen_country]
