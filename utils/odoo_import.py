@@ -638,7 +638,7 @@ class OdooImport:
 
             cls.logger.info("CREATED CATEGORY: " + category['name'])
 
-    # TODO test persistence of browsed products within 1 runtime
+    # TODO TEST persistence of browsed products within 1 runtime
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
         # Fetch records in batches to avoid RPCerror
