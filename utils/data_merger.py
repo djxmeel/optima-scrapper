@@ -22,9 +22,6 @@ class DataMerger:
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
-    # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
-
     # Path to json with name -> category mapping
     PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
 
@@ -241,10 +238,13 @@ class DataMerger:
                 except KeyError:
                     pass
 
-            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH, cls.logger)
+            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.SKUS_CATALOGO_Q12024_FILE_PATH, cls.logger)
 
             if not merged_product['public_categories']:
-                merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH, cls.logger)
+                merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.MANUAL_PUBLIC_CATEGS_EXCEL_PATH, cls.logger)
+
+                if not merged_product['public_categories']:
+                    merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH, cls.logger)
 
             if 'icons' in merged_product_media:
                 merged_product_media['icons'] = cls.get_translated_icons(merged_product_media['icons'])
