@@ -7,6 +7,8 @@ import re
 import time
 import shutil
 from datetime import datetime
+from io import BytesIO
+from PIL import Image
 
 
 import openpyxl
@@ -44,6 +46,10 @@ class Util:
 
     PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/PRODUCT_NAME_RENAMES.json'
     ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/ATTACHMENT_NAME_RENAMES.json'
+    SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
+    MANUAL_PUBLIC_CATEGS_EXCEL_PATH = 'data/common/excel/public_category_manual.xlsx'
+
+    ODOO_FETCHED_PRODUCTS = []
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
@@ -613,3 +619,23 @@ class Util:
             if os.path.isfile(file):
                 print('Deleting file:', file)
                 os.remove(file)
+
+    @classmethod
+    def resize_image_b64(cls, image_b64, new_width):
+        # Decode the base64 string
+        decoded_image = base64.b64decode(image_b64)
+        image = Image.open(BytesIO(decoded_image))
+
+        # Calculate new height maintaining the aspect ratio
+        original_width, original_height = image.size
+        new_height = int(new_width * original_height / original_width)
+
+        # Resize the image
+        resized_image = image.resize((new_width, new_height), Image.Resampling.NEAREST)
+
+        # Convert the resized image back to base64
+        buffer = BytesIO()
+        resized_image.save(buffer, format="PNG")
+        resized_b64 = base64.b64encode(buffer.getvalue()).decode()
+
+        return resized_b64

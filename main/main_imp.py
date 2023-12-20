@@ -29,8 +29,6 @@ PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/public_categories_odoo.xlsx'
 SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/supplier_stock.xlsx'
 SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'
 
-SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
-
 BRANDS_EXCEL_FILE_PATH = 'data/common/excel/product_brands.xlsx'
 
 PRODUCT_TO_ARCHIVE_CONDITIONS_JSON_PATH = 'data/common/json/PRODUCT_TO_ARCHIVE_CONDITIONS.json'
@@ -60,15 +58,14 @@ IF_IMPORT_AVAILABILITY = False
 IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 
 IF_IMPORT_ACC = False
-IF_ONLY_NEW_PRODUCTS_ACC = False
 
 IF_IMPORT_PDFS = False
 PDF_START_FROM = 0
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
-IF_IMPORT_IMGS = True
-IF_IMPORT_ICONS = True
-SKIP_PRODUCTS_W_MEDIA = True
+IF_IMPORT_IMGS_AND_ICONS = True
+IF_CLEAN_EXISTING = True
+SKIP_PRODUCTS_W_MEDIA = False
 
 IF_ARCHIVE_PRODUCTS_FROM_JSON = False
 
@@ -103,15 +100,10 @@ if IF_IMPORT_PDFS:
     OdooImport.import_pdfs(PDF_START_FROM, SKIP_PRODUCTS_W_ATTACHMENTS)
     OdooImport.logger.info(f'FINISHED PDFS IMPORT')
 
-if IF_IMPORT_IMGS:
+if IF_IMPORT_IMGS_AND_ICONS:
     OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    OdooImport.import_imgs_videos(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH, SKIP_PRODUCTS_W_MEDIA)
+    OdooImport.import_imgs_icons_videos(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH, SKIP_PRODUCTS_W_MEDIA, IF_CLEAN_EXISTING)
     OdooImport.logger.info(f'FINISHED IMGS IMPORT')
-
-if IF_IMPORT_ICONS:
-    OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
-    OdooImport.import_icons(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH)
-    OdooImport.logger.info(f'FINISHED ICONS IMPORT')
 
 if IF_IMPORT_SUPPLIER_INFO_AND_COST:
     OdooImport.logger.info(f'BEGINNING SUPPLIER INFO IMPORT')
@@ -120,7 +112,7 @@ if IF_IMPORT_SUPPLIER_INFO_AND_COST:
 
 if IF_IMPORT_DESCATALOGADOS_CATALOGO:
     OdooImport.logger.info(f'BEGINNING DESCATALOGADOS IMPORT')
-    OdooImport.import_descatalogados_catalogo(SKUS_CATALOGO_Q12024_FILE_PATH)
+    OdooImport.import_descatalogados_catalogo(Util.SKUS_CATALOGO_Q12024_FILE_PATH)
     OdooImport.logger.info(f'FINISHED DESCATALOGADOS IMPORT')
 
 if IF_IMPORT_AVAILABILITY:
@@ -129,6 +121,6 @@ if IF_IMPORT_AVAILABILITY:
     OdooImport.logger.info(f'FINISHED AVAILABILITY IMPORT')
 
 if IF_ARCHIVE_PRODUCTS_FROM_JSON:
-    OdooImport.logger.info(f'BEGINNING BRANDS IMPORT')
+    OdooImport.logger.info(f'BEGINNING PRODUCTS TO ARCHIVE IMPORT')
     OdooImport.archive_products_from_json(PRODUCT_TO_ARCHIVE_CONDITIONS_JSON_PATH)
-    OdooImport.logger.info(f'FINISHED BRANDS IMPORT')
+    OdooImport.logger.info(f'FINISHED PRODUCTS TO ARCHIVE IMPORT')

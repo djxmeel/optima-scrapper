@@ -1,5 +1,4 @@
 import os.path
-import random
 import time
 from urllib.error import HTTPError
 
@@ -441,19 +440,19 @@ class OdooImport:
                         continue
 
     @classmethod
-    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images):
+    def import_imgs_icons_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images, clean=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
             products = Util.load_json(file_path)
 
             for product in products:
+
+                # Search for the product template with the given sku
+                product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
+
                 if 'imgs' in product:
                     cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
-
-                    # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
-
                     if product_ids:
                         # write/overwrite the image to the product
                         if product['imgs']:
@@ -462,24 +461,33 @@ class OdooImport:
                             except RPCError:
                                 pass
 
-                            image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+                            images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
 
-                            if image_ids and skip_products_with_images:
-                                cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
-                                continue
+                            if images:
+                                if skip_products_with_images:
+                                    cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
+                                    continue
+                                if clean:
+                                    cls.MEDIA_MODEL.unlink(images)
+                                    images.clear()
+                                    images = []
+                                    cls.logger.info(f"CLEANED {product['default_code']} IMAGES")
+                                else:
+                                    # Product existing images
+                                    images = cls.MEDIA_MODEL.browse(images)
+                                    images = [image.image_1920 for image in images]
 
-                            # Product existing images
-                            images = cls.MEDIA_MODEL.browse(image_ids)
-                            images = [image.image_1920 for image in images]
+                            # Resize images to 1920px width for Odoo
+                            product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
 
                             # Iterate over the products 'imgs'
                             for extra_img in product['imgs'][1:]:
-                                if extra_img['img64'] not in images:
-                                    name = f'{product_ids[0]}_{product["imgs"].index(extra_img)}'
+                                if extra_img not in images:
+                                    name = f'{product_ids[0]}_{product['imgs'].index(extra_img)}'
 
                                     new_image = {
                                         'name': name,
-                                        'image_1920': extra_img['img64'],
+                                        'image_1920': extra_img,
                                         'product_tmpl_id': product_ids[0]
                                     }
                                     try:
@@ -492,10 +500,25 @@ class OdooImport:
                                     cls.logger.info(f'{product["default_code"]}: Image already exists')
 
                             cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING IMAGES")
+                    else:
+                        cls.logger.warn(f'{product["default_code"]} : PRODUCT NOT FOUND IN ODOO')
 
+                else:
+                    cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
+
+                if 'videos' in product:
+                    cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
+                    if product_ids:
+                        if product["videos"]:
                             videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
-                            videos = cls.MEDIA_MODEL.browse(videos)
-                            videos = [video.video_url for video in videos]
+
+                            if videos and clean:
+                                cls.MEDIA_MODEL.unlink(videos)
+                                cls.logger.info(f"CLEANED {product['default_code']} VIDEOS")
+                                videos.clear()
+                            else:
+                                videos = cls.MEDIA_MODEL.browse(videos)
+                                videos = [video.video_url for video in videos]
 
                             if 'videos' in product:
                                 # Iterate over the products 'videos'
@@ -520,36 +543,19 @@ class OdooImport:
                     else:
                         cls.logger.warn(f'{product["default_code"]} : PRODUCT NOT FOUND IN ODOO')
 
-                else:
-                    cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
-
-            # Moving uploaded files to separate dir to persist progress
-            Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
-
-        # Restoring target dir's original name
-        Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
-
-    @classmethod
-    def import_icons(cls, target_dir_path, uploaded_dir_path):
-        file_list = Util.get_all_files_in_directory(target_dir_path)
-
-        for file_path in sorted(file_list):
-            products = Util.load_json(file_path)
-
-            for product in products:
                 if 'icons' in product:
                     cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
 
-                    # Search for the product template with the given sku
-                    product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
-
                     if product_ids:
-                        image_ids = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
+                        images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
 
                         # Product existing icons
-                        icons_elements = cls.MEDIA_MODEL.browse(image_ids)
+                        icons_elements = cls.MEDIA_MODEL.browse(images)
 
                         icons = [icon.image_1920 for icon in icons_elements]
+
+                        # Resize icons to 1920px width for Odoo
+                        product['icons'] = [Util.resize_image_b64(icon, 1920) for icon in product['icons']]
 
                         # Iterate over the products
                         for icon in product['icons']:
@@ -632,6 +638,7 @@ class OdooImport:
 
             cls.logger.info("CREATED CATEGORY: " + category['name'])
 
+    # TODO test persistence of browsed products within 1 runtime
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
         # Fetch records in batches to avoid RPCerror
@@ -641,6 +648,8 @@ class OdooImport:
 
         while True:
             if not field or not operator:
+                if Util.ODOO_FETCHED_PRODUCTS:
+                    return Util.ODOO_FETCHED_PRODUCTS
                 product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
             else:
                 product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
@@ -651,6 +660,10 @@ class OdooImport:
             cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
 
             offset += batch_size
+
+        if not field or not operator:
+            cls.logger.info(f"FETCHED ALL PRODUCTS: {len(products)}")
+            Util.ODOO_FETCHED_PRODUCTS.extend(products)
 
         return products
 
@@ -718,7 +731,7 @@ class OdooImport:
 
         for product in products:
             if str(product.default_code) not in skus:
-                if "WEB" in product.description_purchase:
+                if product.description_purchase and "WEB" in product.description_purchase:
                     description_purchase = "DESCATALOGADO CATALOGO - DESCATALOGADO WEB"
                 else:
                     description_purchase = "DESCATALOGADO CATALOGO"
@@ -759,6 +772,8 @@ class OdooImport:
         ])
 
         for product in cls.PRODUCT_MODEL.browse(products_to_archive):
+            if not product.active:
+                continue
             product.write({'active': False})  # This archives the product in the database
 
     @classmethod
@@ -772,6 +787,7 @@ class OdooImport:
 
         product['Stock europeo'] = f"0 unidades"
         product['Entrada de nuevas unidades'] = ''
+        product['Disponibilidad'] = ''
 
         if 'DESCATALOGADO -' in product['description_purchase']:
             product['Disponibilidad'] = "PRODUCTO DESCATALOGADO (Sin opción de compra. Seleccione otro articulo similar.)"
