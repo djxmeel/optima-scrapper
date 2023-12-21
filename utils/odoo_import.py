@@ -817,7 +817,7 @@ class OdooImport:
         cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', eu_stock_attr_id), ('product_tmpl_id', '=', product_id)]) +
                                         cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
 
-    # TODO TEST
+    # TODO TEST import_availability
     @classmethod
     def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel):
         products = cls.browse_all_products_in_batches()
@@ -867,3 +867,42 @@ class OdooImport:
 
         cls.PRODUCT_MODEL.write(product_dict["id"], {'allow_out_of_stock_order': allow_out_of_stock_order,
                                               'out_of_stock_message': out_of_stock_msg})
+
+    @classmethod
+    def import_local_stock(cls, local_stock_excel_path):
+        stock_quant_model = cls.odoo.env['stock.quant']
+
+        products = cls.browse_all_products_in_batches()
+        local_stock_excel_dicts = Util.load_excel_columns_in_dictionary_list(local_stock_excel_path)
+        location_id = cls.odoo.env['stock.location'].search([('name', '=', 'Stock')])[0]
+
+        for product in products:
+            quantity = 0
+
+            for line in local_stock_excel_dicts:
+                if str(line['SKU']) == product.default_code:
+                    quantity = line['Cantidad']
+                    break
+
+            product_stock_quant_ids = stock_quant_model.search([('product_id', '=', product.id)])
+
+            if product_stock_quant_ids:
+                stock_quant_model.write(product_stock_quant_ids[0], {
+                    'inventory_quantity': quantity,
+                    'product_id': product.id,
+                    'location_id': location_id
+                })
+                cls.logger.info(f"UPDATED STOCK QUANT FOR PRODUCT {product.default_code} WITH QUANTITY {quantity}")
+            else:
+                try:
+                    product_stock_quant_ids = stock_quant_model.create({
+                        'inventory_quantity': quantity,
+                        'product_id': product.id,
+                        'location_id': location_id
+                    })
+                    cls.logger.info(f"CREATED STOCK QUANT FOR PRODUCT {product.default_code} WITH QUANTITY {quantity}")
+                except RPCError:
+                    cls.logger.warn(f"ERROR CREATING STOCK QUANT FOR PRODUCT {product.default_code}")
+                    continue
+
+            stock_quant_model.action_apply_inventory(product_stock_quant_ids)
