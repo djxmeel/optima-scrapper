@@ -564,11 +564,6 @@ class Util:
             if incorrect in name:
                 name = name.replace(incorrect, replacement)
 
-        # Remove "VT-XXXX"
-        name = re.sub(r'VT-\d{1,7}-N', '', name)
-        name = re.sub(r'VT-\d{1,7}-\d{1,7}', '', name)
-        name = re.sub(r'VT-\d{1,7}', '', name)
-
         return name.replace('  ', ' ')
 
     @classmethod
