@@ -628,6 +628,10 @@ class Util:
 
         # Calculate new height maintaining the aspect ratio
         original_width, original_height = image.size
+
+        if original_width <= new_width:
+            return image_b64
+
         new_height = int(new_width * original_height / original_width)
 
         # Resize the image
