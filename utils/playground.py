@@ -628,11 +628,11 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
     workbook.save(output_file)
 
 # Example usage
-get_price_variations_and_new_products_excel(
-    'SKU',
-    'data/common/excel/vtac_supplier_pricelists/stacked/01.Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023_ANTIGUO.xlsx',
-    'data/common/excel/vtac_supplier_pricelists/stacked/02.Pricelist_V-TAC_Europe_Ltd_promotions_November_2023_NUEVO.xlsx',
-    'data/common/excel/vtac_supplier_pricelists/stacked/output_file2.xlsx')
+# get_price_variations_and_new_products_excel(
+#     'SKU',
+#     'data/common/excel/vtac_supplier_pricelists/stacked/01.Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023_ANTIGUO.xlsx',
+#     'data/common/excel/vtac_supplier_pricelists/stacked/02.Pricelist_V-TAC_Europe_Ltd_promotions_November_2023_NUEVO.xlsx',
+#     'data/common/excel/vtac_supplier_pricelists/stacked/output_file2.xlsx')
 
 
 # Example usage :
