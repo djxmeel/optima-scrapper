@@ -6,6 +6,7 @@ import odoorpc
 import base64
 
 import pandas as pd
+from PIL import UnidentifiedImageError
 from odoorpc.error import RPCError
 
 from utils.loggers import Loggers
@@ -344,21 +345,7 @@ class OdooImport:
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
-        # Fetch records in batches to avoid RPCerror
-        batch_size = 200
-        offset = 0
-        skus_in_odoo = []
-
-        while True:
-            product_ids = product_model.search([], offset=offset, limit=batch_size)
-            if not product_ids:  # Exit the loop when no more records are found
-                break
-
-            products = product_model.browse(product_ids)
-            skus_in_odoo.extend([p.default_code for p in products])
-            print(f'FETCHING ALL PRODUCTS SKUS : {len(skus_in_odoo)}')
-
-            offset += batch_size
+        skus_in_odoo = [p.default_code for p in cls.browse_all_products_in_batches()]
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         sku_list_es = [dirr.split('\\')[-1] for dirr in directory_list_es]
@@ -477,8 +464,12 @@ class OdooImport:
                                     images = cls.MEDIA_MODEL.browse(images)
                                     images = [image.image_1920 for image in images]
 
-                            # Resize images to 1920px width for Odoo
-                            product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
+                            try:
+                                # Resize images to 1920px width for Odoo
+                                product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
+                            except UnidentifiedImageError:
+                                cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
+                                pass
 
                             # Iterate over the products 'imgs'
                             for extra_img in product['imgs'][1:]:
@@ -495,7 +486,7 @@ class OdooImport:
                                         cls.MEDIA_MODEL.create(new_image)
                                         cls.logger.info(f'{product["default_code"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
-                                        cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name} *{RPCError}*')
+                                        cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
                                 else:
                                     cls.logger.info(f'{product["default_code"]}: Image already exists')
 
