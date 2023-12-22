@@ -278,6 +278,7 @@ class ScraperVtacUk:
 
         return len(pdf_elements)
 
+    # TODO TEST the correct DL of spec_sheets
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
         """
@@ -295,11 +296,8 @@ class ScraperVtacUk:
 
         pdf_elements = []
 
-        try:
-            # Specs tab certificates
-            pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
-        except NoSuchElementException:
-            pass
+        # Specs tab certificates
+        pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
 
         try:
             # Downloads tab
@@ -307,8 +305,10 @@ class ScraperVtacUk:
         except NoSuchElementException:
             pass
 
+        pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
+
         try:
-            pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
+            pdf_elements += driver.find_elements(By.XPATH, "/html/body/div[3]/main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[2]/div/div[2]/div/a")
         except NoSuchElementException:
             pass
 
