@@ -250,7 +250,7 @@ class DataMerger:
                 merged_product_media['icons'] = cls.get_translated_icons(merged_product_media['icons'])
 
             if 'name' in merged_product:
-                merged_product['name'] = Util.get_correctly_translated_product_name(merged_product['name'])
+                merged_product['name'] = Util.get_correct_name_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, merged_product["default_code"], merged_product['name'])
 
             if 'volume' in merged_product and merged_product['volume'] and type(merged_product['volume']) is str:
                 merged_product['volume'] = float(merged_product['volume'].replace(',', '.'))
