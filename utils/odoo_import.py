@@ -781,10 +781,9 @@ class OdooImport:
         product['Entrada de nuevas unidades'] = ''
         product['Disponibilidad'] = ''
 
-        if product['description_purchase'] and 'DESCATALOGADO -' in product['description_purchase']:
+        if product['description_purchase'] and 'DESCATALOGADO CATALOGO' in product['description_purchase']:
             product['Disponibilidad'] = "PRODUCTO DESCATALOGADO (Sin opción de compra. Seleccione otro articulo similar.)"
 
-        # Update stock attributes
         if product['default_code'] in eu_stock:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
@@ -846,7 +845,7 @@ class OdooImport:
         # FIXME set to true when ready to publish
         is_published = False
         allow_out_of_stock_order = True
-        out_of_stock_msg = out_of_stock_messages[4] if product_dict["description_purchase"] and 'DESCATALOGADO CATALOGO' in product_dict['description_purchase'] else out_of_stock_messages[3]
+        out_of_stock_msg = out_of_stock_messages[3]
 
         if stock_europeo == '0':
             if 'Entrada de nuevas unidades' in product_dict:
