@@ -843,7 +843,8 @@ class OdooImport:
         stock_europeo = product_dict['Stock europeo'].split(" ")[0]
         out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
 
-        is_published = True
+        # FIXME set to true when ready to publish
+        is_published = False
         allow_out_of_stock_order = True
         out_of_stock_msg = out_of_stock_messages[4] if product_dict["description_purchase"] and 'DESCATALOGADO CATALOGO' in product_dict['description_purchase'] else out_of_stock_messages[3]
 
