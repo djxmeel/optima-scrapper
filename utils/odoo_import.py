@@ -807,8 +807,6 @@ class OdooImport:
     def clear_availability_attributes(cls, product_id, eu_stock_attr_id, entradas_attr_id):
         cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', eu_stock_attr_id), ('product_tmpl_id', '=', product_id)]) +
                                         cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
-
-    # TODO TEST import_availability
     @classmethod
     def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel):
         products = cls.browse_all_products_in_batches()
@@ -848,14 +846,13 @@ class OdooImport:
         out_of_stock_msg = out_of_stock_messages[3]
 
         if stock_europeo == '0':
+            allow_out_of_stock_order = False
+
             if 'Entrada de nuevas unidades' in product_dict:
                 if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
                     out_of_stock_msg = out_of_stock_messages[2]
                 elif '/' in product_dict['Entrada de nuevas unidades']:
                     out_of_stock_msg = out_of_stock_messages[1]
-
-            if product_dict["qty_available"] == 0:
-                allow_out_of_stock_order = False
 
                 if '[VSD' in product_dict['name']:
                     is_published = False
