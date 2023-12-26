@@ -341,7 +341,7 @@ class OdooImport:
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
 
     @classmethod
-    def import_pdfs(cls, start_from=0, skip_products_w_attachments=False):
+    def import_pdfs(cls, start_from=0, clean=False, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
@@ -361,14 +361,15 @@ class OdooImport:
             skus_in_odoo.remove(False)
 
         for index, sku in enumerate(sorted(skus_in_odoo[start_from:])):
-            # FIXME REMOVE after REDOING the import
-            atts = attachments_model.search([('res_id', '=', product_model.search([('default_code', '=', sku)])[0])])
-            attachments_model.unlink(atts)
-
-            print(f'{index+start_from+1} / {len(skus_in_odoo[start_from:])}')
             res_id = product_model.search([('default_code', '=', sku)])[0]
 
-            if skip_products_w_attachments:
+            if clean:
+                atts = attachments_model.search([('res_id', '=', res_id)])
+                attachments_model.unlink(atts)
+
+            print(f'{index+start_from+1} / {len(skus_in_odoo[start_from:])}')
+
+            if skip_products_w_attachments and not clean:
                 product_uploaded_attachments = attachments_model.search([('res_id', '=', res_id)])
 
                 if product_uploaded_attachments:
@@ -421,7 +422,7 @@ class OdooImport:
                     except TimeoutError:
                         cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
                         time.sleep(10)
-                        cls.import_pdfs(start_from, skip_products_w_attachments)
+                        cls.import_pdfs(start_from, skip_products_w_attachments, clean)
                     except HTTPError:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
@@ -629,7 +630,6 @@ class OdooImport:
 
             cls.logger.info("CREATED CATEGORY: " + category['name'])
 
-    # TODO TEST persistence of browsed products within 1 runtime
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
         # Fetch records in batches to avoid RPCerror
@@ -640,6 +640,7 @@ class OdooImport:
         while True:
             if not field or not operator:
                 if Util.ODOO_FETCHED_PRODUCTS:
+                    cls.logger.info(f"FOUND {len(Util.ODOO_FETCHED_PRODUCTS)} LOADED PRODUCTS IN MEMORY")
                     return Util.ODOO_FETCHED_PRODUCTS
                 product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
             else:
@@ -647,10 +648,10 @@ class OdooImport:
             if not product_ids:  # Exit the loop when no more records are found
                 break
 
+            offset += batch_size
+
             products.extend(cls.PRODUCT_MODEL.browse(product_ids))
             cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
-
-            offset += batch_size
 
         if not field or not operator:
             cls.logger.info(f"FETCHED ALL PRODUCTS: {len(products)}")
@@ -822,7 +823,8 @@ class OdooImport:
             product_dict = {'default_code': product.default_code,
                             'description_purchase': product.description_purchase,
                             'qty_available': product.qty_available,
-                            'id': product.id}
+                            'id': product.id,
+                            'name': product.name}
 
             product_dict = cls.update_product_availability(product_dict, eu_stock)
 
@@ -841,23 +843,28 @@ class OdooImport:
         stock_europeo = product_dict['Stock europeo'].split(" ")[0]
         out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
 
+        is_published = True
         allow_out_of_stock_order = True
         out_of_stock_msg = out_of_stock_messages[4] if product_dict["description_purchase"] and 'DESCATALOGADO CATALOGO' in product_dict['description_purchase'] else out_of_stock_messages[3]
-        #FIXME check oof msg logic
+
         if stock_europeo == '0':
             if 'Entrada de nuevas unidades' in product_dict:
                 if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
                     out_of_stock_msg = out_of_stock_messages[2]
-                else:
+                elif '/' in product_dict['Entrada de nuevas unidades']:
                     out_of_stock_msg = out_of_stock_messages[1]
 
             if product_dict["qty_available"] == 0:
                 allow_out_of_stock_order = False
+
+                if '[VSD' in product_dict['name']:
+                    is_published = False
         else:
             out_of_stock_msg = out_of_stock_messages[0]
 
         cls.PRODUCT_MODEL.write(product_dict["id"], {'allow_out_of_stock_order': allow_out_of_stock_order,
-                                              'out_of_stock_message': out_of_stock_msg})
+                                                        'out_of_stock_message': out_of_stock_msg,
+                                                        'is_published': is_published})
 
     @classmethod
     def import_local_stock(cls, local_stock_excel_path):
