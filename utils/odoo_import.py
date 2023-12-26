@@ -905,6 +905,7 @@ class OdooImport:
 
             stock_quant_model.action_apply_inventory(product_stock_quant_ids)
 
+    # TODO change to get names from merged jsons after merging with excel corrections
     @classmethod
     def import_correct_names_from_excel(cls, excel_path):
         excel_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
