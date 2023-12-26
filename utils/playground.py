@@ -325,20 +325,6 @@ def delete_attachments(field, condition, value):
         attachments_model.unlink(attachments)
         print(f"DELETED ATTACHMENTS FOR PRODUCT: {product_id}")
 
-
-def correct_allproduct_names():
-    products = OdooImport.browse_all_products_in_batches()
-    odoo = login_odoo()
-    product_model = odoo.env['product.template']
-
-    for product in products:
-        name = Util.get_correctly_translated_product_name(product.name)
-
-        product_model.write(product.id, {'name': name})
-        if name != product.name:
-            print(f"UPDATED OLD: {product.name}\n NEW: {name}\n")
-
-
 def decode_and_save_b64_image(b64_string, output_folder, image_name):
     """Decode base64 string to image and save it"""
     image_data = base64.b64decode(b64_string)
@@ -670,7 +656,6 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
-#correct_allproduct_names()
 #assign_public_categories('data/common/excel/public_category_sku_Q1_2024.xlsx')
 #assign_public_categs_from_name()
 #assign_public_categories('data/common/excel/public_category_manual.xlsx')
