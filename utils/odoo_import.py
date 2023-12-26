@@ -902,18 +902,28 @@ class OdooImport:
 
             stock_quant_model.action_apply_inventory(product_stock_quant_ids)
 
-    # TODO change to get names from merged jsons after merging with excel corrections
     @classmethod
-    def import_correct_names_from_excel(cls, excel_path):
-        excel_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
+    def import_correct_names_from_excel(cls, excel_path, get_from_jsons):
+        if get_from_jsons:
+            # TODO get names from merged jsons after new merge with excel corrections
+            products_dicts = Util.load_data_in_dir('data/vtac_merged/PRODUCT_INFO')
+            print(f"Loaded {len(products_dicts)} products from jsons")
+            name_key = 'name'
+            sku_key = 'default_code'
 
-        for line in excel_dicts:
-            product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', str(line['Referencia interna']))])
+        else:
+            products_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
+            print(f"Loaded {len(products_dicts)} products from excel")
+            name_key = 'Nombre'
+            sku_key = 'Referencia interna'
+
+        for line in products_dicts:
+            product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', str(line[sku_key]))])
 
             if product_ids:
                 product = cls.PRODUCT_MODEL.browse(product_ids[0])
-                if product.name != line['Nombre']:
-                    cls.PRODUCT_MODEL.write(product.id, {'name': line['Nombre']})
-                    cls.logger.info(f"{product.default_code}: UPDATED NAME TO {line['Nombre']}")
+                if product.name != line[name_key]:
+                    cls.PRODUCT_MODEL.write(product.id, {'name': line[name_key]})
+                    cls.logger.info(f"{product.default_code}: UPDATED NAME TO {line[name_key]}")
                 else:
                     cls.logger.info(f"{product.default_code}: NAME ALREADY CORRECT")

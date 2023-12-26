@@ -72,6 +72,9 @@ IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 IF_ARCHIVE_PRODUCTS_FROM_JSON = False
 
 IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = True
+# If True, correct names will be extracted from product jsons
+# If False, correct names will be extracted from excel
+IF_GET_CORRECT_NAMES_FROM_JSONS = False
 
 
 if IF_IMPORT_FIELDS:
@@ -136,5 +139,5 @@ if IF_IMPORT_LOCAL_STOCK:
 
 if IF_IMPORT_CORRECT_NAMES_FROM_EXCEL:
     OdooImport.logger.info(f'BEGINNING CORRECT NAMES IMPORT')
-    OdooImport.import_correct_names_from_excel(Util.CORRECT_NAMES_EXCEL_PATH)
+    OdooImport.import_correct_names_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, IF_GET_CORRECT_NAMES_FROM_JSONS)
     OdooImport.logger.info(f'FINISHED CORRECT NAMES IMPORT')
