@@ -633,7 +633,7 @@ class Util:
     def get_correct_name_from_excel(cls, excel_path, sku, original_name):
         line_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
         for line_dict in line_dicts:
-            if str(sku) == str(line_dict['SKU']):
-                print(f'{sku}: ASSIGNED CORRECT NAME {line_dict["NAME"]} FROM EXCEL')
-                return line_dict['NAME']
+            if str(sku) == str(line_dict['Referencia interna']):
+                print(f'{sku}: ASSIGNED CORRECT NAME {line_dict["Nombre"]} FROM EXCEL')
+                return line_dict['Nombre']
         return original_name
