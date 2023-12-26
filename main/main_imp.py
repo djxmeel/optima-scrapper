@@ -16,8 +16,6 @@ from utils.util import Util
 # TODO WEEKLY 3. Upload stock when new stock is available
 # TODO WEEKLY 4. Delete unused attributes and values
 
-# TODO Do a scrape that downloads technical sheets from vtacexports ( with update mode )
-
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
@@ -68,10 +66,12 @@ IF_IMPORT_DESCATALOGADOS_CATALOGO = False
 IF_IMPORT_LOCAL_STOCK = False
 
 # TODO Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
-IF_IMPORT_AVAILABILITY = True
+IF_IMPORT_AVAILABILITY = False
 IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 
 IF_ARCHIVE_PRODUCTS_FROM_JSON = False
+
+IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = True
 
 
 if IF_IMPORT_FIELDS:
@@ -133,3 +133,8 @@ if IF_IMPORT_LOCAL_STOCK:
     OdooImport.logger.info(f'BEGINNING LOCAL STOCK IMPORT')
     OdooImport.import_local_stock(LOCAL_STOCK_EXCEL_PATH)
     OdooImport.logger.info(f'FINISHED LOCAL STOCK IMPORT')
+
+if IF_IMPORT_CORRECT_NAMES_FROM_EXCEL:
+    OdooImport.logger.info(f'BEGINNING CORRECT NAMES IMPORT')
+    OdooImport.import_correct_names_from_excel(Util.CORRECT_NAMES_EXCEL_PATH)
+    OdooImport.logger.info(f'FINISHED CORRECT NAMES IMPORT')

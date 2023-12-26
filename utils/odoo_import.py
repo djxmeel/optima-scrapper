@@ -475,7 +475,7 @@ class OdooImport:
                             # Iterate over the products 'imgs'
                             for extra_img in product['imgs'][1:]:
                                 if extra_img not in images:
-                                    name = f'{product_ids[0]}_{product['imgs'].index(extra_img)}'
+                                    name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
 
                                     new_image = {
                                         'name': name,
@@ -904,3 +904,18 @@ class OdooImport:
                     continue
 
             stock_quant_model.action_apply_inventory(product_stock_quant_ids)
+
+    @classmethod
+    def import_correct_names_from_excel(cls, excel_path):
+        excel_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
+
+        for line in excel_dicts:
+            product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', str(line['Referencia interna']))])
+
+            if product_ids:
+                product = cls.PRODUCT_MODEL.browse(product_ids[0])
+                if product.name != line['Nombre']:
+                    cls.PRODUCT_MODEL.write(product.id, {'name': line['Nombre']})
+                    cls.logger.info(f"{product.default_code}: UPDATED NAME TO {line['Nombre']}")
+                else:
+                    cls.logger.info(f"{product.default_code}: NAME ALREADY CORRECT")

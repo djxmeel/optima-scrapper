@@ -44,10 +44,10 @@ class Util:
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
-    PRODUCT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/PRODUCT_NAME_RENAMES.json'
     ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/ATTACHMENT_NAME_RENAMES.json'
     SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
     MANUAL_PUBLIC_CATEGS_EXCEL_PATH = 'data/common/excel/public_category_manual.xlsx'
+    CORRECT_NAMES_EXCEL_PATH = 'data/common/excel/product_correct_names.xlsx'
 
     ODOO_FETCHED_PRODUCTS = []
 
@@ -557,16 +557,6 @@ class Util:
         return website_product_count
 
     @classmethod
-    def get_correctly_translated_product_name(cls, name):
-        replacements = Util.load_json(cls.PRODUCT_NAME_REPLACEMENTS_JSON_PATH)
-
-        for incorrect, replacement in replacements.items():
-            if incorrect in name:
-                name = name.replace(incorrect, replacement)
-
-        return name.replace('  ', ' ')
-
-    @classmethod
     def attachment_naming_replacements(cls, attachment_name):
         replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH)
 
@@ -638,3 +628,12 @@ class Util:
         resized_b64 = base64.b64encode(buffer.getvalue()).decode()
 
         return resized_b64
+
+    @classmethod
+    def get_correct_name_from_excel(cls, excel_path, sku, original_name):
+        line_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
+        for line_dict in line_dicts:
+            if str(sku) == str(line_dict['SKU']):
+                print(f'{sku}: ASSIGNED CORRECT NAME {line_dict["NAME"]} FROM EXCEL')
+                return line_dict['NAME']
+        return original_name
