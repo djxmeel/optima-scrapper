@@ -905,12 +905,10 @@ class OdooImport:
     @classmethod
     def import_correct_names_from_excel(cls, excel_path, get_from_jsons):
         if get_from_jsons:
-            # TODO get names from merged jsons after new merge with excel corrections
             products_dicts = Util.load_data_in_dir('data/vtac_merged/PRODUCT_INFO')
             print(f"Loaded {len(products_dicts)} products from jsons")
             name_key = 'name'
             sku_key = 'default_code'
-
         else:
             products_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
             print(f"Loaded {len(products_dicts)} products from excel")
