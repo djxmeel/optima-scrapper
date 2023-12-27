@@ -26,6 +26,7 @@
     ["vidrio", "Cristal"],
     ["ordenador personal", "PC"],
     ["Thermoplastico", "Termoplástico"],
+    ["Thermoplástico", "Termoplástico"],
     ["Nano Plastic", "Nanoplástico"],
     ["Die Cast ", ""],
     ["Gips", "Escayola"],
@@ -64,7 +65,9 @@
     ["@ Full load", ""],
     ["@Fullload", ""],
     ["25000", "25000h."],
-    ["20000", "20000h."]
+    ["20000", "20000h."],
+    ["h.h.", "h."]
+
   ],
   "Tipo de LED": [
     ["Filamentoo", "Filament"],
@@ -85,7 +88,9 @@
       ["Round", "Redondo"],
       ["Ovale", "Oval"],
       ["Half redondo", "Semi-circular"],
-      ["50 €", "R50"]
+      ["50 €", "R50"],
+      ["Rojoondo", "Redondo"],
+      ["Rotonda", "Redonda"]
   ],
   "Forma de la bombilla": [
     ["Candle", "Vela"]
@@ -96,17 +101,35 @@
   "Altura (caja) mm": [
     ["sesenta y cinco", "65"]
   ],
+  "Altura": [
+    ["Adjustable", "Ajustable"]
+  ],
   "Dimensiones de Montaje": [
-    ["Height", "Altura"]
+    ["Installation height", "Altura de instalación"],
+    ["Height", "Altura"],
+    ["height", "Altura"]
+  ],
+  "Dimensiones": [
+    ["Blades", "Aspas"]
+  ],
+  "Tiempo de espera": [
+    ["personalizados", "personalizable"],
+    ["personalizado", "personalizable"]
   ],
   "Ciclos de encendido/apagado": [
-    ["> ", ">"]
+    ["> ", ">"],
+    [" times", ""]
+  ],
+  "Ángulo de apertura": [
+    ["Adjustable", "Ajustable"],
+    ["Changeable", "Cambiable"]
   ],
   "Garantía": [
     ["years", "Años"],
     ["year", "Años"],
     ["años", "Años"],
-    ["año", "Años"]
+    ["año", "Años"],
+    ["Option for extended warranty", "Opción de garantía extendida + 5 años"]
   ],
   "Temperaturas de trabajo": [
     ["Not suitable for use in extreme conditions. Normal working conditions is -20° +45°", "No es adecuado para su uso en condiciones extremas. Condiciones de trabajo normales de -20 ° a + 45 °"]
@@ -119,7 +142,9 @@
   ],
   "Cantidad de LEDs": [
     [" pcs", " piezas"],
-    [" uds", " unidades"]
+    [" uds", " unidades"],
+    ["Front", "Delante"],
+    ["Back", " Detrás"]
   ],
   "No flicker": [
     ["sin destellos", "Sí"]
@@ -133,12 +158,14 @@
     ["Cut only on the given cut copper line.", "Corte solo en la línea de cobre."]
   ],
   "Corriente": [
-    ["Input", "Entrada"],
-    ["Output", "Salida"],
+    ["Input Current", "Corriente de Entrada"],
+    ["Output Current", "Corriente de Salida"],
+    ["each canal", "cada canal"],
     ["channels", "canales"],
     ["channel", "canal"],
     ["Channels", "Canales"],
-    ["Channel", "Canal"]
+    ["Channel", "Canal"],
+    [" Current ", "Corriente"]
   ],
   "Salida": [
     ["Input", "Entrada"],
@@ -153,12 +180,24 @@
     ["Wire", "Cable"],
     ["wire", "cable"]
   ],
+  "Longitud (caja) mm": [
+    ["sesenta y cinco", "65"]
+  ],
+  "Longitud de la bobina": [
+    ["Mm", " M"],
+    [" Metros", " M"],
+    ["m", " M"],
+    [" M", "m"],
+    ["wire", "cable"]
+  ],
   "Tipo de batería": [
       ["Rechargable Lithium battery", " Batería de Litio recargable"],
       ["4V,2.5AH Lead Acid Battery", "Batería de plomo y ácido 4V,2.5AH"],
       ["3.7V, Lithium Battery 1800mAh", "Batería de Litio 3.7V 1800mAh"],
       ["1AA battery 1.2V/500 mAH Ni-MHV", "Batería 1AA 1.2V/500 mAH Ni-MHV"],
-      ["Lithium battery", "Bateria de Litio"]
+      ["Lithium battery", "Bateria de Litio"],
+      ["Rechargable", "Recargable"],
+      ["Not Included", "No incluido"]
   ],
   "Rotación": [
     ["Yes", "Sí"],
@@ -178,25 +217,43 @@
     ["connettore", "conector"]
   ],
   "Tiempo de carga": [
+    [" horasoras", " h"],
     ["Sunlight Charging", "Carga solar"],
     ["de carga bajo luz solar", "Carga solar"],
     [" ore", " horas"],
     [" hrs", " horas"],
+    [" horas", " h"],
     [" h", " horas"]
   ],
   "IP": [
     ["Junction box: ", ""],
     ["diodes", "diodos"]
   ],
+  "Distancia de detección": [
+    ["Adjustable", "Ajustable"]
+  ],
+  "Diámetro": [
+    ["Body", "Cuerpo"],
+    ["Shade", "Contorno"]
+  ],
   "Tiempo de trabajo": [
-    [" h", "horas"],
-    ["Nights", "Noches"]
+    [" hrs", " h"],
+    [" hours", " h"],
+    [" horas", " h"],
+    [" h", " horas"],
+    ["Mode ", "Modo "],
+    ["Nights", "noches"],
+    ["nights", "noches"],
+    ["depending on use", "dependiendo del uso"]
   ],
   "Potencia": [
     [" Each Holder", ""],
     ["75W Max", "Max. 75W"],
     ["Max. 40", "Max. 40W"],
-    ["PV Set: 600W;Max. power yield / year: upto 1068kWh;max. power yield / day: upto 3kWh;", "PV Set: 600W. Max. potencia de campo / año: hasta 1068kWh ; Max. potencia de campo / dia: hasta 3kWh"],
+    [" year", " año"],
+    ["power yield", "potencia de campo"],
+    [" day", " día"],
+    [" upto", " hasta"],
     ["Real Watts", "Vatios reales"],
     ["Solar Panel", "Panel Solar"],
     ["Max. Input Power", "Max. Potencia de Entrada"],
@@ -221,6 +278,9 @@
     "Sistema eléctrico": [
       ["Tres fases", "Trifásico"]
     ],
+    "Tipo de regulación": [
+        ["Atenuación", "Regulación"]
+      ],
     "Regulable": [
       ["SI", "Sí"],
       ["Si", "Sí"],
@@ -229,6 +289,9 @@
     "Clase de eficiencia energética": [
       ["mi ", "E "],
       ["Un ", "A "]
+    ],
+    "Eficiencia lumínica": [
+      ["lm/W lm/W", "lm/W"]
     ],
     "Tipo de sensor": [
       ["Microwave", "Microondas"],
@@ -239,7 +302,7 @@
       ["Infrared Motion", "Infrarrojo"],
       ["Infrared Motion Sensor", "Infrarrojo"],
       ["Motion via Hand", "Movimiento mediante mano"],
-      ["Motion via Dand", "Movimiento mediante puerta"],
+      ["Motion via Door", "Movimiento mediante puerta"],
       ["Light Sensor", "Sensor de luz"],
       ["Photocell", "Sensor de luz"],
       ["IR movimiento", "Movimiento IR"],
@@ -255,5 +318,9 @@
       [" Nights", " noches"],
       ["(depending on use)", "(dependiendo del uso)"],
       [" h ", "h."]
+    ],
+    "Frecuencia": [
+      ["Infrared", "Infrarrojo"],
+      ["Optional", "Opcional"]
     ]
 }
