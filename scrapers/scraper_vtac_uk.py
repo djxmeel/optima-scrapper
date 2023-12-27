@@ -331,7 +331,8 @@ class ScraperVtacUk:
 
             filename = filename.replace('%20', '_')
 
-            with open(f'{nested_dir}/{filename}', 'wb') as file:
-                file.write(response.content)
+            if '.' in filename:
+                with open(f'{nested_dir}/{filename}', 'wb') as file:
+                    file.write(response.content)
 
         return len(pdf_elements)
