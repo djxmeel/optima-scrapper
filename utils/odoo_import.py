@@ -796,8 +796,7 @@ class OdooImport:
                 product['Entrada de nuevas unidades'] = 'Próximamente'
                 product['Disponibilidad'] = ''
 
-                if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(
-                        eu_stock[product['default_code']]['next delivery']):
+                if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(eu_stock[product['default_code']]['next delivery']):
                     date_unformatted = str(eu_stock[product["default_code"]]["next delivery"])[:10]
                     product['Entrada de nuevas unidades'] = '/'.join(date_unformatted.split('-')[::-1])
 
@@ -807,6 +806,9 @@ class OdooImport:
     def clear_availability_attributes(cls, product_id, eu_stock_attr_id, entradas_attr_id):
         cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', eu_stock_attr_id), ('product_tmpl_id', '=', product_id)]) +
                                         cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
+
+
+    # TODO Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
     @classmethod
     def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel):
         products = cls.browse_all_products_in_batches()

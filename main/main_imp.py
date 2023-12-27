@@ -65,7 +65,6 @@ IF_IMPORT_DESCATALOGADOS_CATALOGO = False
 
 IF_IMPORT_LOCAL_STOCK = False
 
-# TODO Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
 IF_IMPORT_AVAILABILITY = False
 IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 
