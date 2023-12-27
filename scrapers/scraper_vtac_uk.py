@@ -278,7 +278,6 @@ class ScraperVtacUk:
 
         return len(pdf_elements)
 
-    # TODO TEST the correct DL of spec_sheets
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
         """
