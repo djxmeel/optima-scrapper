@@ -140,5 +140,6 @@
 "Corriente de descarga de la batería": "Corriente de descarga",
 "Corriente de carga de la batería": "Corriente de carga",
 "Tiempo de trabajo": "Autonomía",
-"Autonomia": "Autonomía"
+"Autonomia": "Autonomía",
+"Potencia máxima de ca": "Potencia máxima AC"
 }

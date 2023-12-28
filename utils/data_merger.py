@@ -65,7 +65,8 @@ class DataMerger:
         'Cantidad por palet',
         'Cantidad por caja',
         'Unidad de medida',
-        'SAMSUNG'
+        'SAMSUNG',
+        'Tipo de enchufe'
     ]
 
     # Fields to rename for common naming between data sources
@@ -151,13 +152,13 @@ class DataMerger:
         fields_to_rename = Util.load_json(fields_to_rename_json_path)
         value_renames = Util.load_json(value_renames_json_path)
 
-        for field in fields_to_delete:
-            if field in product:
-                del product[field]
-
         for field, field_renamed in fields_to_rename.items():
             if field in product:
                 product[field_renamed] = product[field]
+                del product[field]
+
+        for field in fields_to_delete:
+            if field in product:
                 del product[field]
 
         for field, renames in value_renames.items():
