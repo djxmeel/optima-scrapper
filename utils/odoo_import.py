@@ -668,7 +668,7 @@ class OdooImport:
         pricelist_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_pricelist_excel_path)
 
         for product in products:
-            supplier_prod_name = product.name
+            supplier_prod_name = str(product.name).split('] ')[1]
             purchase_price = 0
 
             for line in pricelist_excel_dicts:
