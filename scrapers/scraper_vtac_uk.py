@@ -171,6 +171,11 @@ class ScraperVtacUk:
 
         # Reemplazo de campos para ODOO
         if 'Peso bruto (kg)' in item:
+
+            # Temporal fix for 16 getting translated in letters for some reason
+            if item['Peso bruto (kg)'] == 'dieciséis':
+                item['Peso bruto (kg)'] = '16'
+
             item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
             del item['Peso bruto (kg)']
 
@@ -193,7 +198,7 @@ class ScraperVtacUk:
                 return
 
             # Número total de productos por categoría
-            product_count = int(driver.find_element(By.XPATH, '//aside/h5').text.split(' ')[0])
+            product_count = int(driver.find_element(By.XPATH, '//aside//h5').text.split(' ')[0])
 
             # Número de páginas (Total / 16)
             page_count = math.ceil(product_count / 16)
