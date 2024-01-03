@@ -459,7 +459,7 @@ class OdooImport:
                                     cls.MEDIA_MODEL.unlink(images)
                                     images.clear()
                                     images = []
-                                    cls.logger.info(f"CLEANED {product['default_code']} IMAGES")
+                                    cls.logger.info(f"CLEANED IMAGES OF SKU {product['default_code']}")
                                 else:
                                     # Product existing images
                                     images = cls.MEDIA_MODEL.browse(images)
@@ -485,7 +485,6 @@ class OdooImport:
                                     try:
                                         # Create the new product.image record
                                         cls.MEDIA_MODEL.create(new_image)
-                                        cls.logger.info(f'{product["default_code"]}: UPLOADED IMAGE with name : {name}')
                                     except RPCError:
                                         cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
                                 else:
@@ -506,7 +505,7 @@ class OdooImport:
 
                             if videos and clean:
                                 cls.MEDIA_MODEL.unlink(videos)
-                                cls.logger.info(f"CLEANED {product['default_code']} VIDEOS")
+                                cls.logger.info(f"CLEANED VIDEOS OF SKU {product['default_code']}")
                                 videos.clear()
                             else:
                                 videos = cls.MEDIA_MODEL.browse(videos)
@@ -562,7 +561,6 @@ class OdooImport:
                                 try:
                                     # Create the new product.image record
                                     cls.MEDIA_MODEL.create(new_image)
-                                    cls.logger.info(f'{product["default_code"]}: UPLOADED ICON with name : {name}')
                                 except RPCError:
                                     pass
                             else:
