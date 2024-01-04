@@ -17,6 +17,10 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
+#TODO Sustituir iconos por las del catalogo
+#TODO Original spec sheets dont have to be in 16
+#TODO Create Odoo 15 products from excel (Check Discord)
+
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 
