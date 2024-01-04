@@ -327,6 +327,9 @@ class Util:
         try:
             for link in loaded_links[begin_from:]:
                 counter += 1
+
+                time.sleep(0.2)
+
                 sku = Util.get_sku_from_link(scraper.DRIVER, link, scraper.COUNTRY)
 
                 if scraper.COUNTRY == 'uk':
