@@ -312,11 +312,6 @@ class ScraperVtacUk:
 
         pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
 
-        try:
-            pdf_elements += driver.find_elements(By.XPATH, "/html/body/div[3]/main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[2]/div/div[2]/div/a")
-        except NoSuchElementException:
-            pass
-
         cls.logger.info(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
 
         for pdf_element in pdf_elements:
@@ -341,3 +336,28 @@ class ScraperVtacUk:
                     file.write(response.content)
 
         return len(pdf_elements)
+
+    @classmethod
+    def download_specsheet_of_sku(cls, driver, sku, skip_existing=False):
+        try:
+            nested_dir = f'data/vtac_uk/spec_sheets/{sku}'
+
+            if not os.path.exists(nested_dir):
+                os.makedirs(nested_dir, exist_ok=False)
+            elif skip_existing:
+                print(f'SKIPPING: Spec sheet of SKU {sku} already exists')
+                return
+
+            spec_sheet_path = '/html/body/div[3]/main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[2]/div/div[2]/div/a'
+
+            specsheet_anchor = driver.find_element(By.XPATH, spec_sheet_path)
+            print(f'Found the specsheet of SKU {sku}')
+
+            name = f'{sku}_specsheet.pdf'
+
+            response = requests.get(specsheet_anchor.get_attribute('href'))
+
+            with open(f'{nested_dir}/{name}', 'wb') as file:
+                file.write(response.content)
+        except NoSuchElementException:
+            print(f'SKIPPING: Could not download spec_sheet of SKU -> {sku}')
