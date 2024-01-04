@@ -613,6 +613,36 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
     # Save the workbook
     workbook.save(output_file)
 
+def load_and_convert_images(input_directory, output_directory):
+    # Create the output directory if it doesn't exist
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+
+    # Track the unique base64 strings
+    unique_images = set()
+
+    # Iterate over all files in the input directory
+    for filename in os.listdir(input_directory):
+        if filename.endswith('.json'):
+            filepath = os.path.join(input_directory, filename)
+            with open(filepath, 'r') as file:
+                data = json.load(file)
+                for p in data:
+                    # Extract base64 strings from 'icons' key
+                    if 'icons' in p:
+                        for image_b64 in p['icons']:
+                            unique_images.add(image_b64)
+
+    # Convert and save the unique images
+    for i, image_b64 in enumerate(unique_images):
+        image_data = base64.b64decode(image_b64)
+        image = Image.open(BytesIO(image_data))
+        image.save(os.path.join(output_directory, f'image_{i}.png'))
+
+# Example usage
+load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/distinct_icons')
+
+
 # Example usage
 # get_price_variations_and_new_products_excel(
 #     'SKU',
@@ -625,15 +655,15 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
 #find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
-# merge_excel_files(
-#     'data/common/excel/public_category_sku_Q1_2024.xlsx',
-#     'data/common/excel/eu_stock/SOLO_EN_ODOO15_CON_CANTIDAD.xlsx',
-#     'data/common/excel/eu_stock/no_en_catalog_2024.xlsx',
-#     'SKU',
-#     False,
-#     False,
-#     "data/common/json/SKUS_TO_SKIP.json"
-# )
+merge_excel_files(
+    'data/common/excel/productos_odoo_16.xlsx',
+    'data/common/excel/public_category_sku_Q1_2024.xlsx',
+    'data/common/excel/no_en_odoo_16_TEST.xlsx',
+    'SKU',
+    False,
+    False,
+    "data/common/json/SKUS_TO_SKIP.json"
+)
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")

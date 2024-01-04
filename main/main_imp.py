@@ -15,6 +15,7 @@ from utils.util import Util
 # TODO WEEKLY 2. Compare pricelists when new pricelist is available
 # TODO WEEKLY 3. Upload stock when new stock is available
 # TODO WEEKLY 4. Delete unused attributes and values
+# TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -58,19 +59,19 @@ PDF_START_FROM = 0
 IF_CLEAN_ATTACHMENTS = False
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
-IF_IMPORT_SUPPLIER_INFO_AND_COST = False
-IF_UPDATE_MODE = False
+IF_IMPORT_SUPPLIER_INFO_AND_COST = True
+IF_UPDATE_MODE = True
 
-IF_IMPORT_DESCATALOGADOS_CATALOGO = False
+IF_IMPORT_DESCATALOGADOS_CATALOGO = True
 
 IF_IMPORT_LOCAL_STOCK = False
 
-IF_IMPORT_AVAILABILITY = False
+IF_IMPORT_AVAILABILITY = True
 IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 
-IF_ARCHIVE_PRODUCTS_FROM_JSON = False
+IF_ARCHIVE_PRODUCTS_FROM_JSON = True
 
-IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = True
+IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = False
 # If True, correct names will be extracted from product jsons
 # If False, correct names will be extracted from excel
 IF_GET_CORRECT_NAMES_FROM_JSONS = False

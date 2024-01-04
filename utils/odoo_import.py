@@ -663,12 +663,15 @@ class OdooImport:
         partner_model = cls.odoo.env['res.partner']
         partner_id = partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0]
 
-        products = cls.browse_all_products_in_batches()
+        products = cls.browse_all_products_in_batches('default_code', '!=', False)
         stock_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_stock_excel_path)
         pricelist_excel_dicts = Util.load_excel_columns_in_dictionary_list(supplier_pricelist_excel_path)
 
         for product in products:
-            supplier_prod_name = str(product.name).split('] ')[1]
+            if ']' in product.name:
+                supplier_prod_name = str(product.name).split(']')[1].strip()
+            else:
+                supplier_prod_name = str(product.name)
             purchase_price = 0
 
             for line in pricelist_excel_dicts:
