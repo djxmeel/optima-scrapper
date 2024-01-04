@@ -24,6 +24,9 @@ IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
+# Fichas técnicas productos UK
+IF_DL_ITEM_SPEC_SHEETS = True
+
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF)
 scraper = country_scrapers[chosen_country]
 scraper.logger = Loggers.setup_vtac_logger(chosen_country)
@@ -96,6 +99,22 @@ if IF_DL_ITEM_PDF:
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
+
+
+# SPEC SHEET DL
+if IF_DL_ITEM_SPEC_SHEETS:
+    scraper.instantiate_driver()
+    start_time = time.time()
+
+    scraper.logger.info(f'BEGINNING PRODUCT SPEC SHEETS DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH}')
+    Util.begin_items_uk_specsheets_download(
+        scraper,
+        scraper.PRODUCTS_LINKS_PATH,
+        scraper.logger,
+    )
+
+    elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
+    scraper.logger.info(f'FINISHED PRODUCT SPEC SHEETS DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 try:
     url = scraper.DRIVER.current_url
