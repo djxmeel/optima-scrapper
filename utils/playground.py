@@ -639,8 +639,41 @@ def load_and_convert_images(input_directory, output_directory):
         image = Image.open(BytesIO(image_data))
         image.save(os.path.join(output_directory, f'image_{i}.png'))
 
+
+def create_products_from_excel(excel_path):
+    products = Util.load_excel_columns_in_dictionary_list(excel_path)
+    odoo = login_odoo()
+    product_model = odoo.env['product.template']
+    partner_model = odoo.env['res.partner']
+    partner_id = partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0]
+    supplier_info_model = odoo.env['product.supplierinfo']
+
+    for product in products:
+        product_id = product_model.create({
+                        "default_code": str(product["SKU"]),
+                        "name": product["Nombre"],
+                        "standard_price": product["Coste"],
+                        "list_price": 0,
+                        "detailed_type": "product",
+                        "invoice_policy": "delivery",
+                        "product_brand_id": 1
+                    })
+
+        supplier_info_model.create({
+            'partner_id': partner_id,
+            'product_tmpl_id': product_id,
+            'product_code': str(product["SKU"]),
+            'price': product["Compra"],
+            'min_qty': 1
+        })
+
+        print(f"CREATED SKU: {product['SKU']}")
+
+create_products_from_excel("data/common/excel/ESTA_EN_ODOO_15_PERO_NO_EN_ODOO_16.xlsx")
+
+
 # Example usage
-load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/distinct_icons')
+# load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/distinct_icons')
 
 
 # Example usage
@@ -655,15 +688,15 @@ load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/dist
 #find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
-merge_excel_files(
-    'data/common/excel/productos_odoo_16.xlsx',
-    'data/common/excel/public_category_sku_Q1_2024.xlsx',
-    'data/common/excel/no_en_odoo_16_TEST.xlsx',
-    'SKU',
-    False,
-    False,
-    "data/common/json/SKUS_TO_SKIP.json"
-)
+# merge_excel_files(
+#     'data/common/excel/no_en_odoo_16_pero_si_15.xlsx',
+#     'data/common/excel/STOCK.xlsx',
+#     'data/common/excel/tst.xlsx',
+#     'SKU',
+#     False,
+#     False,
+#     "data/common/json/SKUS_TO_SKIP.json"
+# )
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")

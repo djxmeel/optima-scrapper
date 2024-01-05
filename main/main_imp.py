@@ -29,7 +29,7 @@ UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
 PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/public_categories_odoo.xlsx'
 
-SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/supplier_stock.xlsx'
+SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/eu_stock/eu_stock.xlsx'
 SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'
 
 BRANDS_EXCEL_FILE_PATH = 'data/common/excel/product_brands.xlsx'
@@ -128,7 +128,7 @@ if IF_IMPORT_DESCATALOGADOS_CATALOGO:
 
 if IF_IMPORT_AVAILABILITY:
     OdooImport.logger.info(f'BEGINNING AVAILABILITY IMPORT')
-    OdooImport.import_availability(OdooImport.EU_STOCK_EXCEL_PATH, IF_GENERATE_MISSING_PRODUCTS_EXCEL)
+    OdooImport.import_availability(SUPPLIER_STOCK_EXCEL_FILE_PATH, IF_GENERATE_MISSING_PRODUCTS_EXCEL)
     OdooImport.logger.info(f'FINISHED AVAILABILITY IMPORT')
 
 if IF_ARCHIVE_PRODUCTS_FROM_JSON:

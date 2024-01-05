@@ -65,7 +65,6 @@ class OdooImport:
 
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
     PRIORITY_EXCEL_SKUS_PATH = 'data/common/excel/Productos Comprados o Vendidos VTAC.xlsx'
-    EU_STOCK_EXCEL_PATH = 'data/common/excel/eu_stock/eu_stock.xlsx'
 
     @classmethod
     def create_internal_category(cls, internal_category):
