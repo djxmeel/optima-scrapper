@@ -17,9 +17,7 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
-#TODO Sustituir iconos por las del catalogo
-#TODO Original spec sheets dont have to be in 16
-#TODO Create Odoo 15 products from excel (Check Discord)
+# TODO new catalog icons
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -44,7 +42,7 @@ IF_IMPORT_BRANDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
 
-IF_IMPORT_PRODUCTS = False
+IF_IMPORT_PRODUCTS = True
 # When False, products with changed origin URL to ES will be updated anyway
 # When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
@@ -54,17 +52,17 @@ USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
 
-IF_IMPORT_IMGS_AND_ICONS = False
+IF_IMPORT_IMGS_AND_ICONS = True
 IF_CLEAN_EXISTING = False
-SKIP_PRODUCTS_W_MEDIA = False
+SKIP_PRODUCTS_W_MEDIA = True
 
-IF_IMPORT_PDFS = False
+IF_IMPORT_PDFS = True
 PDF_START_FROM = 0
-IF_CLEAN_ATTACHMENTS = False
+IF_CLEAN_ATTACHMENTS = True
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_SUPPLIER_INFO_AND_COST = True
-IF_UPDATE_MODE = True
+IF_UPDATE_MODE = False
 
 IF_IMPORT_DESCATALOGADOS_CATALOGO = True
 
@@ -73,11 +71,11 @@ IF_IMPORT_LOCAL_STOCK = False
 IF_IMPORT_AVAILABILITY = True
 IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 
-IF_ARCHIVE_PRODUCTS_FROM_JSON = True
+IF_ARCHIVE_PRODUCTS_FROM_JSON = False
 
 IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = False
 # If True, correct names will be extracted from product jsons
-# If False, correct names will be extracted from excel
+# If False, correct names will be extracted from Excel
 IF_GET_CORRECT_NAMES_FROM_JSONS = False
 
 
