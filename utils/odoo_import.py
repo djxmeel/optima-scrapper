@@ -250,7 +250,7 @@ class OdooImport:
 
                     current_origin_url = cls.PRODUCT_MODEL.browse(product_id).x_url
 
-                    if (current_origin_url == url or 'v-tac.es' in current_origin_url or 'v-tac.es' not in url) and not force_update:
+                    if current_origin_url and (current_origin_url == url or 'v-tac.es' in current_origin_url or 'v-tac.es' not in url) and not force_update:
                         cls.logger.info(f'FORCE SKIPPING Product {product["default_code"]} for it\'s origin didn\'t change')
                         continue
 
@@ -344,7 +344,7 @@ class OdooImport:
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
-        skus_in_odoo = [p.default_code for p in cls.browse_all_products_in_batches()]
+        skus_in_odoo = [p.default_code for p in cls.browse_all_products_in_batches('default_code', '!=', 'False')]
 
         directory_list_es = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['es'])
         sku_list_es = [dirr.split('\\')[-1] for dirr in directory_list_es]
@@ -355,11 +355,7 @@ class OdooImport:
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
         sku_list_ita = [dirr.split('\\')[-1] for dirr in directory_list_ita]
 
-
-        while False in skus_in_odoo:
-            skus_in_odoo.remove(False)
-
-        for index, sku in enumerate(sorted(skus_in_odoo[start_from:])):
+        for index, sku in enumerate(skus_in_odoo[start_from:]):
             res_id = product_model.search([('default_code', '=', sku)])[0]
 
             if clean:
@@ -646,9 +642,13 @@ class OdooImport:
                 break
 
             offset += batch_size
-
-            products.extend(cls.PRODUCT_MODEL.browse(product_ids))
-            cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
+            try:
+                products.extend(cls.PRODUCT_MODEL.browse(product_ids))
+                cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
+            except TimeoutError:
+                cls.logger.error(f"TIMEOUT ERROR FETCHING PRODUCTS. RETRYING IN 5 SECONDS...")
+                time.sleep(5)
+                products.extend(cls.PRODUCT_MODEL.browse(product_ids))
 
         if not field or not operator:
             cls.logger.info(f"FETCHED ALL PRODUCTS: {len(products)}")
