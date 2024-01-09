@@ -652,11 +652,11 @@ def create_products_from_excel(excel_path):
         product_id = product_model.create({
                         "default_code": str(product["SKU"]),
                         "name": product["Nombre"],
-                        "standard_price": product["Coste"],
+                        "standard_price": product["Compra"],
                         "list_price": 0,
                         "detailed_type": "product",
-                        "invoice_policy": "delivery",
-                        "product_brand_id": 1
+                        "invoice_policy": "delivery"
+                        #"product_brand_id": 1
                     })
 
         supplier_info_model.create({
@@ -670,7 +670,7 @@ def create_products_from_excel(excel_path):
         print(f"CREATED SKU: {product['SKU']}")
 
 
-# create_products_from_excel("data/common/excel/ESTA_EN_ODOO_15_PERO_NO_EN_ODOO_16.xlsx")
+#create_products_from_excel("data/common/excel/AvideEntac_con_movimientos_OK.xlsx")
 
 # Example usage
 # load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/distinct_icons')
@@ -688,15 +688,15 @@ def create_products_from_excel(excel_path):
 #find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
-merge_excel_files(
-    'data/common/excel/eu_stock/16.xlsx',
-    "data/common/excel/eu_stock/NO_ESTA_EN_EL_CATALOGO_2024_Y_TENEMOS_STOCK.xlsx",
-    'data/common/excel/eu_stock/tst.xlsx',
-'Referencia interna',
-    False,
-    False,
-    "data/common/json/SKUS_TO_SKIP.json"
-)
+# merge_excel_files(
+#     'data/common/excel/eu_stock/16.xlsx',
+#     "data/common/excel/eu_stock/En_odoo_15_y_no_en_pricelist.xlsx",
+#     'data/common/excel/eu_stock/tst.xlsx',
+# 'Referencia interna',
+#     False,
+#     False,
+#     "data/common/json/SKUS_TO_SKIP.json"
+# )
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
