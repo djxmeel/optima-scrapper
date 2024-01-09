@@ -486,9 +486,9 @@ def merge_excel_files(path1, path2, output_path, field, is_in=False, concat=True
     else:
         df2_filtered = df2[~df2[field].isin(unique_skus)]
 
-    if additional_sku_filter_path and field == 'SKU':
+    if additional_sku_filter_path and field == field:
         skus_to_skip = [sku for sku in Util.load_json(additional_sku_filter_path)["skus"]]
-        df2_filtered = df2_filtered[~df2_filtered['SKU'].isin(skus_to_skip)]
+        df2_filtered = df2_filtered[~df2_filtered[field].isin(skus_to_skip)]
 
     if concat:
         # Combine the DataFrames
@@ -669,8 +669,8 @@ def create_products_from_excel(excel_path):
 
         print(f"CREATED SKU: {product['SKU']}")
 
-create_products_from_excel("data/common/excel/ESTA_EN_ODOO_15_PERO_NO_EN_ODOO_16.xlsx")
 
+# create_products_from_excel("data/common/excel/ESTA_EN_ODOO_15_PERO_NO_EN_ODOO_16.xlsx")
 
 # Example usage
 # load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/distinct_icons')
@@ -679,24 +679,24 @@ create_products_from_excel("data/common/excel/ESTA_EN_ODOO_15_PERO_NO_EN_ODOO_16
 # Example usage
 # get_price_variations_and_new_products_excel(
 #     'SKU',
-#     'data/common/excel/vtac_supplier_pricelists/stacked/01.Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023_ANTIGUO.xlsx',
-#     'data/common/excel/vtac_supplier_pricelists/stacked/02.Pricelist_V-TAC_Europe_Ltd_promotions_November_2023_NUEVO.xlsx',
-#     'data/common/excel/vtac_supplier_pricelists/stacked/output_file2.xlsx')
+#     'data/common/excel/local_stock/16._Pricelist_V-TAC_Europe_Ltd_promotions_November_2023.xlsx',
+#     'data/common/excel/local_stock/17._Pricelist_V-TAC_Europe_Ltd_promotions_January_2024.xlsx',
+#     'data/common/excel/local_stock/output.xlsx')
 
 
 # Example usage :
 #find_duplicate_in_excel('data/common/excel/productos_odoo_15.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
-# merge_excel_files(
-#     'data/common/excel/no_en_odoo_16_pero_si_15.xlsx',
-#     'data/common/excel/STOCK.xlsx',
-#     'data/common/excel/tst.xlsx',
-#     'SKU',
-#     False,
-#     False,
-#     "data/common/json/SKUS_TO_SKIP.json"
-# )
+merge_excel_files(
+    'data/common/excel/eu_stock/16.xlsx',
+    "data/common/excel/eu_stock/NO_ESTA_EN_EL_CATALOGO_2024_Y_TENEMOS_STOCK.xlsx",
+    'data/common/excel/eu_stock/tst.xlsx',
+'Referencia interna',
+    False,
+    False,
+    "data/common/json/SKUS_TO_SKIP.json"
+)
 
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
