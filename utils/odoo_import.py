@@ -915,7 +915,7 @@ class OdooImport:
             products_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
             print(f"Loaded {len(products_dicts)} products from excel")
             name_key = 'Nombre'
-            sku_key = 'Referencia interna'
+            sku_key = 'SKU'
 
         for line in products_dicts:
             product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', str(line[sku_key]))])
