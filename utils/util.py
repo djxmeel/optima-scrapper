@@ -597,7 +597,7 @@ class Util:
         all_products_data_filenames = Util.get_all_files_in_directory(product_data_path)
 
         if all_products_data_filenames:
-            last_products_data_file = cls.find_last_file(all_products_data_filenames)
+            last_products_data_file = cls.find_last_product_data_file(all_products_data_filenames)
             new_products_data = Util.load_json(last_products_data_file) + Util.load_data_in_dir(new_product_data_path)
             old_product_count = (len(all_products_data_filenames) - 1) * Util.JSON_DUMP_FREQUENCY
             os.remove(last_products_data_file)
@@ -661,7 +661,16 @@ class Util:
         return original_name
 
     @classmethod
-    def find_last_file(cls, all_products_data_filenames):
+    def find_last_product_data_file(cls, all_products_data_filenames):
+        """
+            Finds the last file in a list of files with format {any}_XXXX.json. 
+            
+            parameters:
+                all_products_data_filenames: products data jsons names list.
+
+            Returns:
+                The last file in the list.
+        """
         last_file = all_products_data_filenames[0]
         for file in all_products_data_filenames:
             if int(file.split('\\')[-1].split('_')[2].split('.')[0]) > int(
