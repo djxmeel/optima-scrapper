@@ -339,8 +339,9 @@ class ScraperVtacUk:
 
     @classmethod
     def download_specsheet_of_sku(cls, driver, sku, skip_existing=False):
+        nested_dir = f'data/vtac_uk/spec_sheets/{sku}'
+
         try:
-            nested_dir = f'data/vtac_uk/spec_sheets/{sku}'
 
             if not os.path.exists(nested_dir):
                 os.makedirs(nested_dir, exist_ok=False)
@@ -360,4 +361,5 @@ class ScraperVtacUk:
             with open(f'{nested_dir}/{name}', 'wb') as file:
                 file.write(response.content)
         except NoSuchElementException:
+            os.remove(nested_dir)
             print(f'SKIPPING: Could not download spec_sheet of SKU -> {sku}')
