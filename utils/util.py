@@ -1,5 +1,6 @@
 import base64
 import copy
+import io
 import json
 import os
 import random
@@ -667,3 +668,19 @@ class Util:
                     last_file.split('\\')[-1].split('_')[2].split('.')[0]):
                 last_file = file
         return last_file
+
+    @classmethod
+    def convert_image_to_base64(cls, image_path):
+        """
+            Converts an image to base64 string
+
+            Parameters:
+                image_path: path to the image file
+
+            Returns:
+                :return: base64 string of the image
+        """
+        with Image.open(image_path) as image:
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            return base64.b64encode(buffered.getvalue()).decode()
