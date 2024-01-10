@@ -670,6 +670,32 @@ def create_products_from_excel(excel_path):
         print(f"CREATED SKU: {product['SKU']}")
 
 
+def match_images(dir1, dir2):
+    images1 = set(os.listdir(dir1))
+    images2 = set(os.listdir(dir2))
+
+    matched_images = images1.intersection(images2)
+
+    for image_name in matched_images:
+        img1_path = os.path.join(dir1, image_name)
+        img2_path = os.path.join(dir2, image_name)
+
+        img1_b64 = Util.convert_image_to_base64(img1_path)
+        img2_b64 = Util.convert_image_to_base64(img2_path)
+
+        pair_data = {
+            "icons": [img1_b64, img2_b64]
+        }
+
+        with open(f"data/common/icons/icon_mappings/ita_{image_name.split('.')[0]}.json", 'w') as outfile:
+            json.dump(pair_data, outfile)
+
+# Example usage
+dir_path1 = 'data/common/icons/icons_catalog_Q1_2024'
+dir_path2 = 'data/common/icons/distinct_icons_ita'
+match_images(dir_path1, dir_path2)
+
+
 #create_products_from_excel("data/common/excel/AvideEntac_con_movimientos_OK.xlsx")
 
 # Example usage
