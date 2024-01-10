@@ -298,12 +298,15 @@ class DataMerger:
 
     @classmethod
     def get_translated_icons(cls, icons):
-        original_translated_icons_tuples = Util.load_json('data/common/json/original_translated_icons.json')
+        mappings_paths = Util.get_all_files_in_directory('data/common/json/icon_mappings')
 
-        for entry in original_translated_icons_tuples['icons']:
-            if entry[0] in icons:
-                icons.remove(entry[0])
-                icons.append(entry[1])
-                print("REPLACED ICON WITH TRANSLATED VERSION")
+        for path in mappings_paths:
+            original_translated_icons_tuples = Util.load_json(path)
+
+            for entry in original_translated_icons_tuples['icons']:
+                if entry[0] in icons:
+                    icons.remove(entry[0])
+                    icons.append(entry[1])
+                    print("REPLACED ICON WITH TRANSLATED VERSION")
 
         return icons
