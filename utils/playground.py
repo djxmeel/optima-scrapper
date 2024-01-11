@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import base64
@@ -8,9 +9,12 @@ from io import BytesIO
 import pandas as pd
 
 import odoorpc
+from PyPDF2.errors import PdfReadError
 from odoorpc.error import RPCError
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
+import PyPDF2
+from reportlab.pdfgen import canvas
 from selenium import webdriver
 
 from utils.data_merger import DataMerger
@@ -670,6 +674,24 @@ def create_products_from_excel(excel_path):
         print(f"CREATED SKU: {product['SKU']}")
 
 
+def rename_files_in_subfolders(base_folder, new_name_pattern):
+    """
+    Renames all files in subfolders of the specified base folder.
+    The new file names will follow the specified new_name_pattern.
+
+    :param base_folder: Path to the base folder containing subfolders.
+    :param new_name_pattern: A pattern for new file names, including an '{}' to be replaced with the original file name.
+    """
+    for root, dirs, files in os.walk(base_folder):
+        for file in files:
+            old_file_path = os.path.join(root, file)
+            new_file_name = new_name_pattern.format(file)
+
+            new_file_path = os.path.join(root, new_file_name)
+            os.rename(old_file_path, new_file_path)
+            print(f"Renamed '{old_file_path}' to '{new_file_path}'")
+
+
 def match_images(dir1, dir2):
     images1 = set(os.listdir(dir1))
     images2 = set(os.listdir(dir2))
@@ -690,10 +712,95 @@ def match_images(dir1, dir2):
         with open(f"data/common/icons/icon_mappings/ita_{image_name.split('.')[0]}.json", 'w') as outfile:
             json.dump(pair_data, outfile)
 
+def remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path):
+    # Read the input PDF
+    try:
+        input_pdf = PyPDF2.PdfReader(open(input_pdf_path, "rb"))
+    except PdfReadError:
+        print(f"ERROR READING {input_pdf_path}")
+        return
+
+    # Create a new PDF to write the modified content
+    output_pdf = PyPDF2.PdfWriter()
+
+    # Iterate through each page and remove annotations
+    for i in range(len(input_pdf.pages)):
+        page = input_pdf.pages[i]
+        page[PyPDF2.generic.NameObject("/Annots")] = PyPDF2.generic.ArrayObject()
+        output_pdf.add_page(page)
+
+    # Write the modified content to a new file
+    with open(output_pdf_path, "wb") as f:
+        output_pdf.write(f)
+
+
+def remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size):
+    unedited_specsheets = []
+
+    for root, dirs, files in os.walk(parent_folder):
+        for file in files:
+            if file.lower().endswith('.pdf') and not file.__contains__('FICHA_TECNICA_SKU'):
+                input_pdf_path = os.path.join(root, file)
+                output_pdf_path = os.path.join(root, f"FICHA_TECNICA_SKU_{file}")
+                remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path)
+                remove_elements_within_square(output_pdf_path, position, size, output_pdf_path)
+                print(f"PROCESSED {input_pdf_path}")
+                unedited_specsheets.append(input_pdf_path)
+
+    for specsheet in unedited_specsheets:
+        os.remove(specsheet)
+
+
+def create_white_square_overlay(position, size=(100, 100)):
+    # Create a PDF in memory
+    packet = io.BytesIO()
+    c = canvas.Canvas(packet)
+    c.setFillColorRGB(0, 0.807843137254902, 0.48627450980392156)  # White color
+    c.rect(position[0], position[1], size[0], size[1], stroke=0, fill=1)
+    c.save()
+
+    packet.seek(0)
+    return PyPDF2.PdfReader(packet)
+
+
+def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
+    # Read the input PDF
+    try:
+        input_pdf = PyPDF2.PdfReader(open(pdf_path, "rb"))
+    except PdfReadError:
+        print(f"ERROR READING {pdf_path}")
+        return
+    except FileNotFoundError:
+        print(f"ERROR READING {pdf_path}")
+        return
+
+    # Create a new PDF to write the modified content
+    output_pdf = PyPDF2.PdfWriter()
+
+    # Create the white square overlay PDF
+    overlay_pdf = create_white_square_overlay(position, size)
+
+    # Iterate through each page and apply the white square overlay
+    for i in range(len(input_pdf.pages)):
+        page = input_pdf.pages[i]
+        if i == 0:
+            page.merge_page(overlay_pdf.pages[0])
+        output_pdf.add_page(page)
+
+    # Write the modified content to a new file
+    with open(output_pdf_path, "wb") as f:
+        output_pdf.write(f)
+
+
+position = (490, 740)  # X, Y coordinates
+size = (80, 80)  # Width, Height of the square
+parent_folder = "data/vtac_uk/spec_sheets"
+remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
+
 # Example usage
-dir_path1 = 'data/common/icons/icons_catalog_Q1_2024'
-dir_path2 = 'data/common/icons/distinct_icons_ita'
-match_images(dir_path1, dir_path2)
+# dir_path1 = 'data/common/icons/icons_catalog_Q1_2024'
+# dir_path2 = 'data/common/icons/distinct_icons_ita'
+# match_images(dir_path1, dir_path2)
 
 
 #create_products_from_excel("data/common/excel/AvideEntac_con_movimientos_OK.xlsx")

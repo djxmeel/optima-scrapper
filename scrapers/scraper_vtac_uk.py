@@ -354,7 +354,7 @@ class ScraperVtacUk:
             specsheet_anchor = driver.find_element(By.XPATH, spec_sheet_path)
             print(f'Found the specsheet of SKU {sku}')
 
-            name = f'{sku}_specsheet.pdf'
+            name = f'{sku}.pdf'
 
             response = requests.get(specsheet_anchor.get_attribute('href'))
 
