@@ -808,7 +808,6 @@ class OdooImport:
                                         cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
 
 
-    # TODO Auto-generate excel with product in EU Stock not in Odoo & qty > 0 after upload weekly EU Stock
     @classmethod
     def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel):
         products = cls.browse_all_products_in_batches()
@@ -836,6 +835,10 @@ class OdooImport:
             cls.update_availability_related_fields(product_dict)
 
             cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY")
+
+        if generate_missing_products_excel:
+            # TODO check the generated excel
+            cls.generate_missing_products_excel(products, eu_stock)
 
     @classmethod
     def update_availability_related_fields(cls, product_dict):
@@ -927,3 +930,14 @@ class OdooImport:
                     cls.logger.info(f"{product.default_code}: UPDATED NAME TO {line[name_key]}")
                 else:
                     cls.logger.info(f"{product.default_code}: NAME ALREADY CORRECT")
+
+    @classmethod
+    def generate_missing_products_excel(cls, products, eu_stock):
+        missing_products = []
+        skus_in_odoo = [product.default_code for product in products]
+
+        for row in eu_stock:
+            if str(row['SKU']) not in skus_in_odoo and not pd.isna(row['AVAILABLE']) and int(row['AVAILABLE']) > 0:
+                missing_products.append(row)
+
+        pd.DataFrame(missing_products).to_excel('data/common/excel/products_in_eustock_not_odoo16_and_qty_greater_than_0.xlsx')

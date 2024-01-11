@@ -26,6 +26,7 @@ IF_DL_ITEM_PDF = False
 
 # Fichas técnicas productos UK
 IF_DL_ITEM_SPEC_SHEETS = True
+SPEC_SHEETS_BEGIN_FROM = 0
 
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF)
 scraper = country_scrapers[chosen_country]
@@ -111,6 +112,7 @@ if IF_DL_ITEM_SPEC_SHEETS:
         scraper,
         scraper.PRODUCTS_LINKS_PATH,
         scraper.logger,
+        SPEC_SHEETS_BEGIN_FROM
     )
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
