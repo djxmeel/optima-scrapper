@@ -821,6 +821,7 @@ class OdooImport:
             product_dict = {'default_code': product.default_code,
                             'description_purchase': product.description_purchase,
                             'qty_available': product.qty_available,
+                            'category_id': product.categ_id,
                             'id': product.id,
                             'name': product.name}
 
@@ -844,6 +845,7 @@ class OdooImport:
     def update_availability_related_fields(cls, product_dict):
         stock_europeo = product_dict['Stock europeo'].split(" ")[0]
         out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
+        productos_iluminacion_category_id = cls.odoo.env['product.category'].search([('name', '=', 'Productos de iluminación')])[0]
 
         # FIXME set to true when ready to publish
         is_published = False
@@ -853,16 +855,20 @@ class OdooImport:
         if stock_europeo == '0':
             allow_out_of_stock_order = False
 
-            if 'Entrada de nuevas unidades' in product_dict:
-                if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
-                    out_of_stock_msg = out_of_stock_messages[2]
-                elif '/' in product_dict['Entrada de nuevas unidades']:
-                    out_of_stock_msg = out_of_stock_messages[1]
 
-                if '[VSD' in product_dict['name']:
-                    is_published = False
+            if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
+                out_of_stock_msg = out_of_stock_messages[2]
+            elif '/' in product_dict['Entrada de nuevas unidades']:
+                out_of_stock_msg = out_of_stock_messages[1]
+
+            if '[VSD' in product_dict['name']:
+                is_published = False
         else:
             out_of_stock_msg = out_of_stock_messages[0]
+
+        # Unpublish products that are not in the 'Productos de iluminación' category
+        if product_dict['categ_id'] != productos_iluminacion_category_id:
+            is_published = False
 
         cls.PRODUCT_MODEL.write(product_dict["id"], {'allow_out_of_stock_order': allow_out_of_stock_order,
                                                         'out_of_stock_message': out_of_stock_msg,
