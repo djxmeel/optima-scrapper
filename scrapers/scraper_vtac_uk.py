@@ -5,7 +5,7 @@ import requests
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium.common.exceptions import TimeoutException
 from utils.util import Util
 
@@ -120,7 +120,7 @@ class ScraperVtacUk:
             driver.find_element(By.ID, 'tab-label-features').click()
             outer_html = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
             item['website_description'] = f'{Util.translate_from_to_spanish("en", outer_html)}\n'
-        except NoSuchElementException:
+        except (NoSuchElementException, ElementClickInterceptedException):
             pass
 
         # Extracción del SKU
@@ -133,6 +133,7 @@ class ScraperVtacUk:
         internal_ref = Util.get_internal_ref_from_sku(item['default_code'])
 
         if not internal_ref:
+            cls.logger.warning(f'SKIPPING: SKU NOT CONVERTED TO INTERNAL REF {item["url"]}')
             return None
 
         # Extracción del titulo
