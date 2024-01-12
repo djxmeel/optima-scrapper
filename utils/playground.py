@@ -651,6 +651,7 @@ def create_products_from_excel(excel_path):
     partner_model = odoo.env['res.partner']
     partner_id = partner_model.search([('name', '=', 'V-TAC Europe Ltd.')])[0]
     supplier_info_model = odoo.env['product.supplierinfo']
+    categ_id = odoo.env['product.category'].search([('name', '=', 'Productos de iluminación')])[0]
 
     for product in products:
         product_id = product_model.create({
@@ -659,7 +660,8 @@ def create_products_from_excel(excel_path):
                         "standard_price": product["Compra"],
                         "list_price": 0,
                         "detailed_type": "product",
-                        "invoice_policy": "delivery"
+                        "invoice_policy": "delivery",
+                        "categ_id": categ_id
                         #"product_brand_id": 1
                     })
 
@@ -792,10 +794,10 @@ def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
         output_pdf.write(f)
 
 
-position = (490, 740)  # X, Y coordinates
-size = (80, 80)  # Width, Height of the square
-parent_folder = "data/vtac_uk/spec_sheets"
-remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
+# position = (490, 740)  # X, Y coordinates
+# size = (80, 80)  # Width, Height of the square
+# parent_folder = "data/vtac_uk/spec_sheets"
+# remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
 
 # Example usage
 # dir_path1 = 'data/common/icons/icons_catalog_Q1_2024'
@@ -822,13 +824,13 @@ remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
 # merge_excel_files(
-#     'data/common/excel/eu_stock/16.xlsx',
-#     "data/common/excel/eu_stock/En_odoo_15_y_no_en_pricelist.xlsx",
-#     'data/common/excel/eu_stock/tst.xlsx',
+#     'data/common/excel/eu_stock/Producto (product.template) (3).xlsx',
+#     "data/common/excel/eu_stock/Variante de producto (product.product).xlsx",
+#     'data/common/excel/eu_stock/output.xlsx',
 # 'Referencia interna',
 #     False,
 #     False,
-#     "data/common/json/SKUS_TO_SKIP.json"
+#     #"data/common/json/SKUS_TO_SKIP.json"
 # )
 
 
