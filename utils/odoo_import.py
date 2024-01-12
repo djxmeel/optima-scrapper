@@ -934,10 +934,11 @@ class OdooImport:
     @classmethod
     def generate_missing_products_excel(cls, products, eu_stock):
         missing_products = []
+        skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')["skus"]
         skus_in_odoo = [product.default_code for product in products]
 
         for row in eu_stock:
-            if str(row['SKU']) not in skus_in_odoo and not pd.isna(row['AVAILABLE']) and int(row['AVAILABLE']) > 0:
+            if str(row['SKU']) not in skus_to_skip and str(row['SKU']) not in skus_in_odoo and not pd.isna(row['AVAILABLE']) and int(row['AVAILABLE']) > 0:
                 missing_products.append(row)
 
         pd.DataFrame(missing_products).to_excel('data/common/excel/products_in_eustock_not_odoo16_and_qty_greater_than_0.xlsx')
