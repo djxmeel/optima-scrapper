@@ -340,7 +340,7 @@ class Util:
             Util.begin_items_uk_specsheets_download(scraper, links_path, logger, skip_existing, counter)
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new=False, start_from=0):
+    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new=False, begin_from=0):
         """
         Begins item info extraction.
 
@@ -353,13 +353,13 @@ class Util:
         skipped = 0
 
         products_data = []
-        counter = start_from
+        counter = begin_from
 
         # Different links but same product
         duplicate_links = []
 
         try:
-            for link in links[start_from:]:
+            for link in links[begin_from:]:
                 # Skip duplicate links for ES
                 if scraper.COUNTRY == 'es':
                     if link in duplicate_links:

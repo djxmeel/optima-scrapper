@@ -51,6 +51,8 @@ class OdooImport:
                         'uk': 'data/vtac_uk/PRODUCT_PDF',
                         'ita': 'data/vtac_italia/PRODUCT_PDF'}
 
+    PRODUCT_SPEC_SHEETS_DIR = 'data/vtac_uk/SPEC_SHEETS'
+
     # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories')
 
@@ -340,7 +342,66 @@ class OdooImport:
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
 
     @classmethod
-    def import_pdfs(cls, start_from=0, clean=False, skip_products_w_attachments=False):
+    def import_spec_sheets(cls, clean, begin_from):
+        product_model = cls.PRODUCT_MODEL
+        attachments_model = cls.odoo.env['ir.attachment']
+
+        skus_in_odoo = [p.default_code for p in cls.browse_all_products_in_batches('default_code', '!=', 'False')]
+
+        directory_list = Util.get_nested_directories(cls.PRODUCT_SPEC_SHEETS_DIR)
+        spec_sheets_skus = [dirr.split('\\')[-1] for dirr in directory_list]
+
+        for index, sku in enumerate(skus_in_odoo[begin_from:]):
+            product_id = product_model.search([('default_code', '=', sku)])[0]
+            spec_sheet_name_template = 'FICHA_TECNICA_SKU_{}'
+
+            if clean:
+                existing_spec_sheet = attachments_model.search([('res_name', '=', spec_sheet_name_template.format(sku))])
+                attachments_model.unlink(existing_spec_sheet)
+
+            print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
+
+            existing_spec_sheet = attachments_model.search([('res_name', '=', spec_sheet_name_template.format(sku))])
+
+            if existing_spec_sheet:
+                cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
+                continue
+
+            attachment_paths = Util.get_all_files_in_directory(directory_list[spec_sheets_skus.index(sku)])
+
+            if attachment_paths:
+                cls.logger.info(f"{sku}: UPLOADING SPEC SHEET")
+
+                for attachment_path in attachment_paths:
+                    with open(attachment_path, 'rb') as file:
+                        pdf_binary_data = file.read()
+                        encoded_data = base64.b64encode(pdf_binary_data).decode()
+
+                    attachment_name = attachment_path.split('\\')[-1]
+
+                    attachment_data = {
+                        'name': attachment_name,
+                        'datas': encoded_data,
+                        'type': 'binary'
+                    }
+
+                    try:
+                        attachment_id = attachments_model.create(attachment_data)
+                        cls.logger.info(f'{sku}: {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
+
+                        product_model.browse(product_id).write({'website_attachment_ids': [(6, 0, [attachment_id])]})
+                        cls.logger.info(f'{sku}: {attachment_name} LINKED TO PRODUCT WITH ID {product_id}')
+                    except TimeoutError:
+                        cls.logger.error(f"{sku}: FAILED TO UPLOAD {attachment_name} FOR PRODUCT")
+                        time.sleep(10)
+                        cls.import_spec_sheets(clean, begin_from)
+                    except HTTPError:
+                        cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
+                        continue
+
+
+    @classmethod
+    def import_pdfs(cls, begin_from=0, clean=False, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
         attachments_model = cls.odoo.env['ir.attachment']
 
@@ -355,14 +416,14 @@ class OdooImport:
         directory_list_ita = Util.get_nested_directories(cls.PRODUCT_PDF_DIRS['ita'])
         sku_list_ita = [dirr.split('\\')[-1] for dirr in directory_list_ita]
 
-        for index, sku in enumerate(skus_in_odoo[start_from:]):
+        for index, sku in enumerate(skus_in_odoo[begin_from:]):
             res_id = product_model.search([('default_code', '=', sku)])[0]
 
             if clean:
                 atts = attachments_model.search([('res_id', '=', res_id)])
                 attachments_model.unlink(atts)
 
-            print(f'{index+start_from+1} / {len(skus_in_odoo[start_from:])}')
+            print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
 
             if skip_products_w_attachments and not clean:
                 product_uploaded_attachments = attachments_model.search([('res_id', '=', res_id)])
@@ -417,7 +478,7 @@ class OdooImport:
                     except TimeoutError:
                         cls.logger.error(f"FAILED TO UPLOAD {attachment_name} FOR PRODUCT {sku}")
                         time.sleep(10)
-                        cls.import_pdfs(start_from, skip_products_w_attachments, clean)
+                        cls.import_pdfs(begin_from, skip_products_w_attachments, clean)
                     except HTTPError:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
