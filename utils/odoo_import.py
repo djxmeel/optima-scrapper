@@ -355,24 +355,28 @@ class OdooImport:
             product_id = product_model.search([('default_code', '=', sku)])[0]
             spec_sheet_name_template = 'FICHA_TECNICA_SKU_{}'
 
+            try:
+                spec_sheet_path = Util.get_all_files_in_directory(directory_list[spec_sheets_skus.index(sku)])
+            except ValueError:
+                cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS NO SPEC SHEET")
+                continue
+
             if clean:
                 existing_spec_sheet = attachments_model.search([('res_name', '=', spec_sheet_name_template.format(sku))])
                 attachments_model.unlink(existing_spec_sheet)
 
             print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
 
-            existing_spec_sheet = attachments_model.search([('res_name', '=', spec_sheet_name_template.format(sku))])
+            existing_spec_sheet = attachments_model.search([('name', '=', spec_sheet_name_template.format(sku))])
 
             if existing_spec_sheet:
                 cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
                 continue
 
-            attachment_paths = Util.get_all_files_in_directory(directory_list[spec_sheets_skus.index(sku)])
-
-            if attachment_paths:
+            if spec_sheet_path:
                 cls.logger.info(f"{sku}: UPLOADING SPEC SHEET")
 
-                for attachment_path in attachment_paths:
+                for attachment_path in spec_sheet_path:
                     with open(attachment_path, 'rb') as file:
                         pdf_binary_data = file.read()
                         encoded_data = base64.b64encode(pdf_binary_data).decode()
@@ -381,16 +385,16 @@ class OdooImport:
 
                     attachment_data = {
                         'name': attachment_name,
+                        'website_name': 'Ficha técnica',
                         'datas': encoded_data,
+                        'public': True,
+                        'attached_in_product_tmpl_ids': [product_id],
                         'type': 'binary'
                     }
 
                     try:
                         attachment_id = attachments_model.create(attachment_data)
                         cls.logger.info(f'{sku}: {attachment_name} UPLOADED TO ODOO WITH ID {attachment_id}')
-
-                        product_model.browse(product_id).write({'website_attachment_ids': [(6, 0, [attachment_id])]})
-                        cls.logger.info(f'{sku}: {attachment_name} LINKED TO PRODUCT WITH ID {product_id}')
                     except TimeoutError:
                         cls.logger.error(f"{sku}: FAILED TO UPLOAD {attachment_name} FOR PRODUCT")
                         time.sleep(10)
@@ -706,6 +710,11 @@ class OdooImport:
             try:
                 products.extend(cls.PRODUCT_MODEL.browse(product_ids))
                 cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
+
+
+                break
+
+
             except TimeoutError:
                 cls.logger.error(f"TIMEOUT ERROR FETCHING PRODUCTS. RETRYING IN 5 SECONDS...")
                 time.sleep(5)
