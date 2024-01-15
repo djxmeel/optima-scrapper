@@ -4,6 +4,7 @@ import time
 import requests
 import os
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium.common.exceptions import TimeoutException
@@ -50,6 +51,7 @@ class ScraperVtacUk:
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
+        cls.DRIVER.maximize_window()
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -300,41 +302,48 @@ class ScraperVtacUk:
 
         pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
 
+        #ActionChains(driver).scroll_by_amount(0, 1800).perform()
+
         pdf_elements = []
 
         # Specs tab certificates
         pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
 
         try:
+            time.sleep(0.2)
             # Downloads tab
             driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
         except NoSuchElementException:
             pass
+        except ElementClickInterceptedException:
+            time.sleep(0.2)
+            driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
 
         pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
 
         cls.logger.info(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
 
         for pdf_element in pdf_elements:
-            url = pdf_element.get_attribute('href')
-            response = requests.get(url)
 
-            nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
-            os.makedirs(nested_dir, exist_ok=True)
+            attachment_display_names = pdf_element.find_elements(By.TAG_NAME, "span")
 
-            # Get the original file name if possible
-            content_disposition = response.headers.get('content-disposition')
-            if content_disposition:
-                filename = content_disposition.split('filename=')[-1].strip('"')
-            else:
-                # Fallback to extracting the filename from URL if no content-disposition header
-                filename = os.path.basename(url)
+            if attachment_display_names:
+                attachment_name = attachment_display_names[1].text
+                if '(Fiche)' in attachment_name or 'Label UK' in attachment_name:
+                    cls.logger.info(f'SKIPPING UNWANTED PDF: {attachment_name} of SKU {sku}')
+                    continue
 
-            filename = filename.replace('%20', '_')
+                url = pdf_element.get_attribute('href')
+                response = requests.get(url)
 
-            if '.' in filename:
-                with open(f'{nested_dir}/{filename}', 'wb') as file:
+                nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
+                os.makedirs(nested_dir, exist_ok=True)
+
+                # FIXME always downloads as pdf
+                with open(f'{nested_dir}/{attachment_name}.pdf', 'wb') as file:
                     file.write(response.content)
+            else:
+                return None
 
         return len(pdf_elements)
 

@@ -312,7 +312,7 @@ class Util:
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
                 logger.warn(f'DOWNLOADED {found} PDFS FROM: {link}  {counter + 1}/{len(loaded_links)}')
-        except:
+        except TimeoutError:
             logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
             Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)

@@ -47,6 +47,8 @@ class ScraperEfectoLed:
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
+        cls.DRIVER.maximize_window()
+
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):

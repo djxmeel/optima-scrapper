@@ -43,6 +43,7 @@ class ScraperVtacItalia:
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
+        cls.DRIVER.maximize_window()
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -299,6 +300,10 @@ class ScraperVtacItalia:
         for pdf_element in pdf_elements:
             response = requests.get(pdf_element.get_attribute('href'))
             name = pdf_element.get_attribute('data-tippy-content')
+
+            if 'Scheda' in name:
+                cls.logger.warn("Skipping italian attachment with name containing 'Scheda'")
+                continue
 
             if '/' in name:
                 name = name.replace('/', '-')

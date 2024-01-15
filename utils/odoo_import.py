@@ -925,7 +925,6 @@ class OdooImport:
         if stock_europeo == '0':
             allow_out_of_stock_order = False
 
-
             if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
                 out_of_stock_msg = out_of_stock_messages[2]
             elif '/' in product_dict['Entrada de nuevas unidades']:
