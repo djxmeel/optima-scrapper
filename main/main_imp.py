@@ -18,6 +18,9 @@ from utils.util import Util
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
 # TODO new catalog icons
+# TODO Upload spec sheets to ir.attachment in 1st position
+# TODO skip scrape of ita specsheets (scheda tecnica)
+# TODO scrape only EU Fiche and Energy Label EU
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
