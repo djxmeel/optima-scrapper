@@ -6,7 +6,8 @@ import os
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, \
+    ElementNotInteractableException
 from selenium.common.exceptions import TimeoutException
 from utils.util import Util
 
@@ -268,6 +269,12 @@ class ScraperVtacUk:
 
         pdf_elements = []
 
+        # Accept cookies
+        try:
+            ScraperVtacUk.DRIVER.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
+        except (NoSuchElementException, ElementNotInteractableException):
+            pass
+
         try:
             # Specs tab certificates
             pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
@@ -279,6 +286,10 @@ class ScraperVtacUk:
             ScraperVtacUk.DRIVER.find_element(By.XPATH, pdf_download_tab_xpath).click()
         except NoSuchElementException:
             pass
+        except ElementClickInterceptedException:
+            ActionChains(ScraperVtacUk.DRIVER).scroll_by_amount(0, 500).perform()
+            time.sleep(0.2)
+            ScraperVtacUk.DRIVER.find_element(By.XPATH, pdf_download_tab_xpath).click()
 
         try:
             pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
@@ -302,12 +313,16 @@ class ScraperVtacUk:
 
         pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
 
-        #ActionChains(driver).scroll_by_amount(0, 1800).perform()
-
         pdf_elements = []
 
         # Specs tab certificates
         pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+
+        # Accept cookies
+        try:
+            driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
+        except (NoSuchElementException, ElementNotInteractableException):
+            pass
 
         try:
             time.sleep(0.2)
@@ -316,6 +331,7 @@ class ScraperVtacUk:
         except NoSuchElementException:
             pass
         except ElementClickInterceptedException:
+            ActionChains(driver).scroll_by_amount(0, 500).perform()
             time.sleep(0.2)
             driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
 
@@ -327,23 +343,37 @@ class ScraperVtacUk:
 
             attachment_display_names = pdf_element.find_elements(By.TAG_NAME, "span")
 
-            if attachment_display_names:
+            if len(attachment_display_names) >= 2:
                 attachment_name = attachment_display_names[1].text
-                if '(Fiche)' in attachment_name or 'Label UK' in attachment_name:
+                if '(Fiche)' in attachment_name or 'Label UK' in attachment_name or 'Right Click' in attachment_name:
                     cls.logger.info(f'SKIPPING UNWANTED PDF: {attachment_name} of SKU {sku}')
                     continue
 
                 url = pdf_element.get_attribute('href')
                 response = requests.get(url)
 
+                # Get the original file name if possible to extract the extension
+                content_disposition = response.headers.get('content-disposition')
+                if content_disposition:
+                    filename = content_disposition.split('filename=')[-1].strip('"')
+                else:
+                    # Fallback to extracting the filename from URL if no content-disposition header
+                    filename = os.path.basename(url)
+
+                file_extension = filename.split('.')[-1]
+
                 nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
                 os.makedirs(nested_dir, exist_ok=True)
 
-                # FIXME always downloads as pdf
-                with open(f'{nested_dir}/{attachment_name}.pdf', 'wb') as file:
+                attachment_name = (attachment_name.replace('Instruction Manual', 'Manual de instrucciones')
+                                    .replace('Energy Label', 'Etiqueta Energética')
+                                    .replace('Product Information Document', 'Documento de Información del Producto'))
+
+                with open(f'{nested_dir}/{attachment_name}.{file_extension}', 'wb') as file:
                     file.write(response.content)
             else:
-                return None
+                cls.logger.warning(f'PDF ELEMENT HAS NO DISPLAY NAME: spans length {len(attachment_display_names)}')
+                continue
 
         return len(pdf_elements)
 
