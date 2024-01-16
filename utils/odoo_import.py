@@ -361,16 +361,16 @@ class OdooImport:
                 cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS NO SPEC SHEET")
                 continue
 
+            existing_spec_sheet = attachments_model.search([('name', '=', spec_sheet_name_template.format(sku))])
+
             if clean:
-                existing_spec_sheet = attachments_model.search([('res_name', '=', spec_sheet_name_template.format(sku))])
                 attachments_model.unlink(existing_spec_sheet)
+                existing_spec_sheet.clear()
 
             print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
 
-            existing_spec_sheet = attachments_model.search([('name', '=', spec_sheet_name_template.format(sku))])
-
             if existing_spec_sheet:
-                cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
+                cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS SPEC SHEET UPLOADED")
                 continue
 
             if spec_sheet_path:
@@ -421,16 +421,16 @@ class OdooImport:
         sku_list_ita = [dirr.split('\\')[-1] for dirr in directory_list_ita]
 
         for index, sku in enumerate(skus_in_odoo[begin_from:]):
-            res_id = product_model.search([('default_code', '=', sku)])[0]
+            product_id = product_model.search([('default_code', '=', sku)])[0]
 
             if clean:
-                atts = attachments_model.search([('res_id', '=', res_id)])
+                atts = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
                 attachments_model.unlink(atts)
 
             print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
 
             if skip_products_w_attachments and not clean:
-                product_uploaded_attachments = attachments_model.search([('res_id', '=', res_id)])
+                product_uploaded_attachments = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
 
                 if product_uploaded_attachments:
                     cls.logger.warn(f"SKIPPING {sku} BECAUSE IT HAS ATTACHMENTS UPLOADED")
@@ -455,24 +455,21 @@ class OdooImport:
                         pdf_binary_data = file.read()
                         encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                    attachment_name = attachment_path.split('\\')[-1]
+                    attachment_name = Util.attachment_naming_replacements(attachment_path.split('\\')[-1])
 
-                    attachment_name = Util.attachment_naming_replacements(attachment_name.lower())
-
-                    attachment_name = f'{res_id}_{attachment_name}'
-
-                    existing_attachment = attachments_model.search([('name', '=', attachment_name), ('res_id', '=', res_id)])
+                    existing_attachment = attachments_model.search([('name', '=', f'{sku}_{attachment_name}'), ('attached_in_product_tmpl_ids', '=', [product_id])])
 
                     if existing_attachment:
-                        cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {attachment_name} ALREADY EXISTS IN ODOO')
+                        cls.logger.info(f'{sku}: ATTACHMENT WITH NAME {sku}_{attachment_name} ALREADY EXISTS IN ODOO')
                         continue
 
                     attachment_data = {
-                        'name': attachment_name,
+                        'name': f'{sku}_{attachment_name}',
+                        'website_name': attachment_name,
                         'datas': encoded_data,
-                        'res_model': 'product.template',  # Model you want to link the attachment to (optional)
-                        'res_id': res_id,  # ID of the record of the above model you want to link the attachment to (optional)
-                        'type': 'binary',
+                        'public': True,
+                        'attached_in_product_tmpl_ids': [product_id],
+                        'type': 'binary'
                     }
 
                     try:
