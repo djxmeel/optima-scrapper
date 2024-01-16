@@ -341,6 +341,7 @@ class OdooImport:
 
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
 
+    # TODO test import_spec_sheets
     @classmethod
     def import_spec_sheets(cls, clean, begin_from):
         product_model = cls.PRODUCT_MODEL
@@ -403,7 +404,7 @@ class OdooImport:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
 
-
+    # TODO test import_pdfs
     @classmethod
     def import_pdfs(cls, begin_from=0, clean=False, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
@@ -707,11 +708,6 @@ class OdooImport:
             try:
                 products.extend(cls.PRODUCT_MODEL.browse(product_ids))
                 cls.logger.info(f"FETCHED PRODUCTS: {len(products)}")
-
-
-                break
-
-
             except TimeoutError:
                 cls.logger.error(f"TIMEOUT ERROR FETCHING PRODUCTS. RETRYING IN 5 SECONDS...")
                 time.sleep(5)
@@ -882,6 +878,10 @@ class OdooImport:
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
         entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
 
+        if generate_missing_products_excel:
+            # TODO check the generated excel
+            cls.generate_missing_products_excel(products, eu_stock)
+
         for product in products:
             cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
 
@@ -903,10 +903,6 @@ class OdooImport:
             cls.update_availability_related_fields(product_dict)
 
             cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY")
-
-        if generate_missing_products_excel:
-            # TODO check the generated excel
-            cls.generate_missing_products_excel(products, eu_stock)
 
     @classmethod
     def update_availability_related_fields(cls, product_dict):
@@ -1010,7 +1006,12 @@ class OdooImport:
         skus_in_odoo = [product.default_code for product in products]
 
         for row in eu_stock:
-            if str(row['SKU']) not in skus_to_skip and str(row['SKU']) not in skus_in_odoo and not pd.isna(row['AVAILABLE']) and int(row['AVAILABLE']) > 0:
+            if (str(row['SKU']) not in skus_to_skip
+                    and str(row['SKU']) not in skus_in_odoo
+                    and (
+                            (not pd.isna(row['AVAILABLE']) and int(row['AVAILABLE']) > 0 )
+                            or not pd.isna(row['UNDELIVERED ORDER'])
+                    )):
                 missing_products.append(row)
 
         pd.DataFrame(missing_products).to_excel('data/common/excel/products_in_eustock_not_odoo16_and_qty_greater_than_0.xlsx')
