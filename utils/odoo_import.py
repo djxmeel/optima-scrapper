@@ -194,6 +194,7 @@ class OdooImport:
         counter = 0
 
         PRIORITY_SKUS = Util.get_priority_excel_skus('data/common/excel/Productos Comprados o Vendidos VTAC.xlsx', 'A') if use_priority_excel else []
+        skus_to_skip = Util.load_json("data/common/json/SKUS_TO_SKIP.json")["skus"]
 
         for file_path in sorted(file_list):
             products = Util.load_json(file_path)
@@ -201,6 +202,10 @@ class OdooImport:
             cls.logger.info(f'IMPORTING PRODUCTS OF FILE: {file_path}')
 
             for product in products:
+                if product['default_code'] in skus_to_skip:
+                    cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS IN SKUS_TO_SKIP")
+                    continue
+
                 if use_priority_excel and product['default_code'] and product['default_code'] not in PRIORITY_SKUS:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
@@ -512,6 +517,7 @@ class OdooImport:
                             if images:
                                 if skip_products_with_images:
                                     cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
+                                    time.sleep(0.3)
                                     continue
                                 if clean:
                                     cls.MEDIA_MODEL.unlink(images)
@@ -887,7 +893,7 @@ class OdooImport:
             product_dict = {'default_code': product.default_code,
                             'description_purchase': product.description_purchase,
                             'qty_available': product.qty_available,
-                            'category_id': product.categ_id,
+                            'categ_id': product.categ_id,
                             'id': product.id,
                             'name': product.name}
 
