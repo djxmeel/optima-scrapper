@@ -872,17 +872,16 @@ class OdooImport:
 
 
     @classmethod
-    def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel):
+    def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
         products = cls.browse_all_products_in_batches()
         eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
         entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
 
         if generate_missing_products_excel:
-            # TODO check the generated excel
             cls.generate_missing_products_excel(products, eu_stock)
 
-        for product in products:
+        for index, product in enumerate(products[begin_from:]):
             cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
 
             product_dict = {'default_code': product.default_code,
@@ -902,7 +901,7 @@ class OdooImport:
 
             cls.update_availability_related_fields(product_dict)
 
-            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY")
+            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products[begin_from:])}")
 
     @classmethod
     def update_availability_related_fields(cls, product_dict):
@@ -1015,3 +1014,4 @@ class OdooImport:
                 missing_products.append(row)
 
         pd.DataFrame(missing_products).to_excel('data/common/excel/products_in_eustock_not_odoo16_and_qty_greater_than_0.xlsx')
+        cls.logger.info(f"GENERATED EXCEL WITH {len(missing_products)} PRODUCTS MISSING FROM 16")
