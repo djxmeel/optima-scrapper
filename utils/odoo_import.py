@@ -68,6 +68,9 @@ class OdooImport:
     # USE TO ONLY UPLOAD CERTAIN PRODUCTS
     PRIORITY_EXCEL_SKUS_PATH = 'data/common/excel/Productos Comprados o Vendidos VTAC.xlsx'
 
+    # ID of the brand to assign to the products
+    VTAC_BRAND_ID = 1
+
     @classmethod
     def create_internal_category(cls, internal_category):
         try:
@@ -430,8 +433,11 @@ class OdooImport:
             product_id = product_model.search([('default_code', '=', sku)])[0]
 
             if clean:
-                atts = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
+                #FIXME
+                #atts = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
+                atts = attachments_model.search([('res_id', '=', product_id)])
                 attachments_model.unlink(atts)
+                continue
 
             print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
 
@@ -787,7 +793,7 @@ class OdooImport:
     def import_descatalogados_catalogo(cls, skus_catalogo_file_path):
         skus = [str(entry['SKU']) for entry in Util.load_excel_columns_in_dictionary_list(skus_catalogo_file_path)]
 
-        products = cls.browse_all_products_in_batches('default_code', '!=', False)
+        products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
         descatalogados_category_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', 'DESCATALOGADOS')])[0]
 
         for product in products:
