@@ -433,11 +433,9 @@ class OdooImport:
             product_id = product_model.search([('default_code', '=', sku)])[0]
 
             if clean:
-                #FIXME
-                #atts = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
-                atts = attachments_model.search([('res_id', '=', product_id)])
+                atts = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
                 attachments_model.unlink(atts)
-                continue
+                cls.logger.info(f"CLEANED ATTACHMENTS OF SKU {sku}")
 
             print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
 

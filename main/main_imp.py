@@ -18,7 +18,7 @@ from utils.util import Util
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
 # TODO delete all attachments and reupload them like spec sheets
-# TODO new catalog icons
+# TODO new catalog icons excel
 # TODO make pdf "Instruction Manual" 2nd position in website
 # TODO Remove all products in "Descatalogados" public category
 #TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
@@ -65,9 +65,9 @@ IF_IMPORT_SPEC_SHEETS = False
 SPEC_SHEETS_BEGIN_FROM = 0
 IF_UPDATE_SPEC_SHEETS = False
 
-IF_IMPORT_PDFS = True
+IF_IMPORT_PDFS = False
 PDF_BEGIN_FROM = 0
-IF_CLEAN_ATTACHMENTS = True
+IF_CLEAN_ATTACHMENTS = False
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_SUPPLIER_INFO_AND_COST = False
