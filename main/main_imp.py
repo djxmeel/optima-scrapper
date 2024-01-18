@@ -17,7 +17,7 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
-# TODO delete all attachments and reupload them like spec sheets
+# TODO reescrape and reupload attachments to spec sheets field
 # TODO new catalog icons excel
 # TODO make pdf "Instruction Manual" 2nd position in website
 # TODO Remove all products in "Descatalogados" public category
