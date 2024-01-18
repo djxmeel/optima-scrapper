@@ -722,6 +722,10 @@ class OdooImport:
                 cls.logger.error(f"TIMEOUT ERROR FETCHING PRODUCTS. RETRYING IN 5 SECONDS...")
                 time.sleep(5)
                 products.extend(cls.PRODUCT_MODEL.browse(product_ids))
+            except HTTPError:
+                cls.logger.error(f"HTTP ERROR FETCHING PRODUCTS. RETRYING IN 20 SECONDS...")
+                time.sleep(20)
+                products.extend(cls.PRODUCT_MODEL.browse(product_ids))
 
         if not field or not operator:
             cls.logger.info(f"FETCHED ALL PRODUCTS: {len(products)}")
