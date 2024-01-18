@@ -465,7 +465,7 @@ class OdooImport:
                         pdf_binary_data = file.read()
                         encoded_data = base64.b64encode(pdf_binary_data).decode()
 
-                    attachment_name = Util.attachment_naming_replacements(attachment_path.split('\\')[-1])
+                    attachment_name = attachment_path.split('\\')[-1]
 
                     existing_attachment = attachments_model.search([('name', '=', f'{sku}_{attachment_name}'), ('attached_in_product_tmpl_ids', '=', [product_id])])
 

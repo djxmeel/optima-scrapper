@@ -299,14 +299,13 @@ class ScraperVtacItalia:
 
         for pdf_element in pdf_elements:
             response = requests.get(pdf_element.get_attribute('href'))
-            name = pdf_element.get_attribute('data-tippy-content')
+            name = pdf_element.find_element(By.TAG_NAME, 'p').text
 
             if 'Scheda' in name:
                 cls.logger.warn("Skipping italian attachment with name containing 'Scheda'")
                 continue
 
-            if '/' in name:
-                name = name.replace('/', '-')
+            name = Util.attachment_naming_replacements(name)
 
             nested_dir = f'{ScraperVtacItalia.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)

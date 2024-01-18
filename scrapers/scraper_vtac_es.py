@@ -256,17 +256,10 @@ class ScraperVtacSpain:
             nested_dir = f'{ScraperVtacSpain.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
-            # Get the original file name if possible
-            content_disposition = response.headers.get('content-disposition')
-            if content_disposition:
-                filename = content_disposition.split('filename=')[-1].strip('"')
-            else:
-                # Fallback to extracting the filename from URL if no content-disposition header
-                filename = os.path.basename(url)
+            #FIXME parent:://strong is not working
+            filename = pdf_element.find_element(By.XPATH, '/parent:://strong').text
 
-            filename = filename.replace('%20', '_')
-
-            with open(f'{nested_dir}/{filename}', 'wb') as file:
+            with open(f'{nested_dir}/{filename}.pdf', 'wb') as file:
                 file.write(response.content)
 
         return len(pdf_elements)

@@ -362,10 +362,14 @@ class ScraperVtacUk:
 
                 file_extension = filename.split('.')[-1]
 
+                if file_extension != 'pdf' and file_extension != 'png':
+                    continue
+
                 nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
                 os.makedirs(nested_dir, exist_ok=True)
 
                 attachment_name = (attachment_name.replace('Instruction Manual', 'Manual de instrucciones')
+                                    .replace(' (EU Fiche)', '')
                                     .replace('Energy Label', 'Etiqueta Energética')
                                     .replace('Product Information Document', 'Documento de Información del Producto'))
 

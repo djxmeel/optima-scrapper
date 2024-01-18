@@ -1,8 +1,11 @@
 {
-  "manuale": "Manual",
+  "Manuale": "Manual",
   "istruzioni": "Instrucciones",
   "Certificato": "Certificado",
   "Etichetta": "Etiqueta",
   "energetica": "energética",
-  "prodotto": "Producto"
+  "prodotto": "Producto",
+  "Report": "Informe",
+  "Dichiarazione": "Declaración",
+  "conformita": "de conformidad"
 }
