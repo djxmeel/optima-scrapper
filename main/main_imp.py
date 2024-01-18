@@ -21,6 +21,7 @@ from utils.util import Util
 # TODO new catalog icons
 # TODO make pdf "Instruction Manual" 2nd position in website
 # TODO Remove all products in "Descatalogados" public category
+#TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
