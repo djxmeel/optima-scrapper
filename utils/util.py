@@ -44,7 +44,10 @@ class Util:
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
-    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH = 'data/common/json/ATTACHMENT_NAME_RENAMES.json'
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ITA = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_ITA.json'
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ES = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_ES.json'
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_UK = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_UK.json'
+
     SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
     MANUAL_PUBLIC_CATEGS_EXCEL_PATH = 'data/common/excel/public_category_manual.xlsx'
     CORRECT_NAMES_EXCEL_PATH = 'data/common/excel/product_correct_names.xlsx'
@@ -579,8 +582,14 @@ class Util:
         return website_product_count
 
     @classmethod
-    def attachment_naming_replacements(cls, attachment_name):
-        replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH)
+    def attachment_naming_replacements(cls, attachment_name, country):
+        if country == 'es':
+            replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ES)
+        elif country == 'uk':
+            replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_UK)
+        else:
+            replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ITA)
+
 
         for incorrect, replacement in replacements.items():
             if incorrect in attachment_name:
