@@ -458,6 +458,13 @@ class OdooImport:
                 attachment_paths = Util.get_all_files_in_directory(
                     directory_list_ita[sku_list_ita.index(sku)])
 
+            # TODO test uploading instrucciones to 1st position
+            for path in attachment_paths:
+                if 'instrucciones' in path.lower():
+                    attachment_paths.remove(path)
+                    attachment_paths.insert(0, path)
+                    break
+
             if attachment_paths:
                 cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
                 for attachment_path in attachment_paths:
