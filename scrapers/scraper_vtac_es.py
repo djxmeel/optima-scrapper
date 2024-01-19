@@ -259,7 +259,11 @@ class ScraperVtacSpain:
             try:
                 filename = pdf_element.find_element(By.XPATH, 'parent::div/parent::div//strong').text
             except NoSuchElementException:
-                filename = pdf_element.find_element(By.XPATH, 'parent::p/parent::div/parent::div//span').text
+                filename = pdf_element.find_elements(By.XPATH, 'parent::p/parent::div/parent::div//span')
+                if filename:
+                    filename = filename[0].text
+                else:
+                    filename = pdf_element.find_element(By.XPATH, 'parent::div/parent::div/parent::div//strong').text
 
             filename = Util.attachment_naming_replacements(filename, 'es')
 
