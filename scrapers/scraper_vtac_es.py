@@ -256,7 +256,12 @@ class ScraperVtacSpain:
             nested_dir = f'{ScraperVtacSpain.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
-            filename = Util.attachment_naming_replacements(pdf_element.find_element(By.XPATH, 'parent::div/parent::div//strong').text, 'es')
+            try:
+                filename = pdf_element.find_element(By.XPATH, 'parent::div/parent::div//strong').text
+            except NoSuchElementException:
+                filename = pdf_element.find_element(By.XPATH, 'parent::p/parent::div/parent::div//span').text
+
+            filename = Util.attachment_naming_replacements(filename, 'es')
 
             with open(f'{nested_dir}/{filename}.pdf', 'wb') as file:
                 file.write(response.content)
