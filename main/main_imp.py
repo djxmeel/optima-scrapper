@@ -19,9 +19,8 @@ from utils.util import Util
 
 # TODO reescrape and reupload attachments to spec sheets field
 # TODO new catalog icons excel
-# TODO make pdf "Instruction Manual" 2nd position in website
-# TODO Remove all products in "Descatalogados" public category
-#TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
+# TODO run a descatologados import
+# TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
