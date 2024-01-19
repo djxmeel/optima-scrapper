@@ -269,6 +269,9 @@ class ScraperVtacUk:
 
         pdf_elements = []
 
+        offset = 0
+        pdfs_to_skip_count = 0
+
         # Accept cookies
         try:
             ScraperVtacUk.DRIVER.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
@@ -278,6 +281,7 @@ class ScraperVtacUk:
         try:
             # Specs tab certificates
             pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+            offset = len(pdf_elements)
         except NoSuchElementException:
             pass
 
@@ -296,7 +300,14 @@ class ScraperVtacUk:
         except NoSuchElementException:
             pass
 
-        return len(pdf_elements)
+        for pdf_element in pdf_elements[offset:]:
+            spans = pdf_element.find_elements(By.TAG_NAME, "span")
+            if len(spans) >= 2:
+                name = spans[1].text
+                if '(Fiche)' in name or 'Label UK' in name or 'Right Click' in name:
+                    pdfs_to_skip_count += 1
+
+        return len(pdf_elements) - pdfs_to_skip_count
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
@@ -340,44 +351,43 @@ class ScraperVtacUk:
         cls.logger.info(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
 
         for pdf_element in pdf_elements:
-
             attachment_display_names = pdf_element.find_elements(By.TAG_NAME, "span")
 
             if len(attachment_display_names) >= 2:
                 attachment_name = attachment_display_names[1].text
-                if '(Fiche)' in attachment_name or 'Label UK' in attachment_name or 'Right Click' in attachment_name:
-                    cls.logger.info(f'SKIPPING UNWANTED PDF: {attachment_name} of SKU {sku}')
-                    continue
-
-                url = pdf_element.get_attribute('href')
-                response = requests.get(url)
-
-                # Get the original file name if possible to extract the extension
-                content_disposition = response.headers.get('content-disposition')
-                if content_disposition:
-                    filename = content_disposition.split('filename=')[-1].strip('"')
-                else:
-                    # Fallback to extracting the filename from URL if no content-disposition header
-                    filename = os.path.basename(url)
-
-                file_extension = filename.split('.')[-1]
-
-                if file_extension != 'pdf' and file_extension != 'png':
-                    continue
-
-                nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
-                os.makedirs(nested_dir, exist_ok=True)
-
-                attachment_name = (attachment_name.replace('Instruction Manual', 'Manual de instrucciones')
-                                    .replace(' (EU Fiche)', '')
-                                    .replace('Energy Label', 'Etiqueta Energética')
-                                    .replace('Product Information Document', 'Documento de Información del Producto'))
-
-                with open(f'{nested_dir}/{attachment_name}.{file_extension}', 'wb') as file:
-                    file.write(response.content)
             else:
-                cls.logger.warning(f'PDF ELEMENT HAS NO DISPLAY NAME: spans length {len(attachment_display_names)}')
+                attachment_name = ""
+
+            if '(Fiche)' in attachment_name or 'Label UK' in attachment_name or 'Right Click' in attachment_name:
+                cls.logger.info(f'SKIPPING UNWANTED PDF: {attachment_name} of SKU {sku}')
                 continue
+
+            url = pdf_element.get_attribute('href')
+            response = requests.get(url)
+
+            # Get the original file name if possible to extract the extension
+            content_disposition = response.headers.get('content-disposition')
+            if content_disposition:
+                filename = content_disposition.split('filename=')[-1].strip('"')
+            else:
+                # Fallback to extracting the filename from URL if no content-disposition header
+                filename = os.path.basename(url)
+
+            if not attachment_name:
+                attachment_name = filename.split('.')[0]
+
+            file_extension = filename.split('.')[-1]
+
+            if file_extension != 'pdf' and file_extension != 'png':
+                continue
+
+            nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
+            os.makedirs(nested_dir, exist_ok=True)
+
+            attachment_name = Util.attachment_naming_replacements(attachment_name, 'uk')
+
+            with open(f'{nested_dir}/{attachment_name}.{file_extension}', 'wb') as file:
+                file.write(response.content)
 
         return len(pdf_elements)
 

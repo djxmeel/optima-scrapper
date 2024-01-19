@@ -271,13 +271,20 @@ class ScraperVtacItalia:
 
         pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'
         pdf_elements = []
+        pdfs_to_skip_count = 0
 
         try:
             pdf_elements = ScraperVtacItalia.DRIVER.find_elements(By.XPATH, pdf_download_xpath)
         except NoSuchElementException:
             pass
 
-        return len(pdf_elements)
+        for pdf_element in pdf_elements:
+            name = pdf_element.find_element(By.TAG_NAME, 'p').text
+
+            if 'Scheda' in name:
+                pdfs_to_skip_count += 1
+
+        return len(pdf_elements) - pdfs_to_skip_count
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
@@ -305,7 +312,7 @@ class ScraperVtacItalia:
                 cls.logger.warn("Skipping italian attachment with name containing 'Scheda'")
                 continue
 
-            name = Util.attachment_naming_replacements(name)
+            name = Util.attachment_naming_replacements(name, 'ita')
 
             nested_dir = f'{ScraperVtacItalia.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)

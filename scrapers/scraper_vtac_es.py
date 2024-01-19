@@ -256,8 +256,7 @@ class ScraperVtacSpain:
             nested_dir = f'{ScraperVtacSpain.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
-            #FIXME parent:://strong is not working
-            filename = pdf_element.find_element(By.XPATH, '/parent:://strong').text
+            filename = Util.attachment_naming_replacements(pdf_element.find_element(By.XPATH, 'parent::div/parent::div//strong').text, 'es')
 
             with open(f'{nested_dir}/{filename}.pdf', 'wb') as file:
                 file.write(response.content)
