@@ -19,6 +19,7 @@ from utils.util import Util
 
 # TODO reescrape and reupload attachments to spec sheets field
 # TODO new catalog icons excel
+# TODO ADD Alexa icon to icon folder with name alexa.png
 # TODO run a descatologados import
 # TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
 
