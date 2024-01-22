@@ -393,7 +393,7 @@ class ScraperVtacUk:
 
     @classmethod
     def download_specsheet_of_sku(cls, driver, sku, skip_existing=False):
-        nested_dir = f'data/vtac_uk/spec_sheets/{sku}'
+        nested_dir = f'data/vtac_uk/SPEC_SHEETS/{sku}'
 
         try:
 
