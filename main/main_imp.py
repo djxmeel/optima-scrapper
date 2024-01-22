@@ -20,8 +20,9 @@ from utils.util import Util
 # TODO reescrape and reupload attachments to spec sheets field
 # TODO new catalog icons excel
 # TODO ADD Alexa icon to icon folder with name alexa.png
-# TODO run a descatologados import
+# TODO run a descatologados import after running a full scrape
 # TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
+# TODO RUN remove_hyperlinks_and_qr_code_from_pdfs() from playground.py
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
