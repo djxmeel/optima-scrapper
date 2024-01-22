@@ -742,16 +742,26 @@ def remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size):
 
     for root, dirs, files in os.walk(parent_folder):
         for file in files:
-            if file.lower().endswith('.pdf') and not file.__contains__('FICHA_TECNICA_SKU'):
-                input_pdf_path = os.path.join(root, file)
-                output_pdf_path = os.path.join(root, f"FICHA_TECNICA_SKU_{file}")
-                remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path)
-                remove_elements_within_square(output_pdf_path, position, size, output_pdf_path)
-                print(f"PROCESSED {input_pdf_path}")
-                unedited_specsheets.append(input_pdf_path)
+            if file.__contains__('FICHA_TECNICA_SKU'):
+                continue
+            input_pdf_path = os.path.join(root, file)
+            output_pdf_path = os.path.join(root, f"FICHA_TECNICA_SKU_{file}")
+            remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path)
+            remove_elements_within_square(output_pdf_path, position, size, output_pdf_path)
+            print(f"PROCESSED {input_pdf_path}")
+            unedited_specsheets.append(input_pdf_path)
 
     for specsheet in unedited_specsheets:
         os.remove(specsheet)
+        print(f"REMOVED {specsheet}")
+
+    # Remove empty folders
+    for root, dirs, files in os.walk(parent_folder):
+        for dir in dirs:
+            dir_path = os.path.join(root, dir)
+            if not os.listdir(str(dir_path)):
+                os.rmdir(dir_path)
+                print(f"REMOVED EMPTY FOLDER: {dir_path}")
 
 
 def create_white_square_overlay(position, size=(100, 100)):
@@ -820,7 +830,7 @@ def replace_name_files_in_subfolders(parent_folder, old_str, new_str):
 
 # position = (490, 740)  # X, Y coordinates
 # size = (80, 80)  # Width, Height of the square
-# parent_folder = "data/vtac_uk/spec_sheets"
+# parent_folder = "data/vtac_uk/SPEC_SHEETS"
 # remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
 
 # Example usage
