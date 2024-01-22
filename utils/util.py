@@ -9,15 +9,19 @@ import time
 import shutil
 from datetime import datetime
 from io import BytesIO
+
+import PyPDF2
 from PIL import Image
 
 
 import openpyxl
 import pandas as pd
 import requests
+from PyPDF2.errors import PdfReadError
 
 from googletrans import Translator
 from httpcore import ReadTimeout
+from reportlab.pdfgen import canvas
 from selenium.common import NoSuchElementException
 from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
@@ -702,3 +706,83 @@ class Util:
             buffered = io.BytesIO()
             image.save(buffered, format="PNG")
             return base64.b64encode(buffered.getvalue()).decode()
+
+    @classmethod
+    def create_white_square_overlay(cls, position, size=(100, 100)):
+        # Create a PDF in memory
+        packet = io.BytesIO()
+        c = canvas.Canvas(packet)
+        c.setFillColorRGB(0, 0.807843137254902, 0.48627450980392156)  # White color
+        c.rect(position[0], position[1], size[0], size[1], stroke=0, fill=1)
+        c.save()
+
+        packet.seek(0)
+        return PyPDF2.PdfReader(packet)
+
+    @classmethod
+    def remove_elements_within_square(cls, pdf_path, position, size, output_pdf_path):
+        # Read the input PDF
+        try:
+            input_pdf = PyPDF2.PdfReader(open(pdf_path, "rb"))
+        except PdfReadError:
+            print(f"ERROR READING {pdf_path}")
+            return
+        except FileNotFoundError:
+            print(f"ERROR READING {pdf_path}")
+            return
+
+        # Create a new PDF to write the modified content
+        output_pdf = PyPDF2.PdfWriter()
+
+        # Create the white square overlay PDF
+        overlay_pdf = cls.create_white_square_overlay(position, size)
+
+        # Iterate through each page and apply the white square overlay
+        for i in range(len(input_pdf.pages)):
+            page = input_pdf.pages[i]
+            if i == 0:
+                page.merge_page(overlay_pdf.pages[0])
+            output_pdf.add_page(page)
+
+        # Write the modified content to a new file
+        with open(output_pdf_path, "wb") as f:
+            output_pdf.write(f)
+
+    @classmethod
+    def remove_hyperlinks_from_pdf(cls, input_pdf_path, output_pdf_path):
+        # Read the input PDF
+        try:
+            input_pdf = PyPDF2.PdfReader(open(input_pdf_path, "rb"))
+        except PdfReadError:
+            print(f"ERROR READING {input_pdf_path}")
+            return
+
+        # Create a new PDF to write the modified content
+        output_pdf = PyPDF2.PdfWriter()
+
+        # Iterate through each page and remove annotations
+        for i in range(len(input_pdf.pages)):
+            page = input_pdf.pages[i]
+            page[PyPDF2.generic.NameObject("/Annots")] = PyPDF2.generic.ArrayObject()
+            output_pdf.add_page(page)
+
+        # Write the modified content to a new file
+        with open(output_pdf_path, "wb") as f:
+            output_pdf.write(f)
+
+    @classmethod
+    def remove_hyperlinks_and_qr_code_from_pdfs(cls, parent_folder, position, size):
+        unedited_specsheets = []
+
+        for root, dirs, files in os.walk(parent_folder):
+            for file in files:
+                if file.lower().endswith('.pdf') and not file.__contains__('FICHA_TECNICA_SKU'):
+                    input_pdf_path = os.path.join(root, file)
+                    output_pdf_path = os.path.join(root, f"FICHA_TECNICA_SKU_{file}")
+                    cls.remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path)
+                    cls.remove_elements_within_square(output_pdf_path, position, size, output_pdf_path)
+                    print(f"PROCESSED {input_pdf_path}")
+                    unedited_specsheets.append(input_pdf_path)
+
+        for specsheet in unedited_specsheets:
+            os.remove(specsheet)

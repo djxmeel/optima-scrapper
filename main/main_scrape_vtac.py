@@ -16,7 +16,7 @@ country_scrapers = {
 }
 
 # Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = True, True
 
 # Datos productos
 IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
@@ -25,7 +25,7 @@ IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 IF_DL_ITEM_PDF = False
 
 # Fichas técnicas productos UK
-IF_DL_ITEM_SPEC_SHEETS = True
+IF_DL_ITEM_SPEC_SHEETS = False
 SPEC_SHEETS_BEGIN_FROM = 0
 
 chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF)
@@ -114,6 +114,11 @@ if IF_DL_ITEM_SPEC_SHEETS:
         scraper.logger,
         SPEC_SHEETS_BEGIN_FROM
     )
+
+    position = (490, 740)  # X, Y coordinates
+    size = (80, 80)  # Width, Height of the square
+    parent_folder = "data/vtac_uk/SPEC_SHEETS"
+    Util.remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
 
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(f'FINISHED PRODUCT SPEC SHEETS DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
