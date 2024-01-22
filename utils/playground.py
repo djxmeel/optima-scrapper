@@ -9,12 +9,12 @@ from PIL import Image
 from io import BytesIO
 import pandas as pd
 
+import pypdf
 import odoorpc
-from PyPDF2.errors import PdfReadError
+from pypdf.errors import PdfReadError
 from odoorpc.error import RPCError
 from openpyxl.reader.excel import load_workbook
 from openpyxl.styles import PatternFill
-import PyPDF2
 from reportlab.pdfgen import canvas
 from selenium import webdriver
 
@@ -718,18 +718,18 @@ def match_images(dir1, dir2):
 def remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path):
     # Read the input PDF
     try:
-        input_pdf = PyPDF2.PdfReader(open(input_pdf_path, "rb"))
+        input_pdf = pypdf.PdfReader(open(input_pdf_path, "rb"))
     except PdfReadError:
         print(f"ERROR READING {input_pdf_path}")
         return
 
     # Create a new PDF to write the modified content
-    output_pdf = PyPDF2.PdfWriter()
+    output_pdf = pypdf.PdfWriter()
 
     # Iterate through each page and remove annotations
     for i in range(len(input_pdf.pages)):
         page = input_pdf.pages[i]
-        page[PyPDF2.generic.NameObject("/Annots")] = PyPDF2.generic.ArrayObject()
+        page[pypdf.generic.NameObject("/Annots")] = pypdf.generic.ArrayObject()
         output_pdf.add_page(page)
 
     # Write the modified content to a new file
@@ -763,13 +763,13 @@ def create_white_square_overlay(position, size=(100, 100)):
     c.save()
 
     packet.seek(0)
-    return PyPDF2.PdfReader(packet)
+    return pypdf.PdfReader(packet)
 
 
 def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
     # Read the input PDF
     try:
-        input_pdf = PyPDF2.PdfReader(open(pdf_path, "rb"))
+        input_pdf = pypdf.PdfReader(open(pdf_path, "rb"))
     except PdfReadError:
         print(f"ERROR READING {pdf_path}")
         return
@@ -778,7 +778,7 @@ def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
         return
 
     # Create a new PDF to write the modified content
-    output_pdf = PyPDF2.PdfWriter()
+    output_pdf = pypdf.PdfWriter()
 
     # Create the white square overlay PDF
     overlay_pdf = create_white_square_overlay(position, size)
@@ -815,8 +815,8 @@ def replace_name_files_in_subfolders(parent_folder, old_str, new_str):
             os.rename(old_file_path, new_file_path)
             pass
 
-replace_name_files_in_subfolders('data/vtac_italia/PRODUCT_PDF', 'Certificado ', 'Licencia ')
 
+#replace_name_files_in_subfolders('data/vtac_italia/PRODUCT_PDF', 'Certificado ', 'Licencia ')
 
 # position = (490, 740)  # X, Y coordinates
 # size = (80, 80)  # Width, Height of the square
@@ -848,13 +848,13 @@ replace_name_files_in_subfolders('data/vtac_italia/PRODUCT_PDF', 'Certificado ',
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
 # merge_excel_files(
-#     'data/common/excel/eu_stock/Producto (product.template) (3).xlsx',
-#     "data/common/excel/eu_stock/Variante de producto (product.product).xlsx",
-#     'data/common/excel/eu_stock/output.xlsx',
-# 'Referencia interna',
+#     'data/common/excel/to_compare/vtac16.xlsx',
+#     "data/common/excel/to_compare/vtac15.xlsx",
+#     'data/common/excel/to_compare/output.xlsx',
+#     'Referencia interna',
 #     False,
 #     False,
-#     #"data/common/json/SKUS_TO_SKIP.json"
+#     "data/common/json/SKUS_TO_SKIP.json"
 # )
 
 

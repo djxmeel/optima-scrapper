@@ -10,14 +10,14 @@ import shutil
 from datetime import datetime
 from io import BytesIO
 
-import PyPDF2
+import pypdf
 from PIL import Image
 
 
 import openpyxl
 import pandas as pd
 import requests
-from PyPDF2.errors import PdfReadError
+from pypdf.errors import PdfReadError
 
 from googletrans import Translator
 from httpcore import ReadTimeout
@@ -717,13 +717,13 @@ class Util:
         c.save()
 
         packet.seek(0)
-        return PyPDF2.PdfReader(packet)
+        return pypdf.PdfReader(packet)
 
     @classmethod
     def remove_elements_within_square(cls, pdf_path, position, size, output_pdf_path):
         # Read the input PDF
         try:
-            input_pdf = PyPDF2.PdfReader(open(pdf_path, "rb"))
+            input_pdf = pypdf.PdfReader(open(pdf_path, "rb"))
         except PdfReadError:
             print(f"ERROR READING {pdf_path}")
             return
@@ -732,7 +732,7 @@ class Util:
             return
 
         # Create a new PDF to write the modified content
-        output_pdf = PyPDF2.PdfWriter()
+        output_pdf = pypdf.PdfWriter()
 
         # Create the white square overlay PDF
         overlay_pdf = cls.create_white_square_overlay(position, size)
@@ -752,18 +752,18 @@ class Util:
     def remove_hyperlinks_from_pdf(cls, input_pdf_path, output_pdf_path):
         # Read the input PDF
         try:
-            input_pdf = PyPDF2.PdfReader(open(input_pdf_path, "rb"))
+            input_pdf = pypdf.PdfReader(open(input_pdf_path, "rb"))
         except PdfReadError:
             print(f"ERROR READING {input_pdf_path}")
             return
 
         # Create a new PDF to write the modified content
-        output_pdf = PyPDF2.PdfWriter()
+        output_pdf = pypdf.PdfWriter()
 
         # Iterate through each page and remove annotations
         for i in range(len(input_pdf.pages)):
             page = input_pdf.pages[i]
-            page[PyPDF2.generic.NameObject("/Annots")] = PyPDF2.generic.ArrayObject()
+            page[pypdf.generic.NameObject("/Annots")] = pypdf.generic.ArrayObject()
             output_pdf.add_page(page)
 
         # Write the modified content to a new file
