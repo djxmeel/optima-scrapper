@@ -362,7 +362,7 @@ class OdooImport:
 
         for index, sku in enumerate(skus_in_odoo[begin_from:]):
             product_id = product_model.search([('default_code', '=', sku)])[0]
-            spec_sheet_name_template = 'FICHA_TECNICA_SKU_{}'
+            spec_sheet_name_template = 'FICHA_TECNICA_SKU_{}.pdf'
 
             try:
                 spec_sheet_path = Util.get_all_files_in_directory(directory_list[spec_sheets_skus.index(sku)])
