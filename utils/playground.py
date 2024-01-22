@@ -3,6 +3,7 @@ import json
 import os
 import base64
 from copy import copy
+from pathlib import Path
 
 from PIL import Image
 from io import BytesIO
@@ -792,6 +793,29 @@ def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
     # Write the modified content to a new file
     with open(output_pdf_path, "wb") as f:
         output_pdf.write(f)
+
+
+def replace_name_files_in_subfolders(parent_folder, old_str, new_str):
+    """
+    Renames files in all subfolders of the given parent folder.
+
+    Args:
+    parent_folder (str): Path to the parent folder containing subfolders.
+    old_str (str): The substring to be replaced in file names.
+    new_str (str): The substring to replace with in file names.
+
+    Returns:
+    None: Files are renamed in place.
+    """
+    for subdir, _, files in os.walk(parent_folder):
+        for file in files:
+            old_file_path = Path(subdir) / file
+            new_file_name = file.replace(old_str, new_str)
+            new_file_path = Path(subdir) / new_file_name
+            os.rename(old_file_path, new_file_path)
+            pass
+
+replace_name_files_in_subfolders('data/vtac_italia/PRODUCT_PDF', 'Certificado ', 'Licencia ')
 
 
 # position = (490, 740)  # X, Y coordinates
