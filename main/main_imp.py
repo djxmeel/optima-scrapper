@@ -17,11 +17,10 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
-# TODO reescrape and reupload attachments to spec sheets field
+# TODO rescrape and reupload attachments to spec sheets field
 # TODO new catalog icons excel
 # TODO run a descatologados import after running a full scrape and import
 # TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
-# TODO remove "no image" images from Odoo16
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
