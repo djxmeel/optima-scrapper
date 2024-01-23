@@ -411,7 +411,6 @@ class OdooImport:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
 
-    # TODO test import_pdfs
     @classmethod
     def import_pdfs(cls, begin_from=0, clean=False, skip_products_w_attachments=False):
         product_model = cls.PRODUCT_MODEL
