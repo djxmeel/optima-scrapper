@@ -509,10 +509,28 @@ class OdooImport:
                     if product_ids:
                         # write/overwrite the image to the product
                         if product['imgs']:
+                            main_media_position = 0
+
+                            # TODO TEST media position overrides
+                            # Main media position overrides
+                            if 'v-tac.es' in product['url']:
+                                media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
+                            elif 'vtacexports.com' in product['url']:
+                                media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_UK.json')
+                            else:
+                                media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ITA.json')
+
+                            if product['default_code'] in media_reorders:
+                                main_media_position = media_reorders[product['default_code']]
+
                             try:
-                                cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][0]['img64']})
+                                cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][main_media_position]['img64']})
+                                product['imgs'].pop(main_media_position)
                             except RPCError:
                                 pass
+                            except IndexError:
+                                cls.PRODUCT_MODEL.write([product_ids[0]],{'image_1920': product['imgs'][0]['img64']})
+                                product['imgs'].pop(0)
 
                             images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
 
@@ -539,7 +557,7 @@ class OdooImport:
                                 pass
 
                             # Iterate over the products 'imgs'
-                            for extra_img in product['imgs'][1:]:
+                            for extra_img in product['imgs']:
                                 if extra_img not in images:
                                     name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
 
