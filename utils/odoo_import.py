@@ -349,7 +349,6 @@ class OdooImport:
 
                     cls.PRODUCT_MODEL.write(main_product_id, {'website_description': current_desc + desc_extension})
 
-    # TODO test import_spec_sheets
     @classmethod
     def import_spec_sheets(cls, clean, begin_from):
         product_model = cls.PRODUCT_MODEL
@@ -394,7 +393,7 @@ class OdooImport:
 
                     attachment_data = {
                         'name': attachment_name,
-                        'website_name': 'Ficha técnica',
+                        'website_name': 'Ficha técnica.pdf',
                         'datas': encoded_data,
                         'public': True,
                         'attached_in_product_tmpl_ids': [product_id],
@@ -457,13 +456,6 @@ class OdooImport:
             elif sku in sku_list_ita:
                 attachment_paths = Util.get_all_files_in_directory(
                     directory_list_ita[sku_list_ita.index(sku)])
-
-            # TODO test uploading instrucciones to 1st position
-            for path in attachment_paths:
-                if 'instrucciones' in path.lower():
-                    attachment_paths.remove(path)
-                    attachment_paths.insert(0, path)
-                    break
 
             if attachment_paths:
                 cls.logger.info(f"{sku}: UPLOADING {len(attachment_paths)} FILES")
