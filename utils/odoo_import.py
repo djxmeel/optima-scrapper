@@ -617,37 +617,35 @@ class OdooImport:
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
+                # FIXME TEST icon upload
                 if 'icons' in product:
                     cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
 
+                    # Try getting icons from EXCEL for products of catalog
+                    icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
+
+                    for record in icons_excel:
+                        if str(record['SKU']) == product['default_code']:
+                            if not pd.isna(record['ICONOS']):
+                                product['icons'] = Util.get_encoded_icons_from_excel(str(record['ICONOS']).split(','))
+
                     if product_ids:
-                        images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0])])
-
-                        # Product existing icons
-                        icons_elements = cls.MEDIA_MODEL.browse(images)
-
-                        icons = [icon.image_1920 for icon in icons_elements]
-
                         # Resize icons to 1920px width for Odoo
                         product['icons'] = [Util.resize_image_b64(icon, 1920) for icon in product['icons']]
 
                         # Iterate over the products
-                        for icon in product['icons']:
-                            if icon not in icons:
-                                name = f'{product_ids[0]}_{product["icons"].index(icon)}'
-                                new_image = {
-                                    'name': name,  # Replace with your image name
-                                    'image_1920': icon,
-                                    'product_tmpl_id': product_ids[0]
-                                }
+                        for index, icon in enumerate(product['icons']):
+                            name = f'icon_{product_ids[0]}_{product["icons"].index(icon)}'
 
-                                try:
-                                    # Create the new product.image record
-                                    cls.MEDIA_MODEL.create(new_image)
-                                except RPCError:
-                                    pass
-                            else:
-                                cls.logger.info('Icon already exists')
+                            try:
+                                if index+1 > 6:
+                                    cls.logger.warn(f'{product["default_code"]}: ICONS LIMIT REACHED')
+                                    break
+
+                                # Create the new product.image record
+                                cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{index+1}': icon})
+                            except RPCError:
+                                cls.logger.warn(f'{product["default_code"]}: ERROR UPLOADING ICON with name : {name}')
                     else:
                         cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
 

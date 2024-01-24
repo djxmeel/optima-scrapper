@@ -796,3 +796,11 @@ class Util:
         :return: A string with all <a> tags and their contents removed.
         """
         return re.sub(r'<a[^>]*>.*?</a>', '', html_string, flags=re.DOTALL)
+
+    @classmethod
+    def get_encoded_icons_from_excel(cls, icons_names):
+        icons = []
+        for icon_name in icons_names:
+            icon_b64 = Util.load_json(f'data/common/icons/icons_b64/{icon_name}.json')
+            icons.append(icon_b64[icon_name])
+        return icons
