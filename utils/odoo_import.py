@@ -638,7 +638,7 @@ class OdooImport:
                             name = f'icon_{product_ids[0]}_{product["icons"].index(icon)}'
 
                             try:
-                                if index+1 > 6:
+                                if index+1 > 8:
                                     cls.logger.warn(f'{product["default_code"]}: ICONS LIMIT REACHED')
                                     break
 
