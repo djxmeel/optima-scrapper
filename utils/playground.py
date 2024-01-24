@@ -837,7 +837,7 @@ def encode_images_to_json(folder_path, output_path):
                 encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
             # Creating a dictionary with the filename as key and encoded image as value
-            data = {filename.split('.')[0]: encoded_string}
+            data = {filename.split('.png')[0]: encoded_string}
 
             # Writing the JSON file
             json_filename = os.path.splitext(filename)[0] + '.json'
@@ -845,10 +845,10 @@ def encode_images_to_json(folder_path, output_path):
                 json.dump(data, json_file)
 
 # Usage
-#encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons')
+#encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons/icons_b64')
 
 
-replace_name_files_in_subfolders('data/vtac_spain/PRODUCT_PDF', 'Technical Specifications', 'Especificaciones Técnicas')
+#replace_name_files_in_subfolders('data/vtac_spain/PRODUCT_PDF', 'Technical Specifications', 'Especificaciones Técnicas')
 
 # position = (490, 740)  # X, Y coordinates
 # size = (80, 80)  # Width, Height of the square
