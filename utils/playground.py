@@ -826,6 +826,28 @@ def replace_name_files_in_subfolders(parent_folder, old_str, new_str):
             pass
 
 
+def encode_images_to_json(folder_path, output_path):
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".png"):
+            # Constructing the full file path
+            file_path = os.path.join(folder_path, filename)
+
+            # Reading the image and encoding it in base64
+            with open(file_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+
+            # Creating a dictionary with the filename as key and encoded image as value
+            data = {filename.split('.')[0]: encoded_string}
+
+            # Writing the JSON file
+            json_filename = os.path.splitext(filename)[0] + '.json'
+            with open(os.path.join(output_path, json_filename), 'w') as json_file:
+                json.dump(data, json_file)
+
+# Usage
+encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons')
+
+
 #replace_name_files_in_subfolders('data/vtac_italia/PRODUCT_PDF', 'Certificado ', 'Licencia ')
 
 # position = (490, 740)  # X, Y coordinates
