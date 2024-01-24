@@ -516,7 +516,7 @@ class OdooImport:
                         if product['imgs']:
                             main_media_position = 0
 
-                            # TODO TEST media position overrides
+                            # FIXME TEST main media & vid position overrides
                             # Main media position overrides
                             if 'v-tac.es' in product['url']:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
@@ -561,6 +561,37 @@ class OdooImport:
                                 cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
                                 pass
 
+                            if 'videos' in product:
+                                videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
+
+                                if videos and clean:
+                                    cls.MEDIA_MODEL.unlink(videos)
+                                    cls.logger.info(f"CLEANED VIDEOS OF SKU {product['default_code']}")
+                                    videos.clear()
+                                else:
+                                    videos = cls.MEDIA_MODEL.browse(videos)
+                                    videos = [video.video_url for video in videos]
+
+                                # Iterate over the products 'videos'
+                                for video_url in product['videos']:
+                                    if video_url not in videos:
+                                        name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
+
+                                        new_video = {
+                                            'name': name,
+                                            'video_url': video_url,
+                                            'product_tmpl_id': product_ids[0]
+                                        }
+                                        try:
+                                            # Create the new product.image record
+                                            cls.MEDIA_MODEL.create(new_video)
+                                        except RPCError:
+                                            pass
+                                    else:
+                                        cls.logger.info(f'{product["default_code"]}: Video already exists')
+
+                                cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
+
                             # Iterate over the products 'imgs'
                             for extra_img in product['imgs']:
                                 if extra_img not in images:
@@ -585,43 +616,6 @@ class OdooImport:
 
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
-
-                if 'videos' in product:
-                    cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
-                    if product_ids:
-                        if product["videos"]:
-                            videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
-
-                            if videos and clean:
-                                cls.MEDIA_MODEL.unlink(videos)
-                                cls.logger.info(f"CLEANED VIDEOS OF SKU {product['default_code']}")
-                                videos.clear()
-                            else:
-                                videos = cls.MEDIA_MODEL.browse(videos)
-                                videos = [video.video_url for video in videos]
-
-                            if 'videos' in product:
-                                # Iterate over the products 'videos'
-                                for video_url in product['videos']:
-                                    if video_url not in videos:
-                                        name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
-
-                                        new_video = {
-                                            'name': name,
-                                            'video_url': video_url,
-                                            'product_tmpl_id': product_ids[0]
-                                        }
-                                        try:
-                                            # Create the new product.image record
-                                            cls.MEDIA_MODEL.create(new_video)
-                                        except RPCError:
-                                            pass
-                                    else:
-                                        cls.logger.info(f'{product["default_code"]}: Video already exists')
-
-                                cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
-                    else:
-                        cls.logger.warn(f'{product["default_code"]} : PRODUCT NOT FOUND IN ODOO')
 
                 if 'icons' in product:
                     cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
@@ -852,7 +846,6 @@ class OdooImport:
 
         for attr, value in product_to_archive_conditions.items():
             cls.archive_products_based_on_condition(attr, '=', value)
-
 
     @classmethod
     def archive_products_based_on_condition(cls, attribute, condition, value):
