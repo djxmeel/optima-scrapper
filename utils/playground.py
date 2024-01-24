@@ -845,10 +845,10 @@ def encode_images_to_json(folder_path, output_path):
                 json.dump(data, json_file)
 
 # Usage
-encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons')
+#encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons')
 
 
-#replace_name_files_in_subfolders('data/vtac_italia/PRODUCT_PDF', 'Certificado ', 'Licencia ')
+replace_name_files_in_subfolders('data/vtac_spain/PRODUCT_PDF', 'Technical Specifications', 'Especificaciones Técnicas')
 
 # position = (490, 740)  # X, Y coordinates
 # size = (80, 80)  # Width, Height of the square

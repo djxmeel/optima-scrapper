@@ -298,7 +298,7 @@ class DataMerger:
 
     @classmethod
     def get_translated_icons(cls, icons):
-        mappings_paths = Util.get_all_files_in_directory('data/common/json/icon_mappings')
+        mappings_paths = Util.get_all_files_in_directory('data/common/icons/icon_mappings')
 
         for path in mappings_paths:
             original_translated_icons_tuples = Util.load_json(path)
