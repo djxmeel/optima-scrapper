@@ -786,3 +786,13 @@ class Util:
 
         for specsheet in unedited_specsheets:
             os.remove(specsheet)
+
+    @classmethod
+    def remove_a_tags(cls, html_string):
+        """
+        Removes all <a> tags and their content from the given HTML string.
+
+        :param html_string: A string containing HTML content.
+        :return: A string with all <a> tags and their contents removed.
+        """
+        return re.sub(r'<a[^>]*>.*?</a>', '', html_string, flags=re.DOTALL)
