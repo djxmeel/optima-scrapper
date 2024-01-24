@@ -213,6 +213,11 @@ class OdooImport:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
 
+                # FIXME TEST
+                # Removes videos from description
+                if 'website_description' in product:
+                    product['website_description'] = Util.remove_a_tags(product['website_description'])
+
                 counter += 1
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
 
