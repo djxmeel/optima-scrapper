@@ -17,8 +17,12 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
+
+# TODO continue with attachments reorder excel
+# TODO upload new EU stock
+# TODO make it so all V-TAC products get V-TAC LOGO icon
 # TODO new catalog icons excel
-# TODO run a descatologados import after running a full scrape and import
+# TODO run a descatalogados import after running a full scrape and import
 # TODO generate a json with icon img name as key and b64 as value to upload icons to Odoo
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH

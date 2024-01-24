@@ -213,7 +213,7 @@ class OdooImport:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
 
-                # FIXME TEST
+                # FIXME TEST removing of videos from description
                 # Removes videos from description
                 if 'website_description' in product:
                     product['website_description'] = Util.remove_a_tags(product['website_description'])
@@ -617,7 +617,7 @@ class OdooImport:
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
-                # FIXME TEST icon upload
+                # FIXME TEST icon upload to right field
                 if 'icons' in product:
                     cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
 
