@@ -804,3 +804,7 @@ class Util:
             icon_b64 = Util.load_json(f'data/common/icons/icons_b64/{icon_name}.json')
             icons.append(icon_b64[icon_name])
         return icons
+
+    @classmethod
+    def get_vtac_logo_icon_b64(cls):
+        return Util.load_json(f'data/common/icons/icons_b64/vtaclogo.json')
