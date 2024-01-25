@@ -18,7 +18,7 @@ from utils.util import Util
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
 
-# TODO continue with attachments reorder excel
+# TODO continue with attachments reorder json
 # TODO upload new EU stock
 # TODO make it so all V-TAC products get V-TAC LOGO icon
 # TODO new catalog icons excel
