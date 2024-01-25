@@ -440,7 +440,7 @@ class OdooImport:
                 attachments_model.unlink(atts)
                 cls.logger.info(f"CLEANED ATTACHMENTS OF SKU {sku}")
 
-            print(f'{index + begin_from + 1} / {len(skus_in_odoo[begin_from:])}')
+            print(f'{index + begin_from + 1} / {len(skus_in_odoo)}')
 
             if skip_products_w_attachments and not clean:
                 product_uploaded_attachments = attachments_model.search([('attached_in_product_tmpl_ids', '=', [product_id]), ('website_name', '!=', 'Ficha Técnica')])
