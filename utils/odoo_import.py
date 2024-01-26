@@ -629,7 +629,7 @@ class OdooImport:
                             if not pd.isna(record['ICONOS']):
                                 product['icons'] = Util.get_encoded_icons_from_excel(str(record['ICONOS']).split(','))
 
-                    # TODO test vtaclogo icon presence on all products
+                    # FIXME test vtaclogo icon presence on all products
                     # Add V-TAC LOGO icon to all V-TAC products
                     if product['Marca'] == 'V-TAC':
                         product['icons'].insert(0, Util.get_vtac_logo_icon_b64())
