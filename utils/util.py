@@ -498,7 +498,7 @@ class Util:
 
         for category_sku in categories_sku:
             if str(sku) == str(category_sku['SKU']):
-                public_categories.append(category_sku['CATEGORY ES'].strip())
+                public_categories.append(str(category_sku['CATEGORY ES']).strip())
 
         if not public_categories:
             logger.warn(f'{sku}: NO PUBLIC CATEGORIES FOUND')
