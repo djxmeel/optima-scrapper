@@ -265,7 +265,7 @@ class OdooImport:
 
                     current_origin_url = cls.PRODUCT_MODEL.browse(product_id).x_url
 
-                    if current_origin_url and (current_origin_url == url or 'v-tac.es' in current_origin_url or 'v-tac.es' not in url) and not force_update:
+                    if not force_update and current_origin_url and (current_origin_url == url or 'v-tac.es' in current_origin_url or 'v-tac.es' not in url):
                         cls.logger.info(f'FORCE SKIPPING Product {product["default_code"]} for it\'s origin didn\'t change')
                         continue
 
@@ -518,9 +518,9 @@ class OdooImport:
 
                             # FIXME TEST main media & vid position overrides
                             # Main media position overrides
-                            if 'v-tac.es' in product['url']:
+                            if 'v-tac.es' in product['x_url']:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
-                            elif 'vtacexports.com' in product['url']:
+                            elif 'vtacexports.com' in product['x_url']:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_UK.json')
                             else:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ITA.json')
