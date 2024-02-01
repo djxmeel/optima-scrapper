@@ -19,7 +19,7 @@ from utils.util import Util
 
 
 # TODO upload new EU stock
-# TODO run a descatalogados import after running a full scrape and import
+# TODO run a descatalogados import after running after assigning public categories to all products
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -43,8 +43,8 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_BRANDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
-# TODO do an imp with force update
-IF_IMPORT_PRODUCTS = True
+# TODO do an INFO imp with force update
+IF_IMPORT_PRODUCTS = False
 # When False, products with changed origin URL to ES will be updated anyway
 # When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
@@ -53,9 +53,9 @@ IF_FORCE_UPDATE = False
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
-
-IF_IMPORT_IMGS_AND_ICONS = False
-IF_CLEAN_EXISTING = False
+# TODO do a MEDIA imp with clean existing
+IF_IMPORT_IMGS_AND_ICONS = True
+IF_CLEAN_EXISTING = True
 SKIP_PRODUCTS_W_MEDIA = False
 
 # Always upload before PDFs
