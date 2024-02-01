@@ -43,7 +43,7 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_BRANDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
-# TODO do an INFO imp with force update
+# TODO do an INFO imp with force update to remove videos from descriptions
 IF_IMPORT_PRODUCTS = False
 # When False, products with changed origin URL to ES will be updated anyway
 # When True, only new SKUS will be imported

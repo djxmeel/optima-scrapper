@@ -304,7 +304,7 @@ class DataMerger:
             original_translated_icons_tuples = Util.load_json(path)
 
             for entry in original_translated_icons_tuples['icons']:
-                if entry[0] in icons:
+                if entry[1] in icons:
                     icons.remove(entry[1])
                     icons.append(entry[0])
                     print("REPLACED ICON WITH TRANSLATED VERSION")
