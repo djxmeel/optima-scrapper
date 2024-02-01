@@ -84,7 +84,7 @@ class ScraperVtacUk:
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0,
-                'imgs': [], 'icons': [],
+                'imgs': [],
                 'website_description': '',
                 'videos': [],
                 'product_brand_id': cls.BRAND_NAME}
@@ -162,16 +162,6 @@ class ScraperVtacUk:
                     item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
-
-        # Extracción de iconos
-        icons = driver.find_elements(By.XPATH,
-                                     '//main/div[3]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
-
-        for icon in icons:
-            item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
-
-        if not icons:
-            cls.logger.warning('PRODUCT HAS NO ICONS')
 
         # Reemplazo de campos para ODOO
         if 'Peso bruto (kg)' in item:

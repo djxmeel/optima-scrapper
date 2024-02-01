@@ -69,7 +69,7 @@ class ScraperVtacSpain:
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0,
-                'imgs': [], 'icons': [],
+                'imgs': [],
                 'website_description': '',
                 'videos': [],
                 'product_brand_id': cls.BRAND_NAME}

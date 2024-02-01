@@ -40,7 +40,6 @@ class DataMerger:
     }
 
     MEDIA_FIELDS_PRIORITIES = {
-        'icons': ('uk', 'ita', 'es'),
         'imgs': ('ita', 'uk', 'es'),
         'videos': ('uk', 'ita', 'es')
     }
@@ -247,9 +246,6 @@ class DataMerger:
                 if not merged_product['public_categories']:
                     merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH, cls.logger)
 
-            if 'icons' in merged_product_media:
-                merged_product_media['icons'] = cls.get_translated_icons(merged_product_media['icons'])
-
             if 'name' in merged_product:
                 merged_product['name'] = Util.get_correct_name_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, merged_product["default_code"], merged_product['name'])
 
@@ -294,19 +290,3 @@ class DataMerger:
 
         t1.join()
         t2.join()
-
-
-    @classmethod
-    def get_translated_icons(cls, icons):
-        mappings_paths = Util.get_all_files_in_directory('data/common/icons/icon_mappings')
-
-        for path in mappings_paths:
-            original_translated_icons_tuples = Util.load_json(path)
-
-            for entry in original_translated_icons_tuples['icons']:
-                if entry[1] in icons:
-                    icons.remove(entry[1])
-                    icons.append(entry[0])
-                    print("REPLACED ICON WITH TRANSLATED VERSION")
-
-        return icons

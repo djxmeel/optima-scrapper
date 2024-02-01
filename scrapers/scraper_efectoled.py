@@ -65,7 +65,7 @@ class ScraperEfectoLed:
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 

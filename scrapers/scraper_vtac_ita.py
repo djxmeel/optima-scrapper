@@ -68,7 +68,7 @@ class ScraperVtacItalia:
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
                 'website_description': '',
-                'imgs': [], 'icons': [],
+                'imgs': [],
                 'product_brand_id': cls.BRAND_NAME}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
@@ -156,15 +156,6 @@ class ScraperVtacItalia:
         item['name'] = Util.translate_from_to_spanish('it',
                                                       driver.find_element(By.XPATH,
                                                                           '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
-
-        # Extracción de iconos
-        try:
-            icons = driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/div[2]/div[2]/div[4]/div[2]/img')
-
-            # Mapeo de icons a una lista de sus base64
-            item['icons'] = [Util.src_to_base64(icon.get_attribute('src')) for icon in icons]
-        except NoSuchElementException:
-            cls.logger.warning('PRODUCT HAS NO ICONS')
 
         # Extracción de imágenes
         try:

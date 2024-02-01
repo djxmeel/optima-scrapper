@@ -213,7 +213,6 @@ class OdooImport:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
 
-                # FIXME TEST removing of videos from description
                 # Removes videos from description
                 if 'website_description' in product:
                     product['website_description'] = Util.remove_a_tags(product['website_description'])
@@ -509,154 +508,155 @@ class OdooImport:
                 # Search for the product template with the given sku
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
 
-                if 'imgs' in product:
-                    cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
-                    if product_ids:
-                        # write/overwrite the image to the product
-                        if product['imgs']:
-                            main_media_position = 0
+                if product_ids:
+                    browsed_product = cls.PRODUCT_MODEL.browse(product_ids[0])
+                else:
+                    cls.logger.warn(f'{product["default_code"]} NOT FOUND IN ODOO')
+                    continue
 
-                            # FIXME TEST main media & vid position overrides
-                            # Main media position overrides
-                            origin_url = cls.PRODUCT_MODEL.browse(product_ids[0]).x_url
+                if 'videos' in product:
+                    videos = cls.MEDIA_MODEL.search(
+                        [('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
 
+                    if videos and clean:
+                        cls.MEDIA_MODEL.unlink(videos)
+                        cls.logger.info(f"CLEANED VIDEOS OF SKU {product['default_code']}")
+                        videos.clear()
+                    else:
+                        videos = cls.MEDIA_MODEL.browse(videos)
+                        videos = [video.video_url for video in videos]
 
-                            if 'v-tac.es' in origin_url:
-                                media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
-                            elif 'vtacexports.com' in origin_url:
-                                media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_UK.json')
-                            else:
-                                media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ITA.json')
+                    # Iterate over the products 'videos'
+                    for video_url in product['videos']:
+                        if video_url not in videos:
+                            name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
 
-                            if product['default_code'] in media_reorders:
-                                main_media_position = media_reorders[product['default_code']]
-
+                            new_video = {
+                                'name': name,
+                                'video_url': video_url,
+                                'product_tmpl_id': product_ids[0]
+                            }
                             try:
-                                cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][main_media_position]['img64']})
-                                product['imgs'].pop(main_media_position)
+                                # Create the new product.image record
+                                cls.MEDIA_MODEL.create(new_video)
                             except RPCError:
                                 pass
-                            except IndexError:
-                                cls.PRODUCT_MODEL.write([product_ids[0]],{'image_1920': product['imgs'][0]['img64']})
-                                product['imgs'].pop(0)
+                        else:
+                            cls.logger.info(f'{product["default_code"]}: Video already exists')
 
-                            images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+                    cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
 
-                            if images:
-                                if skip_products_with_images:
-                                    cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
-                                    time.sleep(0.3)
-                                    continue
-                                if clean:
-                                    cls.MEDIA_MODEL.unlink(images)
-                                    images.clear()
-                                    images = []
-                                    cls.logger.info(f"CLEANED IMAGES OF SKU {product['default_code']}")
-                                else:
-                                    # Product existing images
-                                    images = cls.MEDIA_MODEL.browse(images)
-                                    images = [image.image_1920 for image in images]
+                if 'imgs' in product:
+                    cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
+                    # write/overwrite the image to the product
+                    if product['imgs']:
+                        main_media_position = 0
 
-                            try:
-                                # Resize images to 1920px width for Odoo
-                                product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
-                            except UnidentifiedImageError:
-                                cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
-                                pass
+                        # FIXME TEST main media & vid position overrides
+                        # Main media position overrides
+                        origin_url = browsed_product.x_url
 
-                            if 'videos' in product:
-                                videos = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('video_url', '!=', False)])
+                        if 'v-tac.es' in origin_url:
+                            media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
+                        elif 'vtacexports.com' in origin_url:
+                            media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_UK.json')
+                        else:
+                            media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ITA.json')
 
-                                if videos and clean:
-                                    cls.MEDIA_MODEL.unlink(videos)
-                                    cls.logger.info(f"CLEANED VIDEOS OF SKU {product['default_code']}")
-                                    videos.clear()
-                                else:
-                                    videos = cls.MEDIA_MODEL.browse(videos)
-                                    videos = [video.video_url for video in videos]
+                        if product['default_code'] in media_reorders:
+                            main_media_position = media_reorders[product['default_code']]
 
-                                # Iterate over the products 'videos'
-                                for video_url in product['videos']:
-                                    if video_url not in videos:
-                                        name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
+                        try:
+                            cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][main_media_position]['img64']})
+                            product['imgs'].pop(main_media_position)
+                        except RPCError:
+                            pass
+                        except IndexError:
+                            cls.PRODUCT_MODEL.write([product_ids[0]],{'image_1920': product['imgs'][0]['img64']})
+                            product['imgs'].pop(0)
 
-                                        new_video = {
-                                            'name': name,
-                                            'video_url': video_url,
-                                            'product_tmpl_id': product_ids[0]
-                                        }
-                                        try:
-                                            # Create the new product.image record
-                                            cls.MEDIA_MODEL.create(new_video)
-                                        except RPCError:
-                                            pass
-                                    else:
-                                        cls.logger.info(f'{product["default_code"]}: Video already exists')
+                        images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
 
-                                cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
+                        if images:
+                            if clean:
+                                cls.MEDIA_MODEL.unlink(images)
+                                images.clear()
+                                images = []
+                                cls.logger.info(f"CLEANED IMAGES OF SKU {product['default_code']}")
 
-                            # Iterate over the products 'imgs'
-                            for extra_img in product['imgs']:
-                                if extra_img not in images:
-                                    name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
+                            if skip_products_with_images:
+                                cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
+                                time.sleep(0.3)
+                                continue
+                            else:
+                                # Product existing images
+                                images = cls.MEDIA_MODEL.browse(images)
+                                images = [image.image_1920 for image in images]
 
-                                    new_image = {
-                                        'name': name,
-                                        'image_1920': extra_img,
-                                        'product_tmpl_id': product_ids[0]
-                                    }
-                                    try:
-                                        # Create the new product.image record
-                                        cls.MEDIA_MODEL.create(new_image)
-                                    except RPCError:
-                                        cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
-                                else:
-                                    cls.logger.info(f'{product["default_code"]}: Image already exists')
+                        try:
+                            # Resize images to 1920px width for Odoo
+                            product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
+                        except UnidentifiedImageError:
+                            cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
+                            pass
 
-                            cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING IMAGES")
-                    else:
-                        cls.logger.warn(f'{product["default_code"]} : PRODUCT NOT FOUND IN ODOO')
+                        # Iterate over the products 'imgs'
+                        for extra_img in product['imgs']:
+                            if extra_img not in images:
+                                name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
 
+                                new_image = {
+                                    'name': name,
+                                    'image_1920': extra_img,
+                                    'product_tmpl_id': product_ids[0]
+                                }
+                                try:
+                                    # Create the new product.image record
+                                    cls.MEDIA_MODEL.create(new_image)
+                                except RPCError:
+                                    cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
+                            else:
+                                cls.logger.info(f'{product["default_code"]}: Image already exists')
+
+                        cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING IMAGES")
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
                 # FIXME TEST icon upload to right field
+                # Try getting icons from EXCEL for products of catalog
+                icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
+
+                # FIXME remove after an imp
                 if 'icons' in product:
-                    cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
+                    del product['icons']
 
-                    # Try getting icons from EXCEL for products of catalog
-                    icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
-
-                    for record in icons_excel:
-                        if str(record['SKU']) == product['default_code']:
-                            if not pd.isna(record['ICONOS']):
-                                product['icons'] = Util.get_encoded_icons_from_excel(str(record['ICONOS']).split(','))
-
-                    # FIXME test vtaclogo icon presence on all products
+                for record in icons_excel:
+                    if str(record['SKU']) == product['default_code']:
+                        if not pd.isna(record['ICONS']):
+                            product['icons'] = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
+                            cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
+                        break
+                if 'icons' in product:
                     # Add V-TAC LOGO icon to all V-TAC products
-                    if product['Marca'] == 'V-TAC':
-                        product['icons'].insert(0, Util.get_vtac_logo_icon_b64())
+                    if browsed_product.product_brand_id.name == 'V-TAC':
+                        product['icons'].insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
 
-                    if product_ids:
-                        # Resize icons to 1920px width for Odoo
-                        product['icons'] = [Util.resize_image_b64(icon, 1920) for icon in product['icons']]
+                    # Resize icons to 1920px width for Odoo
+                    product['icons'] = [Util.resize_image_b64(icon, 1920) for icon in product['icons']]
 
-                        # Iterate over the products
-                        for index, icon in enumerate(product['icons']):
-                            name = f'icon_{product_ids[0]}_{product["icons"].index(icon)}'
+                    # Iterate over the products
+                    for index, icon in enumerate(product['icons']):
+                        name = f'icon_{product_ids[0]}_{product["icons"].index(icon)}'
 
-                            try:
-                                if index+1 > 8:
-                                    cls.logger.warn(f'{product["default_code"]}: ICONS LIMIT REACHED')
-                                    break
+                        try:
+                            if index+1 > 8:
+                                cls.logger.warn(f'{product["default_code"]}: ICONS LIMIT of 8 REACHED')
+                                break
 
-                                # Create the new product.image record
-                                cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{index+1}': icon})
-                            except RPCError:
-                                cls.logger.warn(f'{product["default_code"]}: ERROR UPLOADING ICON with name : {name}')
-                    else:
-                        cls.logger.warn('PRODUCT NOT FOUND IN ODOO')
-
+                            # Create the new product.image record
+                            cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{index+1}': icon})
+                        except RPCError:
+                            cls.logger.warn(f'{product["default_code"]}: ERROR UPLOADING ICON with name : {name}')
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO ICONS!')
 
