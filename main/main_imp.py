@@ -18,7 +18,6 @@ from utils.util import Util
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
 
-# TODO continue with main media reorder json
 # TODO upload new EU stock
 # TODO run a descatalogados import after running a full scrape and import
 
