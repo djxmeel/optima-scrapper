@@ -583,14 +583,15 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
     df1 = pd.read_excel(old_pricelist)
     df2 = pd.read_excel(new_pricelist)
 
-    # Merge the dataframes on 'SKU' with a left join
+    # Merge the dataframes on 'SKU' with a right join
     merged_df = pd.merge(df1, df2, on=primary_k, how='right', suffixes=('_file1', '_file2'), indicator=True)
 
     # Filter to keep rows with new SKUs and rows with different 'price' or 'promotions'
     filtered_df = merged_df[
         (merged_df['_merge'] == 'right_only') |
-        ((merged_df['price_file1'] != merged_df['price_file2']) & pd.notna(merged_df['price_file2'])) |
-        ((merged_df['promotions_file1'] != merged_df['promotions_file2']) & pd.notna(merged_df['promotions_file2']))
+        ((merged_df['_merge'] == 'both') &
+         ((merged_df['price_file1'] != merged_df['price_file2']) |
+          (merged_df['promotions_file1'] != merged_df['promotions_file2'])))
         ]
 
     # Select columns from the second file only (excluding the merge indicator)
@@ -608,12 +609,16 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
     worksheet = workbook.active
 
     red_fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
+    green_fill = PatternFill(start_color='05ff00', end_color='05ff00', fill_type='solid')
 
     # Apply conditional formatting
     for row in range(2, worksheet.max_row + 1):
-        if worksheet[f'I{row}'].value == 'both':
-            worksheet[f'I{row}'].fill = red_fill
-            worksheet[f'I{row}'] = 'CAMBIO DE PRECIO O PROMOCIONES'
+        if worksheet[f'H{row}'].value == 'both':
+            worksheet[f'H{row}'].fill = red_fill
+            worksheet[f'H{row}'] = 'CAMBIO DE PRECIO O PROMOCIONES'
+        elif worksheet[f'H{row}'].value == 'right_only':
+            worksheet[f'H{row}'].fill = green_fill
+            worksheet[f'H{row}'] = 'NUEVO PRODUCTO'
 
     # Save the workbook
     workbook.save(output_file)
@@ -867,12 +872,12 @@ def encode_images_to_json(folder_path, output_path):
 # load_and_convert_images('data/vtac_italia/PRODUCT_MEDIA', 'data/vtac_italia/distinct_icons')
 
 
-# Example usage
+#Example usage
 # get_price_variations_and_new_products_excel(
 #     'SKU',
-#     'data/common/excel/local_stock/16._Pricelist_V-TAC_Europe_Ltd_promotions_November_2023.xlsx',
-#     'data/common/excel/local_stock/17._Pricelist_V-TAC_Europe_Ltd_promotions_January_2024.xlsx',
-#     'data/common/excel/local_stock/output.xlsx')
+#     'data/common/excel/to_compare/comparar_con_este_Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023.xlsx',
+#     'data/common/excel/to_compare/Pricelist_V-TAC_Europe_Ltd_promotions_January_2024_-_23-01-2024.xlsx',
+#     'data/common/excel/to_compare/output.xlsx')
 
 
 # Example usage :
@@ -880,15 +885,14 @@ def encode_images_to_json(folder_path, output_path):
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
 # merge_excel_files(
-#     'data/common/excel/to_compare/vtac16.xlsx',
-#     "data/common/excel/to_compare/vtac15.xlsx",
+#     'data/common/excel/to_compare/pricelist.xlsx',
+#     "data/common/excel/to_compare/en O15 y no en pricelist.xlsx",
 #     'data/common/excel/to_compare/output.xlsx',
-#     'Referencia interna',
-#     False,
+#     'SKU',
+#     True,
 #     False,
 #     "data/common/json/SKUS_TO_SKIP.json"
 # )
-
 
 #delete_excel_rows("data/common/excel/productos_odoo_15.xlsx")
 
