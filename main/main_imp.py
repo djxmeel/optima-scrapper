@@ -43,8 +43,8 @@ IF_IMPORT_FIELDS = False
 IF_IMPORT_BRANDS = False
 
 IF_IMPORT_PUBLIC_CATEGORIES = False
-
-IF_IMPORT_PRODUCTS = False
+# TODO do an imp with force update
+IF_IMPORT_PRODUCTS = True
 # When False, products with changed origin URL to ES will be updated anyway
 # When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
