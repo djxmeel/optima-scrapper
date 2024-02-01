@@ -518,9 +518,12 @@ class OdooImport:
 
                             # FIXME TEST main media & vid position overrides
                             # Main media position overrides
-                            if 'v-tac.es' in product['x_url']:
+                            origin_url = cls.PRODUCT_MODEL.browse(product_ids[0]).x_url
+
+
+                            if 'v-tac.es' in origin_url:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
-                            elif 'vtacexports.com' in product['x_url']:
+                            elif 'vtacexports.com' in origin_url:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_UK.json')
                             else:
                                 media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ITA.json')
