@@ -17,7 +17,7 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
-
+# TODO Do the icon excel for all products (only catalogados done)
 # TODO upload new EU stock
 # TODO run a descatalogados import after running after assigning public categories to all products
 
@@ -49,13 +49,13 @@ IF_IMPORT_PRODUCTS = False
 # When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
 # True if you want to update products even if their origin URL is the same
-IF_FORCE_UPDATE = False
+IF_FORCE_UPDATE = True
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
 # TODO do a MEDIA imp with clean existing
-IF_IMPORT_IMGS_AND_ICONS = True
-IF_CLEAN_EXISTING = True
+IF_IMPORT_IMGS_AND_ICONS = False
+IF_CLEAN_EXISTING = False
 SKIP_PRODUCTS_W_MEDIA = False
 
 # Always upload before PDFs
