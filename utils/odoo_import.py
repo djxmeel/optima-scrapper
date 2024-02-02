@@ -906,8 +906,8 @@ class OdooImport:
 
 
     @classmethod
-    def import_availability(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
-        products = cls.browse_all_products_in_batches()
+    def import_availability_vtac(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
+        products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
         eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
         entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
