@@ -655,6 +655,12 @@ class OdooImport:
 
                             # Create the new product.image record
                             cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{index+1}': icon})
+
+                            if index +1 == len(product['icons']):
+                                cls.logger.info(f'{product["default_code"]}: ICONS UPLOADED')
+                                # Remove not used icon fields
+                                for i in range(index+1, 9):
+                                    cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{i}': False})
                         except RPCError:
                             cls.logger.warn(f'{product["default_code"]}: ERROR UPLOADING ICON with name : {name}')
                 else:
