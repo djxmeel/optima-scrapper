@@ -17,7 +17,7 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
-# TODO Remove material publicitario from skustoskip and do a new json for product to never publish
+# TODO implement new json SKUS_TO_NOT_PUBLISH.json
 # TODO Do the icon excel for all products (only catalogados done)
 # TODO upload new EU stock
 # TODO run a descatalogados import after assigning public categories to all products
