@@ -54,7 +54,7 @@ class OdooImport:
     PRODUCT_SPEC_SHEETS_DIR = 'data/vtac_uk/SPEC_SHEETS'
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'transit', 'almacen2_custom')
 
     # Invoice policy (delivery ; order)
     CURRENT_INVOICE_POLICY = 'delivery'

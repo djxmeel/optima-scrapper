@@ -36,7 +36,10 @@ class DataMerger:
         'default': ('es', 'uk', 'ita'),
         'website_description': ('es', 'uk'),
         'description_purchase': ('es'),
-        'accesorios': ('ita')
+        'accesorios': ('ita'),
+        'transit': ('uk'),
+        '- Almacén 2': ('uk'),
+        'almacen2_custom': ('uk')
     }
 
     MEDIA_FIELDS_PRIORITIES = {

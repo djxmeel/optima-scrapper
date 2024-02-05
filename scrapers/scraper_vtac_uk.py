@@ -173,6 +173,30 @@ class ScraperVtacUk:
             item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
             del item['Peso bruto (kg)']
 
+        # Scrape UK stock data
+        try:
+            stockdata_dict = {}
+
+            stock_uls = driver.find_elements(By.XPATH, "//div[@class='columns']/div/div/section[1]/div/div/div[2]/div[4]//ul")
+
+            local_lis = stock_uls[0].find_elements(By.TAG_NAME, 'div')
+            global_lis = stock_uls[1].find_elements(By.TAG_NAME, 'div')
+
+            item['almacen2_custom'] = int(str(local_lis[0].text).split(':')[1].replace('pcs', '').replace('-','0').strip())
+            item['- Almacén 2'] = f"{item['almacen2_custom']} unidades"
+
+            stockdata_dict['localtransit'] = local_lis[1].text
+            stockdata_dict['globaltransit'] = global_lis[1].text
+            item['transit'] = 0
+
+            # Sum local and global transit
+            for key, value in stockdata_dict.items():
+                stockdata_dict[key] = int(str(value).split(':')[1].replace('pcs', '').replace('-','0').strip())
+
+                item['transit'] += stockdata_dict[key]
+        except (IndexError, ValueError):
+            cls.logger.warning('NO UK STOCK INFO FOUND FOR SKU ' + item['default_code'])
+
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
         return item
