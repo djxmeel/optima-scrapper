@@ -19,7 +19,7 @@ from utils.util import Util
 
 # TODO Do the icon excel for all products (only catalogados done)
 # TODO upload new EU stock
-# TODO run a descatalogados import after running after assigning public categories to all products
+# TODO run a descatalogados import after assigning public categories to all products
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
