@@ -496,6 +496,8 @@ class OdooImport:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
 
+    # FIXME media import should iterate over skus from ODOO instead of JSON
+    # TODO check samsung icon in excel
     @classmethod
     def import_imgs_icons_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images, clean=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
