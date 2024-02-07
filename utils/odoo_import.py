@@ -623,13 +623,8 @@ class OdooImport:
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
-                # FIXME TEST icon upload to right field
                 # Try getting icons from EXCEL for products of catalog
                 icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
-
-                # FIXME remove after an imp
-                if 'icons' in product:
-                    del product['icons']
 
                 for record in icons_excel:
                     if str(record['SKU']) == product['default_code']:
