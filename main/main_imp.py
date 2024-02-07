@@ -17,7 +17,8 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
-# TODO Do the icon excel for all products (only catalogados done)
+# TODO a ita rescrape to remove icons from data
+# TODO The icon excel for all products (only catalogados done)
 # TODO upload new EU stock
 # TODO run a descatalogados import after assigning public categories to all products
 # TODO scrape UK "Global transit + Local transit" & "Local stock"
@@ -55,7 +56,7 @@ IF_FORCE_UPDATE = True
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
-# TODO do a MEDIA imp with clean existing
+
 IF_IMPORT_IMGS_AND_ICONS = False
 IF_CLEAN_EXISTING = False
 SKIP_PRODUCTS_W_MEDIA = False
