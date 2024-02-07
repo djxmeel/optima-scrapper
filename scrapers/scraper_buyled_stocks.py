@@ -3,16 +3,18 @@ from datetime import datetime
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
+from appium.webdriver.common.appiumby import AppiumBy
+from selenium.common import NoSuchElementException
 
-import utils.playground as playground
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# TODO - Implement the scraper for the BuyLed stocks
+
 # The scraper should be able to:
 # 1. Start the scraping process
 # 2. Get the stock data for all SKUS present in ODOO16
 # 3. Save the stock data to a json named 'buyled_stocks_{date}.json' in the output_dir_path
+
 class ScraperBuyLedStocks():
     capabilities = dict(
         platformName='Android',
@@ -20,29 +22,40 @@ class ScraperBuyLedStocks():
         deviceName='Medium_Phone_API_23',
         appPackage='es.buyled.buyledpro',
         appActivity='.MainActivity t24',
-        language='en',
-        locale='US',
-        noReset=True
+        noReset=False
     )
 
     appium_server_url = 'http://localhost:4723'
     driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
 
-    edittext_field = '//android.widget.EditText[@text="Búsqueda SKU"]'
-    search_btn = '//android.widget.EditText[@text="Búsqueda SKU"]/android.widget.Button'
-    stock_ita_text = "(//android.view.View[@content-desc='0'])[2]"
-    stock_buyled_text = "(//android.view.View[@content-desc='0'])[1]"
+    search_field_locator = 'className("android.widget.EditText")'
+    btn_locator = 'className("android.widget.Button")'
+
+    # Buy led stock index = 0 ; ITA stock index = 1
+    stock_buyled_locator = 'className("android.view.View").index(7)'
+    stock_ita_locator = 'className("android.view.View").index(9)'
+
+    login_fields_locator = 'className("android.widget.EditText")'
+    email_field_index = 0
+    password_field_index = 1
 
     @classmethod
     def start_scrape(cls, output_dir_path):
-        products_odoo = OdooImport.browse_all_products_in_batches()
+        products_odoo = OdooImport.browse_all_products_in_batches('product_brand_id', '=', OdooImport.VTAC_BRAND_ID)
         stock_data = []
+
+        cls.login()
 
         for product in products_odoo:
             sku = product.default_code
+            if not sku:
+                continue
             cls.search_sku(sku)
-            time.sleep(1)
-            stock_data.append(cls.get_stock_data(sku))
+            fetched_data = cls.get_stock_data(sku)
+
+            if fetched_data:
+                print(fetched_data)
+                stock_data.append(fetched_data)
 
         Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")}.json')
         cls.end_scrape()
@@ -52,12 +65,40 @@ class ScraperBuyLedStocks():
 
     @classmethod
     def get_stock_data(cls, sku):
-        return {
-            'sku': sku,
-            'stock_buyled': 0,
-            'stock_ita': 0
-        }
+        try:
+            stock_buyled_text = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.stock_buyled_locator).get_attribute('content-desc')
+            stock_ita_text = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.stock_ita_locator).get_attribute('content-desc')
+
+            return {
+                'sku': sku,
+                'stock_buyled': int(stock_buyled_text),
+                'stock_ita': int(stock_ita_text)
+            }
+        except NoSuchElementException:
+            print(f'No stock data found for SKU: {sku}')
+            return None
 
     @classmethod
     def search_sku(cls, sku):
-        pass
+        search_field_element = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.search_field_locator)
+        search_field_element.click()
+        search_field_element.send_keys(sku)
+        cls.driver.find_elements(AppiumBy.ANDROID_UIAUTOMATOR, cls.btn_locator)[2].click()
+        time.sleep(1)
+
+    @classmethod
+    def login(cls):
+        login_fields_elements = cls.driver.find_elements(AppiumBy.ANDROID_UIAUTOMATOR, cls.login_fields_locator)
+        email_login_element = login_fields_elements[cls.email_field_index]
+        password_login_element = login_fields_elements[cls.password_field_index]
+
+        email_login_element.click()
+        email_login_element.send_keys('compras@optimaluz.com')
+
+        password_login_element.click()
+        password_login_element.send_keys('compras@optimaluz.com')
+
+        cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'{cls.btn_locator}.description("Entrar")').click()
+        time.sleep(5)
+
+ScraperBuyLedStocks.start_scrape('data/buyled_stocks')
