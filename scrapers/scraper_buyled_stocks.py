@@ -26,11 +26,14 @@ class ScraperBuyLedStocks():
         noReset=False
     )
 
+    BEGIN_FROM = 0
+
     appium_server_url = 'http://localhost:4723'
     driver = None
 
     search_field_locator = 'className("android.widget.EditText")'
     btn_locator = 'className("android.widget.Button")'
+    search_btn_locator = 'className("android.widget.Button").index(0)'
 
     # Buy led stock index = 0 ; ITA stock index = 1
     stock_buyled_locator = 'className("android.view.View").index(7)'
@@ -48,10 +51,11 @@ class ScraperBuyLedStocks():
         stock_data = []
 
         cls.driver = webdriver.Remote(cls.appium_server_url, options=UiAutomator2Options().load_capabilities(cls.capabilities))
+        time.sleep(5)
 
         cls.login()
 
-        for index, product in enumerate(products_odoo):
+        for index, product in enumerate(products_odoo[cls.BEGIN_FROM:]):
             sku = product.default_code
             if not sku:
                 continue
@@ -62,7 +66,7 @@ class ScraperBuyLedStocks():
                 print(f'{index+1}. {fetched_data}')
                 stock_data.append(fetched_data)
             if index % 50 == 0 and index != 0 or index == len(products_odoo) - 1:
-                Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{index+1}.json')
+                Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{index + cls.BEGIN_FROM}.json')
                 stock_data = []
         cls.end_scrape()
     @classmethod
@@ -96,8 +100,9 @@ class ScraperBuyLedStocks():
     def search_sku(cls, sku):
         search_field_element = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.search_field_locator)
         search_field_element.click()
+        time.sleep(0.2)
         search_field_element.send_keys(sku)
-        cls.driver.find_elements(AppiumBy.ANDROID_UIAUTOMATOR, cls.btn_locator)[2].click()
+        cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.search_btn_locator).click()
         time.sleep(1)
 
     @classmethod
