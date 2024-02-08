@@ -22,6 +22,7 @@ class ScraperBuyLedStocks():
         deviceName='Medium_Phone_API_23',
         appPackage='es.buyled.buyledpro',
         appActivity='.MainActivity t24',
+        newCommandTimeout=600,
         noReset=False
     )
 
