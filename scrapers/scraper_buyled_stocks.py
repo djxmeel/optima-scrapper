@@ -27,7 +27,7 @@ class ScraperBuyLedStocks():
     )
 
     appium_server_url = 'http://localhost:4723'
-    driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
+    driver = None
 
     search_field_locator = 'className("android.widget.EditText")'
     btn_locator = 'className("android.widget.Button")'
@@ -47,9 +47,11 @@ class ScraperBuyLedStocks():
         products_odoo = OdooImport.browse_all_products_in_batches('product_brand_id', '=', OdooImport.VTAC_BRAND_ID)
         stock_data = []
 
+        cls.driver = webdriver.Remote(cls.appium_server_url, options=UiAutomator2Options().load_capabilities(cls.capabilities))
+
         cls.login()
 
-        for product in products_odoo:
+        for index, product in enumerate(products_odoo):
             sku = product.default_code
             if not sku:
                 continue
@@ -57,10 +59,11 @@ class ScraperBuyLedStocks():
             fetched_data = cls.get_stock_data(sku)
 
             if fetched_data:
-                print(fetched_data)
+                print(f'{index+1}. {fetched_data}')
                 stock_data.append(fetched_data)
-
-        Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")}.json')
+            if index % 50 == 0 and index != 0 or index == len(products_odoo) - 1:
+                Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{index+1}.json')
+                stock_data = []
         cls.end_scrape()
     @classmethod
     def end_scrape(cls):
@@ -110,6 +113,7 @@ class ScraperBuyLedStocks():
         password_login_element.send_keys('compras@optimaluz.com')
 
         cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, f'{cls.btn_locator}.description("Entrar")').click()
+        print('Logged in BuyLed app')
         time.sleep(5)
 
 ScraperBuyLedStocks.start_scrape('data/buyled_stocks')
