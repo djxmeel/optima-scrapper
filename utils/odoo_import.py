@@ -643,7 +643,7 @@ class OdooImport:
                 if str(record['SKU']) == product.default_code:
                     if not pd.isna(record['ICONS']):
                         icons_b64 = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
-                        cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
+                        cls.logger.info(f'{product["default_code"]} icons: {len(icons_b64)}')
                     break
 
             # Add V-TAC LOGO icon to all V-TAC products

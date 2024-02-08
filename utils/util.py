@@ -801,6 +801,8 @@ class Util:
     def get_encoded_icons_from_excel(cls, icons_names):
         icons = []
         for icon_name in icons_names:
+            if not icon_name:
+                continue
             icon_b64 = Util.load_json(f'data/common/icons/icons_b64/{icon_name}.json')
             icons.append(icon_b64[icon_name])
         return icons
