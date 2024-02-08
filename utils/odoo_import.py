@@ -643,12 +643,13 @@ class OdooImport:
                 if str(record['SKU']) == product.default_code:
                     if not pd.isna(record['ICONS']):
                         icons_b64 = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
-                        cls.logger.info(f'{product["default_code"]} icons: {len(icons_b64)}')
                     break
 
             # Add V-TAC LOGO icon to all V-TAC products
             if product.product_brand_id.name == 'V-TAC':
                 icons_b64.insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
+
+            cls.logger.info(f'{product.default_code}: {len(icons_b64)} ICONS')
 
             if icons_b64:
                 # Resize icons to 1920px width for Odoo
@@ -664,17 +665,15 @@ class OdooImport:
                             break
 
                         # Create the new product.image record
-                        cls.PRODUCT_MODEL.write([product.id], {f'x_icono{index + 1}': icon})
+                        cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
 
                         if index + 1 == len(icons_b64):
                             cls.logger.info(f'{product.default_code}: ICONS UPLOADED')
                             # Remove not used icon fields
-                            for i in range(index + 1, 9):
+                            for i in range(index + 2, 9):
                                 cls.PRODUCT_MODEL.write([product.id], {f'x_icono{i}': False})
                     except RPCError:
                         cls.logger.warn(f'{product.default_code}: ERROR UPLOADING ICON with name : {name}')
-            else:
-                cls.logger.warn(f'{product.default_code} HAS NO ICONS!')
 
     @classmethod
     def import_fields(cls, fields):
