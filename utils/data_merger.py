@@ -38,7 +38,6 @@ class DataMerger:
         'description_purchase': ('es'),
         'accesorios': ('ita'),
         'transit': ('uk'),
-        '- Almacén 2': ('uk'),
         'almacen2_custom': ('uk')
     }
 
@@ -58,6 +57,7 @@ class DataMerger:
         'Inmóvil',
         'Ordenable en múltiplos de',
         'Piezas bancales',
+        'Piezas en juego',
         'Product information document (eu fiche)',
         'Se puede pedir en múltiplos de',
         'Tamaño polo',
@@ -256,6 +256,11 @@ class DataMerger:
                 merged_product['volume'] = float(merged_product['volume'].replace(',', '.'))
 
             # ASSIGNING DEFAULT V-TAC VALUES
+            merged_product['almacen1_custom'] = 0
+            merged_product['almacen2_custom'] = 0
+            merged_product['almacen3_custom'] = 0
+            merged_product['transit_stock_custom'] = 0
+            merged_product['transit'] = 0
             merged_product['invoice_policy'] = 'delivery'
             merged_product['detailed_type'] = 'product'
             merged_product['show_availability'] = True

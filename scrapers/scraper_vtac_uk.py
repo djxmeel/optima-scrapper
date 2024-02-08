@@ -183,7 +183,6 @@ class ScraperVtacUk:
             global_lis = stock_uls[1].find_elements(By.TAG_NAME, 'div')
 
             item['almacen2_custom'] = int(str(local_lis[0].text).split(':')[1].replace('pcs', '').replace('-','0').strip())
-            item['- Almacén 2'] = f"{item['almacen2_custom']} unidades"
 
             stockdata_dict['localtransit'] = local_lis[1].text
             stockdata_dict['globaltransit'] = global_lis[1].text

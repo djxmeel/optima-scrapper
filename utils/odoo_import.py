@@ -54,7 +54,7 @@ class OdooImport:
     PRODUCT_SPEC_SHEETS_DIR = 'data/vtac_uk/SPEC_SHEETS'
 
     # Fields not to create as attributes in ODOO
-    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'transit', 'almacen2_custom')
+    NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'transit', 'almacen2_custom', 'almacen3_custom', 'almacen1_custom', 'transit_stock_custom')
 
     # Invoice policy (delivery ; order)
     CURRENT_INVOICE_POLICY = 'delivery'
@@ -496,7 +496,6 @@ class OdooImport:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
 
-    # TODO check samsung icon in excel
     @classmethod
     def import_imgs_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images, clean=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
@@ -630,7 +629,6 @@ class OdooImport:
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
-    # TODO test new icon import
     @classmethod
     def import_icons(cls, begin_from=0):
         # Try getting icons from EXCEL for products of catalog
@@ -883,7 +881,16 @@ class OdooImport:
 
         eu_stock = sku_dict
 
-        product['Stock europeo'] = f"0 unidades"
+        buyled_stock = cls.get_buyled_stock(product['default_code'])
+        product['almacen3_custom'] = buyled_stock['ita']
+        product['transit_stock_custom'] = buyled_stock['bled']
+
+        uk_stock = cls.get_uk_stock(product['default_code'])
+        product['almacen2_custom'] = uk_stock['uk']
+        product['transit'] = uk_stock['transit']
+
+        all_eu_stock_quant = product['almacen2_custom'] + product['almacen3_custom']
+
         product['Entrada de nuevas unidades'] = ''
         product['Disponibilidad'] = ''
 
@@ -894,17 +901,24 @@ class OdooImport:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
                     product['Disponibilidad'] = ''
-                    product['Stock europeo'] = f"{int(eu_stock[product['default_code']]['AVAILABLE'])} unidades (Disponible en un plazo de 5 a 9 días hábiles)"
+                    product['almacen1_custom'] = int(eu_stock[product['default_code']]['AVAILABLE'])
             except ValueError:
                 pass
 
             if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
-                product['Entrada de nuevas unidades'] = 'Próximamente'
                 product['Disponibilidad'] = ''
+                product['Entrada de nuevas unidades'] = f"Próximamente"
 
                 if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(eu_stock[product['default_code']]['next delivery']):
                     date_unformatted = str(eu_stock[product["default_code"]]["next delivery"])[:10]
                     product['Entrada de nuevas unidades'] = '/'.join(date_unformatted.split('-')[::-1])
+
+        if product['transit'] > 0:
+            if not product['Entrada de nuevas unidades']:
+                product['Entrada de nuevas unidades'] = f"Próximamente"
+            product['Entrada de nuevas unidades'] = f'{product["Entrada de nuevas unidades"]} ({product["transit"]} unidades)'
+
+        product['Stock europeo'] = f"{product['almacen1_custom'] + all_eu_stock_quant} unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)"
 
         return product
 
@@ -913,10 +927,11 @@ class OdooImport:
         cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', eu_stock_attr_id), ('product_tmpl_id', '=', product_id)]) +
                                         cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
 
-
+    # FIXME TEST availability import after uk scrape and merge
     @classmethod
     def import_availability_vtac(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
-        products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
+        products = cls.browse_all_products_in_batches('default_code', '=', 'test')
+        #products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
         eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
         entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
@@ -932,13 +947,25 @@ class OdooImport:
                             'qty_available': product.qty_available,
                             'categ_id': product.categ_id,
                             'id': product.id,
-                            'name': product.name}
+                            'name': product.name,
+                            'Stock europeo': "0 unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
+                            'transit': product.x_transit,
+                            'almacen1_custom': product.x_almacen1_custom,
+                            'almacen2_custom': product.x_almacen2_custom,
+                            'almacen3_custom': product.x_almacen3_custom,
+                            'transit_stock_custom': product.x_transit_stock_custom
+                            }
 
             product_dict = cls.update_product_availability(product_dict, eu_stock)
 
             attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo'],
                                                                 'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
-                                                                'Disponibilidad': product_dict['Disponibilidad']})
+                                                                'Stock en tránsito': f'{product_dict["transit_stock_custom"]} unidades',
+                                                                'Disponibilidad': product_dict['Disponibilidad'],
+                                                                '- Almacén 1': f'{product_dict["almacen1_custom"]} unidades',
+                                                                '- Almacén 2': f'{product_dict["almacen2_custom"]} unidades',
+                                                                '- Almacén 3': f'{product_dict["almacen3_custom"]} unidades'
+                                                                })
 
             cls.assign_attribute_values(product.id, product, attr_ids_values, 'soft')
 
@@ -950,6 +977,7 @@ class OdooImport:
     def update_availability_related_fields(cls, product_dict):
         stock_europeo = product_dict['Stock europeo'].split(" ")[0]
         out_of_stock_messages = Util.load_json('data/common/json/VTAC_OOS_MSGS.json')['oos']
+        skus_to_not_publish = Util.load_json('data/common/json/SKUS_TO_NOT_PUBLISH.json')['skus']
         productos_iluminacion_category_id = cls.odoo.env['product.category'].search([('name', '=', 'Productos de iluminación')])[0]
 
         # FIXME set to true when ready to publish
@@ -957,10 +985,13 @@ class OdooImport:
         allow_out_of_stock_order = True
         out_of_stock_msg = out_of_stock_messages[3]
 
+        if product_dict['default_code'] in skus_to_not_publish:
+            is_published = False
+
         if stock_europeo == '0':
             allow_out_of_stock_order = False
 
-            if product_dict['Entrada de nuevas unidades'] == 'Próximamente':
+            if 'Próximamente' in product_dict['Entrada de nuevas unidades']:
                 out_of_stock_msg = out_of_stock_messages[2]
             elif '/' in product_dict['Entrada de nuevas unidades']:
                 out_of_stock_msg = out_of_stock_messages[1]
@@ -1058,3 +1089,25 @@ class OdooImport:
 
         pd.DataFrame(missing_products).to_excel('data/common/excel/products_in_eustock_not_odoo16_and_qty_greater_than_0.xlsx')
         cls.logger.info(f"GENERATED EXCEL WITH {len(missing_products)} PRODUCTS MISSING FROM 16")
+
+    @classmethod
+    def get_buyled_stock(cls, sku):
+        data = Util.load_data_in_dir('data/buyled_stocks')
+
+        for product_stock in data:
+            if product_stock['sku'] == sku:
+                cls.logger.info(f"FOUND {sku} IN B-LED STOCK")
+                return {'ita': product_stock['stock_ita'], 'bled': product_stock['stock_buyled']}
+
+        return {'ita': 0, 'bled': 0}
+
+    @classmethod
+    def get_uk_stock(cls, sku):
+        data = Util.load_data_in_dir('data/vtac_uk/PRODUCT_INFO')
+
+        for product_stock in data:
+            if product_stock['default_code'] == sku:
+                cls.logger.info(f"FOUND {sku} IN UK STOCK")
+                return {'uk': product_stock['almacen2_custom'], 'transit': product_stock['transit']}
+
+        return {'uk': 0, 'transit': 0}
