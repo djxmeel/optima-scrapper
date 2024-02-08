@@ -34,6 +34,8 @@ class ScraperBuyLedStocks():
     # Buy led stock index = 0 ; ITA stock index = 1
     stock_buyled_locator = 'className("android.view.View").index(7)'
     stock_ita_locator = 'className("android.view.View").index(9)'
+    price_locator = 'className("android.view.View").index(11)'
+    date_locator = 'className("android.view.View").index(13)'
 
     login_fields_locator = 'className("android.widget.EditText")'
     email_field_index = 0
@@ -68,11 +70,19 @@ class ScraperBuyLedStocks():
         try:
             stock_buyled_text = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.stock_buyled_locator).get_attribute('content-desc')
             stock_ita_text = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.stock_ita_locator).get_attribute('content-desc')
+            price_text = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.price_locator).get_attribute('content-desc')
+
+            try:
+                date_text = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.date_locator).get_attribute('content-desc')
+            except NoSuchElementException:
+                date_text = None
 
             return {
                 'sku': sku,
                 'stock_buyled': int(stock_buyled_text),
-                'stock_ita': int(stock_ita_text)
+                'stock_ita': int(stock_ita_text),
+                'price': price_text,
+                'date': date_text
             }
         except NoSuchElementException:
             print(f'No stock data found for SKU: {sku}')
