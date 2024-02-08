@@ -57,9 +57,12 @@ USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
 
-IF_IMPORT_IMGS_AND_ICONS = False
+IF_IMPORT_IMGS_AND_VIDEOS = False
 IF_CLEAN_EXISTING = False
 SKIP_PRODUCTS_W_MEDIA = False
+
+IF_IMPORT_ICONS = False
+ICONS_BEGIN_FROM = 0
 
 # Always upload before PDFs
 IF_IMPORT_SPEC_SHEETS = False
@@ -115,10 +118,15 @@ if IF_IMPORT_ACC:
     OdooImport.import_accessories(TARGET_DATA_DIR_PATH)
     OdooImport.logger.info(f'FINISHED ACCESSORIES IMPORT')
 
-if IF_IMPORT_IMGS_AND_ICONS:
-    OdooImport.logger.info(f'BEGINNING IMGS IMPORT')
-    OdooImport.import_imgs_icons_videos(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH, SKIP_PRODUCTS_W_MEDIA, IF_CLEAN_EXISTING)
-    OdooImport.logger.info(f'FINISHED IMGS IMPORT')
+if IF_IMPORT_IMGS_AND_VIDEOS:
+    OdooImport.logger.info(f'BEGINNING IMGS & VIDEOS IMPORT')
+    OdooImport.import_imgs_videos(TARGET_MEDIA_DIR_PATH, UPLOADED_MEDIA_DIR_PATH, SKIP_PRODUCTS_W_MEDIA, IF_CLEAN_EXISTING)
+    OdooImport.logger.info(f'FINISHED IMGS & VIDEOS IMPORT')
+
+if IF_IMPORT_ICONS:
+    OdooImport.logger.info(f'BEGINNING ICONS IMPORT')
+    OdooImport.import_icons(ICONS_BEGIN_FROM)
+    OdooImport.logger.info(f'FINISHED ICONS IMPORT')
 
 if IF_IMPORT_SPEC_SHEETS:
     OdooImport.logger.info(f'BEGINNING SPEC SHEETS IMPORT')

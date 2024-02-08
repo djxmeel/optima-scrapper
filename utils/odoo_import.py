@@ -496,10 +496,9 @@ class OdooImport:
                         cls.logger.error(f"HTTP ERROR: FILE {attachment_name} POTENTIALLY TOO BIG. CONTINUING")
                         continue
 
-    # FIXME media import should iterate over skus from ODOO instead of JSON
     # TODO check samsung icon in excel
     @classmethod
-    def import_imgs_icons_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images, clean=False):
+    def import_imgs_videos(cls, target_dir_path, uploaded_dir_path, skip_products_with_images, clean=False):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
         for file_path in sorted(file_list):
@@ -554,7 +553,6 @@ class OdooImport:
                     if product['imgs']:
                         main_media_position = 0
 
-                        # FIXME TEST main media & vid position overrides
                         # Main media position overrides
                         origin_url = browsed_product.x_url
                         if not origin_url:
@@ -625,50 +623,58 @@ class OdooImport:
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
-                # Try getting icons from EXCEL for products of catalog
-                icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
-
-                for record in icons_excel:
-                    if str(record['SKU']) == product['default_code']:
-                        if not pd.isna(record['ICONS']):
-                            product['icons'] = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
-                            cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
-                        break
-                if 'icons' in product:
-                    # Add V-TAC LOGO icon to all V-TAC products
-                    if browsed_product.product_brand_id.name == 'V-TAC':
-                        product['icons'].insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
-
-                    # Resize icons to 1920px width for Odoo
-                    product['icons'] = [Util.resize_image_b64(icon, 1920) for icon in product['icons']]
-
-                    # Iterate over the products
-                    for index, icon in enumerate(product['icons']):
-                        name = f'icon_{product_ids[0]}_{product["icons"].index(icon)}'
-
-                        try:
-                            if index+1 > 8:
-                                cls.logger.warn(f'{product["default_code"]}: ICONS LIMIT of 8 REACHED')
-                                break
-
-                            # Create the new product.image record
-                            cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{index+1}': icon})
-
-                            if index +1 == len(product['icons']):
-                                cls.logger.info(f'{product["default_code"]}: ICONS UPLOADED')
-                                # Remove not used icon fields
-                                for i in range(index+1, 9):
-                                    cls.PRODUCT_MODEL.write([product_ids[0]], {f'x_icono{i}': False})
-                        except RPCError:
-                            cls.logger.warn(f'{product["default_code"]}: ERROR UPLOADING ICON with name : {name}')
-                else:
-                    cls.logger.warn(f'{product["default_code"]} HAS NO ICONS!')
-
             # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
         # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
+
+
+    # TODO test new icon import
+    @classmethod
+    def import_icons(cls, begin_from=0):
+        # Try getting icons from EXCEL for products of catalog
+        icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
+        products_odoo = cls.browse_all_products_in_batches('default_code', '!=', 'False')
+
+        for product in products_odoo[begin_from:]:
+            icons_b64 = []
+            for record in icons_excel:
+                if str(record['SKU']) == product.default_code:
+                    if not pd.isna(record['ICONS']):
+                        icons_b64 = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
+                        cls.logger.info(f'{product["default_code"]} icons: {len(product["icons"])}')
+                    break
+
+            # Add V-TAC LOGO icon to all V-TAC products
+            if product.product_brand_id.name == 'V-TAC':
+                icons_b64.insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
+
+            if icons_b64:
+                # Resize icons to 1920px width for Odoo
+                icons_b64 = [Util.resize_image_b64(icon, 1920) for icon in icons_b64]
+
+                # Iterate over the products
+                for index, icon in enumerate(icons_b64):
+                    name = f'icon_{product.id}_{icons_b64.index(icon)}'
+
+                    try:
+                        if index + 1 > 8:
+                            cls.logger.warn(f'{product.default_code}: ICONS LIMIT of 8 REACHED')
+                            break
+
+                        # Create the new product.image record
+                        cls.PRODUCT_MODEL.write([product.id], {f'x_icono{index + 1}': icon})
+
+                        if index + 1 == len(icons_b64):
+                            cls.logger.info(f'{product.default_code}: ICONS UPLOADED')
+                            # Remove not used icon fields
+                            for i in range(index + 1, 9):
+                                cls.PRODUCT_MODEL.write([product.id], {f'x_icono{i}': False})
+                    except RPCError:
+                        cls.logger.warn(f'{product.default_code}: ERROR UPLOADING ICON with name : {name}')
+            else:
+                cls.logger.warn(f'{product.default_code} HAS NO ICONS!')
 
     @classmethod
     def import_fields(cls, fields):
