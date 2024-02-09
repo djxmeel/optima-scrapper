@@ -826,7 +826,7 @@ class OdooImport:
         products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
         descatalogados_category_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', 'DESCATALOGADOS')])[0]
 
-        for product in products:
+        for index, product in enumerate(products):
             if str(product.default_code) not in skus:
                 if product.description_purchase and "WEB" in product.description_purchase:
                     description_purchase = "DESCATALOGADO CATALOGO - DESCATALOGADO WEB"
@@ -837,12 +837,12 @@ class OdooImport:
                                         {'description_purchase': description_purchase,
                                          'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD'),
                                          'public_categ_ids': [(4, descatalogados_category_id)]})
-                cls.logger.info(f"{product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
+                cls.logger.info(f"{index+1}. {product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
             else:
                 cls.PRODUCT_MODEL.write(product.id,
                                         {'name': str(product.name).replace('[VSD', '[VS'),
                                          'public_categ_ids': [(3, descatalogados_category_id)]})
-                cls.logger.info(f"{product.default_code} SKIPPING BECAUSE IT IS IN CATALOGO")
+                cls.logger.info(f"{index+1}. {product.default_code} SKIPPING BECAUSE IT IS IN CATALOGO")
 
     @classmethod
     def import_brands(cls, brands_excel_file_path):
