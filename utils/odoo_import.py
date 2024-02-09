@@ -632,7 +632,7 @@ class OdooImport:
     @classmethod
     def import_icons(cls, begin_from=0):
         # Try getting icons from EXCEL for products of catalog
-        icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/public_category_sku_Q1_2024.xlsx')
+        icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/product_icons.xlsx')
         products_odoo = cls.browse_all_products_in_batches('default_code', '!=', 'False')
 
         for product in products_odoo[begin_from:]:
