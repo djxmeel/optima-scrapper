@@ -666,7 +666,7 @@ class OdooImport:
                         cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
 
                         if index + 1 == len(icons_b64):
-                            cls.logger.info(f'{product.default_code}: ICONS UPLOADED')
+                            cls.logger.info(f'{index+1}. {product.default_code}: ICONS UPLOADED')
                             # Remove not used icon fields
                             for i in range(index + 2, 9):
                                 cls.PRODUCT_MODEL.write([product.id], {f'x_icono{i}': False})
