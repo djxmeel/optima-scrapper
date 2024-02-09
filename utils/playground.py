@@ -849,6 +849,29 @@ def encode_images_to_json(folder_path, output_path):
             with open(os.path.join(output_path, json_filename), 'w') as json_file:
                 json.dump(data, json_file)
 
+def find_duplicate_skus(file_path):
+    # Load the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl')
+
+    # Check if 'SKU' column exists
+    if 'SKU' not in df.columns:
+        print("The 'SKU' column does not exist in the Excel file.")
+        return
+
+    # Find duplicates in the 'SKU' column
+    duplicates = df[df.duplicated('SKU', keep=False)]  # keep=False marks all duplicates as True
+
+    if duplicates.empty:
+        print("No duplicate SKUs found.")
+    else:
+        print("Duplicate SKUs found:")
+        print(duplicates[['SKU']])
+
+
+# Example usage
+file_path = 'data/common/excel/product_icons.xlsx'
+find_duplicate_skus(file_path)
+
 # Usage
 #encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons/icons_b64')
 
