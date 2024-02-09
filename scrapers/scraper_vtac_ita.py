@@ -35,6 +35,7 @@ class ScraperVtacItalia:
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
 
     CATEGORIES_LINKS = (
+        #'https://led-italia.it/prodotti/v-tac',
         'https://led-italia.it/prodotti/M4E-fotovoltaico',
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
