@@ -49,7 +49,7 @@ IF_IMPORT_PRODUCTS = False
 # When True, only new SKUS will be imported
 IF_SKIP_EXISTING = False
 # True if you want to update products even if their origin URL is the same
-IF_FORCE_UPDATE = True
+IF_FORCE_UPDATE = False
 USE_PRIORITY_EXCEL = False
 
 IF_IMPORT_ACC = False
@@ -74,7 +74,11 @@ SKIP_PRODUCTS_W_ATTACHMENTS = False
 IF_IMPORT_SUPPLIER_INFO_AND_COST = False
 IF_UPDATE_MODE = False
 
-IF_IMPORT_DESCATALOGADOS_CATALOGO = False
+IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = False
+# If True, correct names will be extracted from product jsons
+IF_GET_CORRECT_NAMES_FROM_JSONS = False
+
+IF_IMPORT_DESCATALOGADOS_CATALOGO = True
 
 IF_IMPORT_LOCAL_STOCK = False
 
@@ -83,11 +87,6 @@ IF_GENERATE_MISSING_PRODUCTS_EXCEL = False
 AVAILABILITY_BEGIN_FROM = 0
 
 IF_ARCHIVE_PRODUCTS_FROM_JSON = False
-
-IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = False
-# If True, correct names will be extracted from product jsons
-# If False, correct names will be extracted from Excel
-IF_GET_CORRECT_NAMES_FROM_JSONS = False
 
 
 if IF_IMPORT_FIELDS:
@@ -140,6 +139,11 @@ if IF_IMPORT_SUPPLIER_INFO_AND_COST:
     OdooImport.import_supplier_info(SUPPLIER_STOCK_EXCEL_FILE_PATH, SUPPLIER_PRICELIST_EXCEL_FILE_PATH, IF_UPDATE_MODE)
     OdooImport.logger.info(f'FINISHED SUPPLIER INFO IMPORT')
 
+if IF_IMPORT_CORRECT_NAMES_FROM_EXCEL:
+    OdooImport.logger.info(f'BEGINNING CORRECT NAMES IMPORT')
+    OdooImport.import_correct_names_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, IF_GET_CORRECT_NAMES_FROM_JSONS)
+    OdooImport.logger.info(f'FINISHED CORRECT NAMES IMPORT')
+
 if IF_IMPORT_DESCATALOGADOS_CATALOGO:
     OdooImport.logger.info(f'BEGINNING DESCATALOGADOS IMPORT')
     OdooImport.import_descatalogados_catalogo(Util.SKUS_CATALOGO_Q12024_FILE_PATH)
@@ -159,8 +163,3 @@ if IF_IMPORT_LOCAL_STOCK:
     OdooImport.logger.info(f'BEGINNING LOCAL STOCK IMPORT')
     OdooImport.import_local_stock(LOCAL_STOCK_EXCEL_PATH)
     OdooImport.logger.info(f'FINISHED LOCAL STOCK IMPORT')
-
-if IF_IMPORT_CORRECT_NAMES_FROM_EXCEL:
-    OdooImport.logger.info(f'BEGINNING CORRECT NAMES IMPORT')
-    OdooImport.import_correct_names_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, IF_GET_CORRECT_NAMES_FROM_JSONS)
-    OdooImport.logger.info(f'FINISHED CORRECT NAMES IMPORT')
