@@ -958,6 +958,12 @@ class OdooImport:
 
             product_dict = cls.update_product_availability(product_dict, eu_stock)
 
+            cls.PRODUCT_MODEL.write(product.id, {'x_transit': product_dict['transit'],
+                                                 'x_almacen1_custom': product_dict['almacen1_custom'],
+                                                 'x_almacen2_custom': product_dict['almacen2_custom'],
+                                                 'x_almacen3_custom': product_dict['almacen3_custom'],
+                                                 'x_transit_stock_custom': product_dict['transit_stock_custom']})
+
             attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo'],
                                                                 'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
                                                                 'Stock en tránsito': f'{product_dict["transit_stock_custom"]} unidades',
