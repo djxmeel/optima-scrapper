@@ -68,7 +68,9 @@ class DataMerger:
         'Cantidad por caja',
         'Unidad de medida',
         'SAMSUNG',
-        'Tipo de enchufe'
+        'Tipo de enchufe',
+        'VDE',
+        'CB Certificate'
     ]
 
     # Fields to rename for common naming between data sources
