@@ -918,7 +918,7 @@ class OdooImport:
                 product['Entrada de nuevas unidades'] = f"Próximamente"
             product['Entrada de nuevas unidades'] = f'{product["Entrada de nuevas unidades"]} ({product["transit"]} unidades)'
 
-        product['Stock europeo'] = f"{product['almacen1_custom'] + all_eu_stock_quant} unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)"
+        product['Stock europeo'] = f"{product['almacen1_custom'] + all_eu_stock_quant}"
 
         return product
 
@@ -964,13 +964,13 @@ class OdooImport:
                                                  'x_almacen3_custom': product_dict['almacen3_custom'],
                                                  'x_transit_stock_custom': product_dict['transit_stock_custom']})
 
-            attr_ids_values = cls.create_attributes_and_values({'Stock europeo': product_dict['Stock europeo'],
-                                                                'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
-                                                                'Stock en tránsito': f'{product_dict["transit_stock_custom"]} unidades',
-                                                                'Disponibilidad': product_dict['Disponibilidad'],
+            attr_ids_values = cls.create_attributes_and_values({'Stock europeo': f"{product_dict['Stock europeo']} unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
+                                                                'Stock en tránsito': f'{product_dict["transit_stock_custom"]} unidades (Disponible para envío en un plazo de 1 a 2 días hábiles)',
                                                                 '- Almacén 1': f'{product_dict["almacen1_custom"]} unidades',
                                                                 '- Almacén 2': f'{product_dict["almacen2_custom"]} unidades',
-                                                                '- Almacén 3': f'{product_dict["almacen3_custom"]} unidades'
+                                                                '- Almacén 3': f'{product_dict["almacen3_custom"]} unidades',
+                                                                'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
+                                                                'Disponibilidad': product_dict['Disponibilidad']
                                                                 })
 
             cls.assign_attribute_values(product.id, product, attr_ids_values, 'soft')
