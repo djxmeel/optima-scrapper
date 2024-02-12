@@ -20,7 +20,8 @@ from utils.util import Util
 # TODO The icon excel for all products (only catalogados done)
 # TODO upload new EU stock
 # TODO run a descatalogados import after assigning public categories to all products
-# TODO remove main media reorders  
+# TODO IP icons for products IP attributes
+# TODO remove main media reorders
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
@@ -79,7 +80,7 @@ IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = False
 # If True, correct names will be extracted from product jsons
 IF_GET_CORRECT_NAMES_FROM_JSONS = False
 
-IF_IMPORT_DESCATALOGADOS_CATALOGO = True
+IF_IMPORT_DESCATALOGADOS_CATALOGO = False
 
 IF_IMPORT_LOCAL_STOCK = False
 

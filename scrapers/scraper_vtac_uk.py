@@ -174,6 +174,10 @@ class ScraperVtacUk:
             del item['Peso bruto (kg)']
 
         # Scrape UK stock data
+
+        item['transit'] = 0
+        item['almacen2_custom'] = 0
+
         try:
             stockdata_dict = {}
 
@@ -186,7 +190,6 @@ class ScraperVtacUk:
 
             stockdata_dict['localtransit'] = local_lis[1].text
             stockdata_dict['globaltransit'] = global_lis[1].text
-            item['transit'] = 0
 
             # Sum local and global transit
             for key, value in stockdata_dict.items():

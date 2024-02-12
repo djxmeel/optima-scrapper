@@ -633,7 +633,7 @@ class OdooImport:
     def import_icons(cls, begin_from=0):
         # Try getting icons from EXCEL for products of catalog
         icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/product_icons.xlsx')
-        products_odoo = cls.browse_all_products_in_batches('default_code', '!=', 'False')
+        products_odoo = cls.browse_all_products_in_batches('default_code', '!=', False)
 
         for product in products_odoo[begin_from:]:
             icons_b64 = []
@@ -666,7 +666,7 @@ class OdooImport:
                         cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
 
                         if index + 1 == len(icons_b64):
-                            cls.logger.info(f'{index + 1 + begin_from}. {product.default_code}: ICONS UPLOADED')
+                            cls.logger.info(f'{product.default_code}: ICONS UPLOADED')
                             # Remove not used icon fields
                             for i in range(index + 2, 9):
                                 cls.PRODUCT_MODEL.write([product.id], {f'x_icono{i}': False})
@@ -933,8 +933,7 @@ class OdooImport:
     # FIXME TEST availability import after uk scrape and merge
     @classmethod
     def import_availability_vtac(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
-        products = cls.browse_all_products_in_batches('default_code', '=', 'test')
-        #products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
+        products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
         eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
         entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
@@ -980,7 +979,7 @@ class OdooImport:
 
             cls.update_availability_related_fields(product_dict)
 
-            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products[begin_from:])}")
+            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products)}")
 
     @classmethod
     def update_availability_related_fields(cls, product_dict):
@@ -1117,6 +1116,13 @@ class OdooImport:
         for product_stock in data:
             if product_stock['default_code'] == sku:
                 cls.logger.info(f"FOUND {sku} IN UK STOCK")
+
+                # FIXME remove after a uk re-scrape
+                if 'transit' not in product_stock:
+                    product_stock['transit'] = 0
+                if 'almacen2_custom' not in product_stock:
+                    product_stock['almacen2_custom'] = 0
+
                 return {'uk': product_stock['almacen2_custom'], 'transit': product_stock['transit']}
 
         return {'uk': 0, 'transit': 0}
