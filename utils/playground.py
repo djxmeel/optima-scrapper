@@ -595,7 +595,7 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
         ]
 
     # Select columns from the second file only (excluding the merge indicator)
-    relevant_columns = [col for col in merged_df.columns if '_file2' in col or col == 'SKU' or col == '_merge']
+    relevant_columns = [col for col in merged_df.columns if '_file2' in col or col == primary_k or col == '_merge']
     filtered_df = filtered_df[relevant_columns]
 
     # Rename columns to remove suffix
@@ -869,8 +869,8 @@ def find_duplicate_skus(file_path):
 
 
 # Example usage
-file_path = 'data/common/excel/product_icons.xlsx'
-find_duplicate_skus(file_path)
+# file_path = 'data/common/excel/product_icons.xlsx'
+# find_duplicate_skus(file_path)
 
 # Usage
 #encode_images_to_json('data/common/icons/icons_catalog_Q1_2024', 'data/common/icons/icons_b64')
@@ -896,11 +896,11 @@ find_duplicate_skus(file_path)
 
 
 #Example usage
-# get_price_variations_and_new_products_excel(
-#     'SKU',
-#     'data/common/excel/to_compare/comparar_con_este_Pricelist_V-TAC_Europe_Ltd_promotions_07_NOVIEMBRE_2023.xlsx',
-#     'data/common/excel/to_compare/Pricelist_V-TAC_Europe_Ltd_promotions_January_2024_-_23-01-2024.xlsx',
-#     'data/common/excel/to_compare/output.xlsx')
+get_price_variations_and_new_products_excel(
+    'sku',
+    'data/common/excel/to_compare/Lista_precios_BULG._JAN_24.xlsx',
+    'data/common/excel/to_compare/Lista_precios_U.K._FEB_24.xlsx',
+    'data/common/excel/to_compare/output.xlsx')
 
 
 # Example usage :
