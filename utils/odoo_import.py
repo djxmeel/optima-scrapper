@@ -979,7 +979,7 @@ class OdooImport:
 
             cls.update_availability_related_fields(product_dict)
 
-            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products[begin_from:])}")
+            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products)}")
 
     @classmethod
     def update_availability_related_fields(cls, product_dict):
@@ -1116,6 +1116,13 @@ class OdooImport:
         for product_stock in data:
             if product_stock['default_code'] == sku:
                 cls.logger.info(f"FOUND {sku} IN UK STOCK")
+
+                # FIXME remove after a uk re-scrape
+                if 'transit' not in product_stock:
+                    product_stock['transit'] = 0
+                if 'almacen2_custom' not in product_stock:
+                    product_stock['almacen2_custom'] = 0
+
                 return {'uk': product_stock['almacen2_custom'], 'transit': product_stock['transit']}
 
         return {'uk': 0, 'transit': 0}
