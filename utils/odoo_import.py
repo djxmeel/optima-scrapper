@@ -546,79 +546,59 @@ class OdooImport:
 
                     cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
 
-                if 'imgs' in product:
+                if product['imgs']:
                     cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
-                    # write/overwrite the image to the product
-                    if product['imgs']:
-                        main_media_position = 0
 
-                        # Main media position overrides
-                        origin_url = browsed_product.x_url
-                        if not origin_url:
-                            media_reorders = []
-                        elif 'v-tac.es' in origin_url:
-                            media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ES.json')
-                        elif 'vtacexports.com' in origin_url:
-                            media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_UK.json')
+                    images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+                    if images:
+                        if clean:
+                            cls.MEDIA_MODEL.unlink(images)
+                            images.clear()
+                            images = []
+                            cls.logger.info(f"CLEANED IMAGES OF SKU {product['default_code']}")
+
+                        if skip_products_with_images:
+                            cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
+                            time.sleep(0.3)
+                            continue
                         else:
-                            media_reorders = Util.load_json('data/common/json/main_media_reorders/MEDIA_REORDERS_ITA.json')
+                            # Product existing images
+                            images = cls.MEDIA_MODEL.browse(images)
+                            images = [image.image_1920 for image in images]
 
-                        if product['default_code'] in media_reorders:
-                            main_media_position = media_reorders[product['default_code']]
+                    # write/overwrite the image to the product
+                    try:
+                        cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][0]['img64']})
+                        product['imgs'].pop(0)
+                    except RPCError:
+                        pass
 
-                        try:
-                            cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][main_media_position]['img64']})
-                            product['imgs'].pop(main_media_position)
-                        except RPCError:
-                            pass
-                        except IndexError:
-                            cls.PRODUCT_MODEL.write([product_ids[0]],{'image_1920': product['imgs'][0]['img64']})
-                            product['imgs'].pop(0)
+                    try:
+                        # Resize images to 1920px width for Odoo
+                        product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
+                    except UnidentifiedImageError:
+                        cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
+                        pass
 
-                        images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
+                    # Iterate over the products 'imgs'
+                    for extra_img in product['imgs']:
+                        if extra_img not in images:
+                            name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
 
-                        if images:
-                            if clean:
-                                cls.MEDIA_MODEL.unlink(images)
-                                images.clear()
-                                images = []
-                                cls.logger.info(f"CLEANED IMAGES OF SKU {product['default_code']}")
+                            new_image = {
+                                'name': name,
+                                'image_1920': extra_img,
+                                'product_tmpl_id': product_ids[0]
+                            }
+                            try:
+                                # Create the new product.image record
+                                cls.MEDIA_MODEL.create(new_image)
+                            except RPCError:
+                                cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
+                        else:
+                            cls.logger.info(f'{product["default_code"]}: Image already exists')
 
-                            if skip_products_with_images:
-                                cls.logger.warn(f"SKIPPING {product['default_code']} BECAUSE IT HAS IMAGES UPLOADED")
-                                time.sleep(0.3)
-                                continue
-                            else:
-                                # Product existing images
-                                images = cls.MEDIA_MODEL.browse(images)
-                                images = [image.image_1920 for image in images]
-
-                        try:
-                            # Resize images to 1920px width for Odoo
-                            product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
-                        except UnidentifiedImageError:
-                            cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
-                            pass
-
-                        # Iterate over the products 'imgs'
-                        for extra_img in product['imgs']:
-                            if extra_img not in images:
-                                name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
-
-                                new_image = {
-                                    'name': name,
-                                    'image_1920': extra_img,
-                                    'product_tmpl_id': product_ids[0]
-                                }
-                                try:
-                                    # Create the new product.image record
-                                    cls.MEDIA_MODEL.create(new_image)
-                                except RPCError:
-                                    cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
-                            else:
-                                cls.logger.info(f'{product["default_code"]}: Image already exists')
-
-                        cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING IMAGES")
+                    cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING IMAGES")
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
