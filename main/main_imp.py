@@ -19,9 +19,7 @@ from utils.util import Util
 
 # TODO The icon excel for all products (only catalogados done)
 # TODO upload new EU stock
-# TODO run a descatalogados import after assigning public categories to all products
 # TODO IP icons for products IP attributes
-# TODO remove main media reorders
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH

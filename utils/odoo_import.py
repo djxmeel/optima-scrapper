@@ -910,7 +910,6 @@ class OdooImport:
         cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', eu_stock_attr_id), ('product_tmpl_id', '=', product_id)]) +
                                         cls.ATTRIBUTE_LINE_MODEL.search([('attribute_id', '=', entradas_attr_id), ('product_tmpl_id', '=', product_id)]))
 
-    # FIXME TEST availability import after uk scrape and merge
     @classmethod
     def import_availability_vtac(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
         products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
