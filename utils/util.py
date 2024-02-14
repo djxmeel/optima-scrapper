@@ -325,7 +325,7 @@ class Util:
             Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)
 
     @staticmethod
-    def begin_items_uk_specsheets_download(scraper, links_path, logger, skip_existing=True, begin_from=0):
+    def begin_items_uk_specsheets_download(scraper, links_path, logger, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
 
@@ -335,16 +335,14 @@ class Util:
             for link in loaded_links[begin_from:]:
                 counter += 1
 
-                time.sleep(0.2)
-
                 sku = Util.get_sku_from_link(scraper.DRIVER, link, scraper.COUNTRY)
 
                 if scraper.COUNTRY == 'uk':
-                    scraper.download_specsheet_of_sku(scraper.DRIVER, sku, skip_existing)
+                    scraper.download_specsheet_of_sku(scraper.DRIVER, sku)
         except:
             logger.error("Error en la descarga de fichas técnicas. Reintentando...")
             time.sleep(5)
-            Util.begin_items_uk_specsheets_download(scraper, links_path, logger, skip_existing, counter)
+            Util.begin_items_uk_specsheets_download(scraper, links_path, logger, counter)
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new=False, begin_from=0):

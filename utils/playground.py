@@ -2,6 +2,7 @@ import io
 import json
 import os
 import base64
+import time
 from copy import copy
 from pathlib import Path
 
@@ -868,6 +869,11 @@ def find_duplicate_skus(file_path):
         print(duplicates[['SKU']])
 
 
+# position = (490, 740)  # X, Y coordinates
+# size = (80, 80)  # Width, Height of the square
+# parent_folder = "data/vtac_uk/SPEC_SHEETS"
+# remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
+
 # Example usage
 # file_path = 'data/common/excel/product_icons.xlsx'
 # find_duplicate_skus(file_path)
@@ -896,11 +902,11 @@ def find_duplicate_skus(file_path):
 
 
 #Example usage
-get_price_variations_and_new_products_excel(
-    'sku',
-    'data/common/excel/to_compare/Lista_precios_BULG._JAN_24.xlsx',
-    'data/common/excel/to_compare/Lista_precios_U.K._FEB_24.xlsx',
-    'data/common/excel/to_compare/output.xlsx')
+# get_price_variations_and_new_products_excel(
+#     'sku',
+#     'data/common/excel/to_compare/Lista_precios_BULG._JAN_24.xlsx',
+#     'data/common/excel/to_compare/Lista_precios_U.K._FEB_24.xlsx',
+#     'data/common/excel/to_compare/output.xlsx')
 
 
 # Example usage :

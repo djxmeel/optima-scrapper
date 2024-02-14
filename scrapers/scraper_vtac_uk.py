@@ -408,14 +408,14 @@ class ScraperVtacUk:
         return len(pdf_elements)
 
     @classmethod
-    def download_specsheet_of_sku(cls, driver, sku, skip_existing=False):
+    def download_specsheet_of_sku(cls, driver, sku):
         nested_dir = f'data/vtac_uk/SPEC_SHEETS/{sku}'
 
         try:
 
             if not os.path.exists(nested_dir):
                 os.makedirs(nested_dir, exist_ok=False)
-            elif skip_existing:
+            else:
                 print(f'SKIPPING: Spec sheet of SKU {sku} already exists')
                 return
 
