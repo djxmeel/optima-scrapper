@@ -20,7 +20,7 @@ from utils.util import Util
 # TODO The icon excel for all products (only catalogados done)
 # TODO upload new EU stock
 # TODO IP icons for products IP attributes
-# TODO implement blistered products excel
+# TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
