@@ -17,9 +17,8 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
+# TODO sug. Store scraped products individually (instead of 50 at a time)
 # TODO The icon excel for all products (only catalogados done)
-# TODO upload new EU stock
-# TODO IP icons for products IP attributes
 # TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
