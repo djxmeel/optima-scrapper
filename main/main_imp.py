@@ -21,6 +21,7 @@ from utils.util import Util
 # TODO The icon excel for all products (only catalogados done)
 # TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
 # TODO DISABLE public categs. automatic assignations
+# TODO when scraping for NEW links, generate an excel that separates skus not in odoo
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
