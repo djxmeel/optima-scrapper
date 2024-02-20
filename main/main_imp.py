@@ -17,6 +17,8 @@ from utils.util import Util
 # TODO WEEKLY 4. Delete unused attributes and values
 # TODO WEEKLY 5. Check new spec sheets in V-TAC UK
 
+# TODO note to SOLUNTEC : reorder to show VS in the first place in website
+
 # TODO sug. Store scraped products individually (instead of 50 at a time)
 # TODO The icon excel for all products (only catalogados done)
 # TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
@@ -57,6 +59,7 @@ USE_PRIORITY_EXCEL = False
 IF_IMPORT_ACC = False
 
 IF_IMPORT_IMGS_AND_VIDEOS = False
+# If True, existing media will be deleted before importing. Product with x_lock_main_media will not be cleaned
 IF_CLEAN_EXISTING = False
 SKIP_PRODUCTS_W_MEDIA = False
 

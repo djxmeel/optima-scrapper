@@ -262,7 +262,8 @@ class OdooImport:
                 elif not skip_existing:
                     product_id = product_ids[0]
 
-                    current_origin_url = cls.PRODUCT_MODEL.browse(product_id).x_url
+                    browsed_product = cls.PRODUCT_MODEL.browse(product_id)
+                    current_origin_url = browsed_product.x_url
 
                     if not force_update and current_origin_url and (current_origin_url == url or 'v-tac.es' in current_origin_url or 'v-tac.es' not in url):
                         cls.logger.info(f'FORCE SKIPPING Product {product["default_code"]} for it\'s origin didn\'t change')
@@ -281,7 +282,9 @@ class OdooImport:
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_attribute_values(product_id, product, created_attrs_ids_values, 'deep')
-                    cls.assign_public_categories(product_id, public_categs)
+
+                    if not browsed_product.x_lock_public_categs:
+                        cls.assign_public_categories(product_id, public_categs)
 
                     if 'product_brand_id' in product:
                         cls.assign_brand(product_id, product['product_brand_id'])
@@ -551,7 +554,7 @@ class OdooImport:
 
                     images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
                     if images:
-                        if clean:
+                        if clean and not browsed_product.x_lock_main_media:
                             cls.MEDIA_MODEL.unlink(images)
                             images.clear()
                             images = []
@@ -568,8 +571,9 @@ class OdooImport:
 
                     # write/overwrite the image to the product
                     try:
-                        cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][0]['img64']})
-                        product['imgs'].pop(0)
+                        if not browsed_product.x_lock_main_media:
+                            cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][0]['img64']})
+                            product['imgs'].pop(0)
                     except RPCError:
                         pass
 
