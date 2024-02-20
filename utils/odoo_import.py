@@ -546,7 +546,7 @@ class OdooImport:
 
                     cls.logger.info(f"{product['default_code']}:FINISHED UPLOADING VIDEOS")
 
-                if product['imgs']:
+                if 'imgs' in product and product['imgs']:
                     cls.logger.info(f'{product["default_code"]}: FOUND {len(product["imgs"])} IMAGES')
 
                     images = cls.MEDIA_MODEL.search([('product_tmpl_id', '=', product_ids[0]), ('image_1920', '!=', False)])
