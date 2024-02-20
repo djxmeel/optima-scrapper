@@ -971,7 +971,7 @@ class OdooImport:
         skus_to_not_publish = Util.load_json('data/common/json/SKUS_TO_NOT_PUBLISH.json')['skus']
         productos_iluminacion_category_id = cls.odoo.env['product.category'].search([('name', '=', 'Productos de iluminación')])[0]
 
-        # FIXME set to true when ready to publish
+        # TEMP set to true when ready to publish
         is_published = False
         allow_out_of_stock_order = True
         out_of_stock_msg = out_of_stock_messages[3]
@@ -1100,7 +1100,7 @@ class OdooImport:
             if product_stock['default_code'] == sku:
                 cls.logger.info(f"FOUND {sku} IN UK STOCK")
 
-                # FIXME remove after a uk re-scrape
+                # TEMP remove after a uk re-scrape
                 if 'transit' not in product_stock:
                     product_stock['transit'] = 0
                 if 'almacen2_custom' not in product_stock:
