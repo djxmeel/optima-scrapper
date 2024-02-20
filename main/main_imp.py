@@ -11,15 +11,15 @@ from utils.util import Util
 # 5 is for removing all linked records (similar to 3, but for all).
 # 6 is for setting a new set of records.
 
-# TODO WEEKLY 1. New products link extraction and scraping
-# TODO WEEKLY 2. Compare pricelists when new pricelist is available
-# TODO WEEKLY 3. Upload stock when new stock is available
-# TODO WEEKLY 4. Delete unused attributes and values
-# TODO WEEKLY 5. Check new spec sheets in V-TAC UK
+# WEEKLY 1. New products link extraction and scraping
+# WEEKLY 2. Compare pricelists when new pricelist is available
+# WEEKLY 3. Upload stock when new stock is available
+# WEEKLY 4. Delete unused attributes and values
+# WEEKLY 5. Check new spec sheets in V-TAC UK
 
 # TODO note to SOLUNTEC : reorder to show VS in the first place in website
 
-#TODO remove DESCATALOGADOS categ from website
+# TODO remove DESCATALOGADOS categ from website
 # TODO sug. Store scraped products individually (instead of 50 at a time)
 # TODO The icon excel for all products (only catalogados done)
 # TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
