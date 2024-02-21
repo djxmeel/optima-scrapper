@@ -819,13 +819,10 @@ class OdooImport:
 
                 cls.PRODUCT_MODEL.write(product.id,
                                         {'description_purchase': description_purchase,
-                                         'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD'),
-                                         'public_categ_ids': [(4, descatalogados_category_id)]})
+                                         'name': str(product.name).replace('[VSD','[VS').replace('[VS', '[VSD')})
                 cls.logger.info(f"{index+1}. {product.default_code}: CHANGED IN-NAME REF FROM VS TO VSD")
             else:
-                cls.PRODUCT_MODEL.write(product.id,
-                                        {'name': str(product.name).replace('[VSD', '[VS'),
-                                         'public_categ_ids': [(3, descatalogados_category_id)]})
+                cls.PRODUCT_MODEL.write(product.id,{'name': str(product.name).replace('[VSD', '[VS')})
                 cls.logger.info(f"{index+1}. {product.default_code} SKIPPING BECAUSE IT IS IN CATALOGO")
 
     @classmethod
