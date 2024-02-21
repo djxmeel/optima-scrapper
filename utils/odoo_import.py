@@ -808,7 +808,6 @@ class OdooImport:
         skus = [str(entry['SKU']) for entry in Util.load_excel_columns_in_dictionary_list(skus_catalogo_file_path)]
 
         products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
-        descatalogados_category_id = cls.PRODUCT_PUBLIC_CATEGORIES_MODEL.search([('name', '=', 'DESCATALOGADOS')])[0]
 
         for index, product in enumerate(products):
             if str(product.default_code) not in skus:
