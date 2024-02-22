@@ -506,6 +506,7 @@ class Util:
         return public_categories
 
 
+    # TEMP unused
     @classmethod
     def get_public_category_from_name(cls, product_name, name_to_categ_json_path, logger=None):
         name_to_categ = Util.load_json(name_to_categ_json_path)

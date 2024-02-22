@@ -245,11 +245,8 @@ class DataMerger:
 
             merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.SKUS_CATALOGO_Q12024_FILE_PATH, cls.logger)
 
-            if not merged_product['public_categories']:
-                merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.MANUAL_PUBLIC_CATEGS_EXCEL_PATH, cls.logger)
-
-                if not merged_product['public_categories']:
-                    merged_product['public_categories'] = Util.get_public_category_from_name(merged_product['name'], cls.PUBLIC_CATEGORY_FROM_NAME_JSON_PATH, cls.logger)
+            # if not merged_product['public_categories']:
+            #     merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.MANUAL_PUBLIC_CATEGS_EXCEL_PATH, cls.logger)
 
             if 'name' in merged_product:
                 merged_product['name'] = Util.get_correct_name_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, merged_product["default_code"], merged_product['name'])
