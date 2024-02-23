@@ -280,7 +280,7 @@ def get_distinct_categs():
     return empty_translation_dict
 
 
-def generate_all_products_info_json(directory):
+def stack_json_files_to_one(directory, output_file_path):
     """Generates a JSON file with all the products info from the specified directory."""
     products_info = []
 
@@ -292,7 +292,7 @@ def generate_all_products_info_json(directory):
 
             products_info.extend(data)
 
-    Util.dump_to_json(products_info, 'data/common/json/PRODUCT_INFO_ALL.json')
+    Util.dump_to_json(products_info, output_file_path)
 
 
 def convert_xlsx_to_json(excel_file_path, json_file_path):
@@ -939,7 +939,7 @@ def find_duplicate_skus(file_path):
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 #change_internal_ref_odoo()
 
-#generate_all_products_info_json(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
+stack_json_files_to_one("data/buyled_stocks - copia", "data/buyled_stocks - copia/buyled_stocks_all.json")
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
