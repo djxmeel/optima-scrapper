@@ -19,7 +19,6 @@ from utils.util import Util
 
 # TODO note to SOLUNTEC : reorder to show VS in the first place in website
 
-# TODO remove DESCATALOGADOS categ from website
 # TODO sug. Store scraped products individually (instead of 50 at a time)
 # TODO The icon excel for all products (only catalogados done)
 # TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
