@@ -27,6 +27,7 @@ class ScraperBuyLedStocks():
     )
 
     BEGIN_FROM = 0
+    DUMP_FREQUENCY = 50
 
     appium_server_url = 'http://localhost:4723'
     driver = None
@@ -63,9 +64,10 @@ class ScraperBuyLedStocks():
             fetched_data = cls.get_stock_data(sku)
 
             if fetched_data:
-                print(f'{index+1}. {fetched_data}')
+                print(f'{index+cls.BEGIN_FROM+1}. {fetched_data}')
                 stock_data.append(fetched_data)
-            if (index % 50 == 0 or index + cls.BEGIN_FROM >= len(products_odoo) - 1) and index > 0:
+
+            if (len(stock_data) % cls.DUMP_FREQUENCY == 0 or index + cls.BEGIN_FROM >= len(products_odoo) - 1) and index > 0:
                 Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{index + cls.BEGIN_FROM}.json')
                 stock_data = []
         cls.end_scrape()
@@ -98,7 +100,13 @@ class ScraperBuyLedStocks():
 
     @classmethod
     def search_sku(cls, sku):
-        search_field_element = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.search_field_locator)
+        try:
+            search_field_element = cls.driver.find_element(AppiumBy.ANDROID_UIAUTOMATOR, cls.search_field_locator)
+        except NoSuchElementException:
+            print('Search field not found. Retrying...')
+            time.sleep(2)
+            cls.search_sku(sku)
+            return
         search_field_element.click()
         time.sleep(0.2)
         search_field_element.send_keys(sku)
