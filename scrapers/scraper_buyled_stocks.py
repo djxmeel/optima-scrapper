@@ -67,7 +67,7 @@ class ScraperBuyLedStocks():
                 print(f'{index+cls.BEGIN_FROM+1}. {fetched_data}')
                 stock_data.append(fetched_data)
 
-            if (len(stock_data) % cls.DUMP_FREQUENCY == 0 or index + cls.BEGIN_FROM >= len(products_odoo) - 1) and index > 0:
+            if (len(stock_data) % cls.DUMP_FREQUENCY == 0 or index + cls.BEGIN_FROM >= len(products_odoo) - 1) and len(stock_data) > 0:
                 Util.dump_to_json(stock_data, f'{output_dir_path}/buyled_stocks_{index + cls.BEGIN_FROM}.json')
                 stock_data = []
         cls.end_scrape()
