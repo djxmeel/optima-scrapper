@@ -802,7 +802,9 @@ class Util:
         for icon_name in icons_names:
             if not icon_name:
                 continue
-            icon_b64 = Util.load_json(f'data/common/icons/icons_b64/{icon_name}.json')
+
+            icon_name = str(icon_name).lower()
+            icon_b64 = dict(Util.load_json(f'data/common/icons/icons_b64/{icon_name}.json'))
             icons.append(icon_b64[icon_name])
         return icons
 
