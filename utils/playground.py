@@ -700,27 +700,6 @@ def rename_files_in_subfolders(base_folder, new_name_pattern):
             os.rename(old_file_path, new_file_path)
             print(f"Renamed '{old_file_path}' to '{new_file_path}'")
 
-
-def match_images(dir1, dir2):
-    images1 = set(os.listdir(dir1))
-    images2 = set(os.listdir(dir2))
-
-    matched_images = images1.intersection(images2)
-
-    for image_name in matched_images:
-        img1_path = os.path.join(dir1, image_name)
-        img2_path = os.path.join(dir2, image_name)
-
-        img1_b64 = Util.convert_image_to_base64(img1_path)
-        img2_b64 = Util.convert_image_to_base64(img2_path)
-
-        pair_data = {
-            "icons": [img1_b64, img2_b64]
-        }
-
-        with open(f"data/common/icons/icon_mappings/ita_{image_name.split('.')[0]}.json", 'w') as outfile:
-            json.dump(pair_data, outfile)
-
 def remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path):
     # Read the input PDF
     try:
@@ -930,7 +909,7 @@ json_file_path1 = 'data/buyled_stocks/buyled_stocks_3450.json'
 json_file_path2 = 'data/buyled_stocks/buyled_stocks_3450 - Copy.json'
 output_excel_path = 'data/buyled_stocks/output.xlsx'
 
-match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, output_excel_path)
+#match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, output_excel_path)
 
 # Uncomment the line below to run the function with your file paths
 # match_and_write_to_excel(json_file_path1, json_file_path2, output_excel_path)
