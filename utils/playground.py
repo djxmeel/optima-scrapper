@@ -869,6 +869,73 @@ def find_duplicate_skus(file_path):
         print(duplicates[['SKU']])
 
 
+def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, output_excel_path):
+    # Load JSON files
+    with open(json_file_path1, 'r') as file:
+        data1 = json.load(file)
+    with open(json_file_path2, 'r') as file:
+        data2 = json.load(file)
+
+    pricelist_data = Util.load_excel_columns_in_dictionary_list(pricelist_path)
+
+    # Assuming data1 and data2 are lists of dictionaries
+    # Convert them to dictionaries with IDs as keys for easier access
+    data1_dict = {str(item['sku']): item for item in data1}
+    data2_dict = {str(item['sku']): item for item in data2}
+    pricelist_dict = {str(item['SKU']): item for item in pricelist_data}
+
+    # Find matching IDs and combine their data
+    matched_data = []
+    for id in data1_dict:
+        coste = 'null'
+
+        if id in pricelist_dict:
+            coste = pricelist_dict[id]['PRECIO COMPRA']
+
+        if id in data2_dict:
+            # Assuming you want to combine all fields, update with data2's fields
+            matched_data.append({
+                'sku': id,
+                'Stock Italia 1': data1_dict[id]['stock_ita'],
+                'Stock Italia 2': data2_dict[id]['stock_ita'],
+                'Stock buyled 1': data1_dict[id]['stock_buyled'],
+                'Stock buyled 2': data2_dict[id]['stock_buyled'],
+                'Precio buyled 1': data1_dict[id]['price'],
+                'Precio buyled 2': data2_dict[id]['price'],
+                'Precio coste': coste,
+            })
+        else:
+            # Add the data from data1
+            matched_data.append({
+                'sku': id,
+                'Stock Italia 1': data1_dict[id]['stock_ita'],
+                'Stock Italia 2': 'null',
+                'Stock buyled 1': data1_dict[id]['stock_buyled'],
+                'Stock buyled 2': 'null',
+                'Precio buyled 1': data1_dict[id]['price'],
+                'Precio buyled 2': 'null',
+                'Precio coste': coste,
+            })
+
+    # Convert matched data to a pandas DataFrame
+    df = pd.DataFrame(matched_data)
+
+    # Write the DataFrame to an Excel file
+    df.to_excel(output_excel_path, index=False)
+
+
+# Example usage
+pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
+json_file_path1 = 'data/buyled_stocks/buyled_stocks_3450.json'
+json_file_path2 = 'data/buyled_stocks/buyled_stocks_3450 - Copy.json'
+output_excel_path = 'data/buyled_stocks/output.xlsx'
+
+match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, output_excel_path)
+
+# Uncomment the line below to run the function with your file paths
+# match_and_write_to_excel(json_file_path1, json_file_path2, output_excel_path)
+
+
 # position = (490, 740)  # X, Y coordinates
 # size = (80, 80)  # Width, Height of the square
 # parent_folder = "data/vtac_uk/SPEC_SHEETS"
@@ -939,7 +1006,7 @@ def find_duplicate_skus(file_path):
 #process_ref_to_sku_acc(DataMerger.MERGED_PRODUCT_INFO_DIR_PATH)
 #change_internal_ref_odoo()
 
-stack_json_files_to_one("data/buyled_stocks - copia", "data/buyled_stocks - copia/buyled_stocks_all.json")
+#stack_json_files_to_one("data/buyled_stocks - copia", "data/buyled_stocks - copia/buyled_stocks_all.json")
 
 #delete_attachments('x_url', 'ilike', 'italia')
 
