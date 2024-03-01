@@ -949,10 +949,10 @@ output_excel_path = 'data/buyled_stocks/output.xlsx'
 
 #Example usage
 # get_price_variations_and_new_products_excel(
-#     'sku',
-#     'data/common/excel/to_compare/Lista_precios_BULG._JAN_24.xlsx',
-#     'data/common/excel/to_compare/Lista_precios_U.K._FEB_24.xlsx',
-#     'data/common/excel/to_compare/output.xlsx')
+#      'sku',
+#      'data/common/excel/to_compare/old.xlsx',
+#      'data/common/excel/to_compare/new.xlsx',
+#      'data/common/excel/to_compare/output.xlsx')
 
 
 # Example usage :
