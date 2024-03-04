@@ -13,6 +13,7 @@ from utils.util import Util
 class ScraperVtacSpain:
     COUNTRY = 'es'
     WEBSITE_NAME = 'V-TAC España'
+    BRAND_NAME = 'V-TAC'
 
     DRIVER = None
     logger = None
@@ -22,32 +23,24 @@ class ScraperVtacSpain:
 
     SPECS_SUBCATEGORIES = ()
 
-    PRODUCTS_INFO_PATH = 'data/vtac_spain/PROD/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PROD/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_spain/PROD/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_spain/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_spain/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_spain/PROD/NEW/PRODUCT_PDF'
-
-    PRODUCTS_INFO_PATH_TEST= 'data/vtac_spain/TEST/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_spain/TEST/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH_TEST = 'data/vtac_spain/TEST/PRODUCT_PDF'
-
-    NEW_PRODUCTS_INFO_PATH_TEST = 'data/vtac_spain/TEST/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_spain/TEST/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH_TEST = 'data/vtac_spain/TEST/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_spain/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_spain/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_spain/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/PRODUCTS_LINKS_ES.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_spain/LINKS/NEW_PRODUCTS_LINKS_ES.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_spain/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_spain/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
     CATEGORIES_LINKS = (
+        "https://v-tac.es/descatalogados.html?limit=500",
+        "https://v-tac.es/descatalogados.html?limit=500&start=499",
+        "https://v-tac.es/descatalogados.html?limit=500&start=998",
+        "https://v-tac.es/descatalogados.html?limit=500&start=1497",
+        "https://v-tac.es/descatalogados.html?limit=500&start=1996",
+        "https://v-tac.es/descatalogados.html?limit=500&start=2495"
         'https://v-tac.es/sistemas-solares.html',
         'https://v-tac.es/iluminaci%C3%B3n.html',
         'https://v-tac.es/smart-digital.html',
@@ -57,6 +50,7 @@ class ScraperVtacSpain:
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
+        cls.DRIVER.maximize_window()
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -74,7 +68,11 @@ class ScraperVtacSpain:
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0,
+                'imgs': [],
+                'website_description': '',
+                'videos': [],
+                'product_brand_id': cls.BRAND_NAME}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -98,16 +96,6 @@ class ScraperVtacSpain:
         else:
             item['default_code'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        # Extracción de las dimensiones gráficas
-        try:
-            graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
-            item['imgs'].append({
-                'src': graph_dimensions_src,
-                'img64': Util.src_to_base64(graph_dimensions_src)
-            })
-        except NoSuchElementException:
-            pass
-
         # Extracción de imágenes
         try:
             # Find the image elements and extract their data
@@ -118,6 +106,16 @@ class ScraperVtacSpain:
                 item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
+
+        # Extracción de las dimensiones gráficas
+        try:
+            graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
+            item['imgs'].append({
+                'src': graph_dimensions_src,
+                'img64': Util.src_to_base64(graph_dimensions_src)
+            })
+        except NoSuchElementException:
+            pass
 
         # Extracción de video
         try:
@@ -143,11 +141,16 @@ class ScraperVtacSpain:
             return None
 
         # Extracción del título
-        item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'
+        item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'.upper()
+
+        item['description_purchase'] = "DESCATALOGADO WEB" if driver.find_elements(By.XPATH, "//img[@alt='badge_category']") else ""
+
+        if item['description_purchase']:
+            item['name'] = item['name'].replace('[VS', '[VSD')
 
         # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
-            item['volume'] = float(item['Volumen del artículo'].replace(',', '.'))
+            item['volume'] = float(item['Volumen del artículo'].replace(',', '.').replace(' ', ''))
             del item['Volumen del artículo']
         if 'Peso del artículo' in item.keys():
             item['weight'] = float(item['Peso del artículo'].replace(',', '.').split(' ')[0].replace('kg', ''))
@@ -158,8 +161,9 @@ class ScraperVtacSpain:
         return item
 
     @classmethod
-    def extract_all_links(cls, driver, categories, update=False):
+    def extract_all_links(cls, driver, categories, update):
         extracted = []
+
         for cat in categories:
             try:
                 driver.get(cat)
@@ -168,11 +172,17 @@ class ScraperVtacSpain:
                 ScraperVtacSpain.extract_all_links(driver, categories, update)
                 return
 
-            inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH,
-                                                                                                "/html/body/div[1]/div/section[3]/div/main/div/div[2]/div[2]/div/section//h4//a")]
+            inner_categories_links = [cat.get_attribute("href") for cat in driver.find_elements(By.XPATH, "/html/body/div[1]/div/section[3]/div/main/div/div[2]/div[2]/div/section//h4//a")]
+
+            if not inner_categories_links:
+                inner_categories_links.append(cat)
 
             for inner_cat in inner_categories_links:
-                driver.get(f'{inner_cat}?limit=9999')
+                if 'limit=' in inner_cat:
+                    driver.get(inner_cat)
+                else:
+                    driver.get(f'{inner_cat}?limit=9999')
+
                 links = driver.find_elements(By.XPATH, "//div[@id='bd_results']//img/parent::a")
                 time.sleep(Util.PRODUCT_LINK_EXTRACTION_DELAY)
 
@@ -196,6 +206,7 @@ class ScraperVtacSpain:
                 with open(links_path, 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
+                    cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
                     return extracted, new_links
 
         return extracted, None
@@ -245,17 +256,18 @@ class ScraperVtacSpain:
             nested_dir = f'{ScraperVtacSpain.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
-            # Get the original file name if possible
-            content_disposition = response.headers.get('content-disposition')
-            if content_disposition:
-                filename = content_disposition.split('filename=')[-1].strip('"')
-            else:
-                # Fallback to extracting the filename from URL if no content-disposition header
-                filename = os.path.basename(url)
+            try:
+                filename = pdf_element.find_element(By.XPATH, 'parent::div/parent::div//strong').text
+            except NoSuchElementException:
+                filename = pdf_element.find_elements(By.XPATH, 'parent::p/parent::div/parent::div//span')
+                if filename:
+                    filename = filename[0].text
+                else:
+                    filename = pdf_element.find_element(By.XPATH, 'parent::div/parent::div/parent::div//strong').text
 
-            filename = filename.replace('%20', '_')
+            filename = Util.attachment_naming_replacements(filename, 'es')
 
-            with open(f'{nested_dir}/{filename}', 'wb') as file:
+            with open(f'{nested_dir}/{filename}.pdf', 'wb') as file:
                 file.write(response.content)
 
         return len(pdf_elements)
@@ -279,11 +291,12 @@ class ScraperVtacSpain:
             data = json.load(f)
 
         substring = base_link.split('/')[-1]
+        basestring = "/".join(base_link.split('/')[2:-1])
 
         links = []
 
         for link in data:
-            if substring in link:
+            if substring in link and basestring not in link:
                 print('FOUND DUPLICATE ->', link)
                 links.append(link)
 

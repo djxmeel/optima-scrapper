@@ -1,24 +1,34 @@
 import base64
 import copy
+import io
 import json
 import os
+import random
 import re
 import time
 import shutil
 from datetime import datetime
+from io import BytesIO
+
+import pypdf
+from PIL import Image
+
 
 import openpyxl
 import pandas as pd
 import requests
+from pypdf.errors import PdfReadError
 
 from googletrans import Translator
+from httpcore import ReadTimeout
+from reportlab.pdfgen import canvas
 from selenium.common import NoSuchElementException
 from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
+from urllib3.exceptions import ReadTimeoutError
 
 os.environ['path'] += r';dlls/'
 import cairosvg
-
 
 class Util:
     DATETIME = datetime.now().strftime("%m-%d-%Y, %Hh %Mmin %Ss")
@@ -32,11 +42,21 @@ class Util:
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
     # The fields kept in ODOO as custom fields
-    ODOO_CUSTOM_FIELDS = ('url', 'Código de familia', 'Marca')
+    ODOO_CUSTOM_FIELDS = ('url', 'Código de familia')
     # Default fields supported by Odoo (not custom)
-    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode')
+    ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode', 'product_brand_id', 'invoice_policy', 'detailed_type', 'show_availability', 'allow_out_of_stock_order', 'available_threshold', 'out_of_stock_message', 'description_purchase')
     # Media fields
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
+
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ITA = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_ITA.json'
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ES = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_ES.json'
+    ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_UK = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_UK.json'
+
+    SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
+    MANUAL_PUBLIC_CATEGS_EXCEL_PATH = 'data/common/excel/public_category_manual.xlsx'
+    CORRECT_NAMES_EXCEL_PATH = 'data/common/excel/product_correct_names.xlsx'
+
+    ODOO_FETCHED_PRODUCTS = []
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
@@ -78,7 +98,7 @@ class Util:
         return products_media
 
     @staticmethod
-    def translate_from_to_spanish(_from, text):
+    def translate_from_to_spanish(_from, text, to='es'):
         """
         Translates Italian text to Spanish using Google Translate.
 
@@ -97,13 +117,13 @@ class Util:
             detected_language = translator.detect(text).lang
 
             if detected_language == _from or _from == 'detect':
-                translation = translator.translate(text, src=detected_language, dest='es')
+                translation = translator.translate(text, src=detected_language, dest=to)
                 return translation.text
-        except TimeoutException:
+        except (TimeoutException, ReadTimeoutError, ReadTimeout):
             print('TRANSLATION TIMED OUT. Retrying...')
             time.sleep(3)
             return Util.translate_from_to_spanish(_from, text)
-        except AttributeError and TypeError:
+        except (AttributeError ,TypeError, ValueError):
             print(f'{text} NOT TRANSLATABLE. SKIPPING...')
 
         return text
@@ -131,17 +151,26 @@ class Util:
             raise Exception(f'Invalid country: {country}')
 
     @staticmethod
-    def get_sku_from_link_ita(driver):
-        link = driver.current_url
-        return str(link).split('/')[6]
+    def get_sku_from_link_ita(driver, link=None):
+        if link:
+            return str(link).split('/')[6]
+        return str(driver.current_url).split('/')[6]
 
     @staticmethod
-    def get_sku_from_link_uk(driver):
-            return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
-
-    @staticmethod
-    def get_sku_from_link_es(driver):
+    def get_sku_from_link_uk(driver, link=None):
+        if link:
+            time.sleep(1)
+            driver.get(link)
         try:
+            return driver.find_element(By.XPATH,"//main/div[3]/div/div/section[1]/div/div/div[2]/div[2]/div[1]").text.split(" ")[1]
+        except NoSuchElementException:
+            return None
+
+    @staticmethod
+    def get_sku_from_link_es(driver, link=None):
+        try:
+            if link:
+                driver.get(link)
             return driver.find_element(By.XPATH, "//div[@class='sku-inner']").text.split(' ')[1]
         except NoSuchElementException:
             from scrapers.scraper_vtac_es import ScraperVtacSpain
@@ -154,6 +183,12 @@ class Util:
         try:
             return f'VS{int(sku) * 2}'
         except ValueError:
+            if "-" in sku:
+                sku_split = sku.split('-')
+                if sku_split[0].isdigit():
+                    return f'VS{int(sku_split[0]) * 2}-{sku_split[1]}'
+                elif sku_split[1].isdigit():
+                    return f'VS{int(sku_split[1]) * 2}-{sku_split[0]}'
             return None
 
     @staticmethod
@@ -210,10 +245,10 @@ class Util:
     def get_all_files_in_directory(directory_path):
         all_files = []
         for root, dirs, files in os.walk(directory_path):
-            for f in sorted(files):
+            for f in files:
                 path = os.path.join(root, f)
                 all_files.append(path)
-        return sorted(all_files)
+        return all_files
 
     @staticmethod
     def load_data_in_dir(directory):
@@ -261,76 +296,6 @@ class Util:
         return f'x_{formatted_field}'[:61]
 
     @staticmethod
-    def extract_fields_example_to_excel(product_info_path, example_field_json_path, example_field_excel_path):
-        file_list = Util.get_all_files_in_directory(product_info_path)
-        json_data = []
-        fields = set()
-        ejemplos = {}
-        urls = {}
-
-        for file_path in file_list:
-            with open(file_path, "r", encoding='ISO-8859-1') as file:
-                json_data.extend(json.load(file))
-
-        for product in json_data:
-            for field in product.keys():
-                fields.add(field)
-                ejemplos[field] = f'{product["default_code"]} -> {product[field]}'
-                urls[field] = product["url"]
-
-        excel_dicts = []
-
-        print(f'FOUND {len(fields)} DISTINCT FIELDS')
-
-        for field in fields:
-            if field in Util.ODOO_SUPPORTED_FIELDS:
-                continue
-            excel_dicts.append(
-                {
-                 'Etiqueta de campo': field,
-                 'Ejemplo': ejemplos[field],
-                 'URL': urls[field]
-                 }
-            )
-
-        Util.dump_to_json(excel_dicts, example_field_json_path)
-
-        # Read the JSON file
-        data = pd.read_json(example_field_json_path)
-
-        # Write the DataFrame to an Excel file
-        excel_file_path = example_field_excel_path
-        data.to_excel(excel_file_path,
-                      index=False)  # Set index=False if you don't want the DataFrame indexes in the Excel file
-
-    @staticmethod
-    def generate_custom_fields_excel_json(field_json_path, field_excel_path, custom_fields):
-        excel_dicts = []
-
-        for field in custom_fields:
-            excel_dicts.append(
-                {'Nombre de campo': Util.format_odoo_custom_field_name(field),
-                 'Etiqueta de campo': field,
-                 'Modelo': 'product.template',
-                 'Tipo de campo': 'texto',
-                 'Indexado': True,
-                 'Almacenado': True,
-                 'Sólo lectura': False,
-                 'Modelo relacionado': '',
-                 }
-            )
-
-        Util.dump_to_json(excel_dicts, field_json_path)
-
-        # Read the JSON file
-        data = pd.read_json(field_json_path)
-
-        # Write the DataFrame to an Excel file
-        excel_file_path = field_excel_path
-        data.to_excel(excel_file_path,
-                      index=False)  # Set index=False if you don't want the DataFrame indices in the Excel file
-
-    @staticmethod
     def begin_items_pdf_download(scraper, links_path, downloads_path, logger, begin_from=0):
         with open(links_path) as f:
             loaded_links = json.load(f)
@@ -354,13 +319,33 @@ class Util:
 
                 found = scraper.download_pdfs_of_sku(scraper.DRIVER, sku)
                 logger.warn(f'DOWNLOADED {found} PDFS FROM: {link}  {counter + 1}/{len(loaded_links)}')
-        except:
+        except TimeoutError:
             logger.error("Error en la descarga de PDFs. Reintentando...")
             time.sleep(5)
             Util.begin_items_pdf_download(scraper, links_path, downloads_path, logger, counter)
 
     @staticmethod
-    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, start_from=0):
+    def begin_items_uk_specsheets_download(scraper, links_path, logger, begin_from=0):
+        with open(links_path) as f:
+            loaded_links = json.load(f)
+
+        counter = begin_from
+
+        try:
+            for link in loaded_links[begin_from:]:
+                counter += 1
+
+                sku = Util.get_sku_from_link(scraper.DRIVER, link, scraper.COUNTRY)
+
+                if scraper.COUNTRY == 'uk':
+                    scraper.download_specsheet_of_sku(scraper.DRIVER, sku)
+        except:
+            logger.error("Error en la descarga de fichas técnicas. Reintentando...")
+            time.sleep(5)
+            Util.begin_items_uk_specsheets_download(scraper, links_path, logger, counter)
+
+    @staticmethod
+    def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new=False, begin_from=0):
         """
         Begins item info extraction.
 
@@ -370,26 +355,31 @@ class Util:
         # Load links from JSON file
         links = Util.load_json(links_path)
 
+        skipped = 0
+
         products_data = []
-        counter = start_from
+        counter = begin_from
 
         # Different links but same product
         duplicate_links = []
 
         try:
-            for link in links[start_from:]:
+            for link in links[begin_from:]:
                 # Skip duplicate links for ES
                 if scraper.COUNTRY == 'es':
                     if link in duplicate_links:
+                        skipped += 1
                         continue
 
-                    for dup in scraper.get_duplicate_product_links(scraper.PRODUCTS_LINKS_PATH, link):
+                    for dup in scraper.get_duplicate_product_links(links_path, link):
                         duplicate_links.append(dup)
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES)
 
                 # If product is None, it's SKU contains letters (Not V-TAC)
                 if not product:
+                    skipped+=1
+                    logger.warn(f'Failed to scrape product with link: {link}. Skipping...')
                     continue
 
                 products_data.append(product)
@@ -397,7 +387,7 @@ class Util:
                 logger.info(f'{counter}/{len(links)}\n')
 
                 # Save each X to a JSON
-                if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links):
+                if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links) - skipped:
                     data_filename = f'{data_extraction_dir}/{Util.PRODUCT_INFO_FILENAME_TEMPLATE.format(counter)}'
                     media_filename = f'{media_extraction_dir}/{Util.PRODUCT_MEDIA_FILENAME_TEMPLATE.format(counter)}'
 
@@ -408,12 +398,18 @@ class Util:
                     Util.dump_to_json(products_media_only, media_filename)
 
                     products_data.clear()
-        except Exception as e:
+
+            if if_only_new:
+                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_INFO_PATH, scraper.NEW_PRODUCTS_INFO_PATH, Util.PRODUCT_INFO_FILENAME_TEMPLATE, exclude=Util.MEDIA_FIELDS)
+                Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_MEDIA_PATH, scraper.NEW_PRODUCTS_MEDIA_PATH, Util.PRODUCT_MEDIA_FILENAME_TEMPLATE)
+                # Remove new products files
+                os.remove(scraper.NEW_PRODUCTS_LINKS_PATH)
+        except (TimeoutError, TimeoutException) as e:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
-            logger.error(e)
+            logger.error(e.with_traceback(None))
             time.sleep(2)
             products_data.clear()
-            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger,
+            Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
     # Replace <use> tags with the referenced element for cairosvg to work
@@ -474,7 +470,7 @@ class Util:
             " \\____/|_|      |_|  |_____|_|  |_/_/    \\_\\ |_____/ \\_____|_|  \\_/_/    \\_|_|    |_|    |______|_|  \\_\\\n")
 
     @staticmethod
-    def get_chosen_country_from_menu(country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf, if_extract_distinct_items_fields):
+    def get_chosen_country_from_menu(country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf):
         Util.print_title()
         # Prompt user to choose country
         while True:
@@ -483,8 +479,7 @@ class Util:
                   f"Extraer NOVEDADES: {if_update}\n"
                   f"\nScrapear información productos: {if_extract_item_info}\n"
                   f"Sólamente NOVEDADES: {if_only_new_items}\n"
-                  f"\nScrapear descargables productos: {if_dl_item_pdf}\n"
-                  f"\nExtraer campos: {if_extract_distinct_items_fields}\n")
+                  f"\nScrapear descargables productos: {if_dl_item_pdf}\n")
             chosen_country = input(f'ELEGIR PAÍS PARA EL SCRAPING ({list(country_scrapers.keys())}) : ').strip().lower()
             if chosen_country in country_scrapers:
                 if input(
@@ -495,34 +490,62 @@ class Util:
         return chosen_country
 
     @classmethod
-    def get_public_category_from_sku(cls, sku, public_categories_excel_path):
+    def get_public_category_from_sku(cls, sku, public_categories_excel_path, logger):
         categories_sku = Util.load_excel_columns_in_dictionary_list(public_categories_excel_path)
         public_categories = []
 
         for category_sku in categories_sku:
             if str(sku) == str(category_sku['SKU']):
-                public_categories.append(category_sku['CATEGORY ES'].strip())
+                public_categories.append(str(category_sku['CATEGORY ES']).strip())
 
         if not public_categories:
-            print(f'{sku}: NO PUBLIC CATEGORIES FOUND')
+            logger.warn(f'{sku}: NO PUBLIC CATEGORIES FOUND')
         else:
-            print(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories}')
+            logger.info(f'{sku}: ASSIGNED PUBLIC CATEGORIES {public_categories} FROM CATALOG EXCEL')
 
         return public_categories
 
+
+    # TEMP unused
+    @classmethod
+    def get_public_category_from_name(cls, product_name, name_to_categ_json_path, logger=None):
+        name_to_categ = Util.load_json(name_to_categ_json_path)
+        samsung_categs_map = Util.load_json('data/common/json/SAMSUNG_CATEGORIES_MAP.json')
+
+        categs = []
+
+        for substr, categ in name_to_categ.items():
+            if substr in product_name:
+                if 'SAMSUNG' in product_name and categ in samsung_categs_map:
+                    categ = samsung_categs_map[categ]
+                categs.append(categ)
+
+        if categs:
+            if logger:
+                logger.info(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
+            else:
+                print(f'{product_name}: ASSIGNED PUBLIC CATEGORIES {categs} FROM NAME')
+
+        return categs
+
+
     @classmethod
     def get_priority_excel_skus(cls, file_path, column_letter, sheet_name=None):
-        workbook = openpyxl.load_workbook(file_path)
+        try:
+            workbook = openpyxl.load_workbook(file_path)
 
-        # If sheet_name is not specified, use the active sheet. Otherwise, use the specified sheet.
-        sheet = workbook[sheet_name] if sheet_name else workbook.active
+            # If sheet_name is not specified, use the active sheet. Otherwise, use the specified sheet.
+            sheet = workbook[sheet_name] if sheet_name else workbook.active
 
-        # Extract data from the desired column
-        data = [cell.value for cell in sheet[column_letter] if cell.value is not None]
+            # Extract data from the desired column
+            data = [cell.value for cell in sheet[column_letter] if cell.value is not None]
 
-        # Close the workbook and return the data
-        workbook.close()
-        return data
+            # Close the workbook and return the data
+            workbook.close()
+            return data
+        except FileNotFoundError:
+            print(f'File not found: {file_path}')
+            return []
 
 
     @classmethod
@@ -560,3 +583,231 @@ class Util:
             )
 
         return website_product_count
+
+    @classmethod
+    def attachment_naming_replacements(cls, attachment_name, country):
+        if country == 'es':
+            replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ES)
+        elif country == 'uk':
+            replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_UK)
+        else:
+            replacements = Util.load_json(cls.ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ITA)
+
+
+        for incorrect, replacement in replacements.items():
+            if incorrect in attachment_name:
+                attachment_name = attachment_name.replace(incorrect, replacement)
+
+        return attachment_name
+
+    @classmethod
+    def randomize_barcode(cls, barcode):
+        return f"{barcode}-{random.randrange(99)}"
+
+    @classmethod
+    def append_new_scrape_to_old_scrape(cls, product_data_path, new_product_data_path, file_template, exclude=None):
+        all_products_data_filenames = Util.get_all_files_in_directory(product_data_path)
+
+        if all_products_data_filenames:
+            last_products_data_file = cls.find_last_product_data_file(all_products_data_filenames)
+            new_products_data = Util.load_json(last_products_data_file) + Util.load_data_in_dir(new_product_data_path)
+            old_product_count = (len(all_products_data_filenames) - 1) * Util.JSON_DUMP_FREQUENCY
+            os.remove(last_products_data_file)
+        else:
+            new_products_data = Util.load_data_in_dir(new_product_data_path)
+            old_product_count = 0
+
+        counter = 0
+
+        print(f'Appending {len(new_products_data)} new products to old scrape...')
+
+        while True:
+            if len(new_products_data) > Util.JSON_DUMP_FREQUENCY:
+                counter += Util.JSON_DUMP_FREQUENCY
+                data_filename = f'{product_data_path}/{file_template.format(old_product_count + counter)}'
+                Util.dump_to_json(new_products_data[:Util.JSON_DUMP_FREQUENCY], data_filename, exclude=exclude)
+                new_products_data = new_products_data[Util.JSON_DUMP_FREQUENCY:]
+            else:
+                data_filename = f'{product_data_path}/{file_template.format(old_product_count + counter + len(new_products_data))}'
+                Util.dump_to_json(new_products_data, data_filename, exclude=exclude)
+                break
+
+        for file_name in os.listdir(new_product_data_path):
+            # construct full file path
+            file = new_product_data_path +'/'+ file_name
+            if os.path.isfile(file):
+                print('Deleting file:', file)
+                os.remove(file)
+
+    @classmethod
+    def resize_image_b64(cls, image_b64, new_width):
+        # Decode the base64 string
+        decoded_image = base64.b64decode(image_b64)
+        image = Image.open(BytesIO(decoded_image))
+
+        # Calculate new height maintaining the aspect ratio
+        original_width, original_height = image.size
+
+        if original_width <= new_width:
+            return image_b64
+
+        new_height = int(new_width * original_height / original_width)
+
+        # Resize the image
+        resized_image = image.resize((new_width, new_height), Image.Resampling.NEAREST)
+
+        # Convert the resized image back to base64
+        buffer = BytesIO()
+        resized_image.save(buffer, format="PNG")
+        resized_b64 = base64.b64encode(buffer.getvalue()).decode()
+
+        return resized_b64
+
+    @classmethod
+    def get_correct_name_from_excel(cls, excel_path, sku, original_name):
+        line_dicts = Util.load_excel_columns_in_dictionary_list(excel_path)
+        for line_dict in line_dicts:
+            if str(sku) == str(line_dict['Referencia interna']):
+                print(f'{sku}: ASSIGNED CORRECT NAME {line_dict["Nombre"]} FROM EXCEL')
+                return line_dict['Nombre']
+        return original_name
+
+    @classmethod
+    def find_last_product_data_file(cls, all_products_data_filenames):
+        """
+            Finds the last file in a list of files with format {any}_XXXX.json. 
+            
+            parameters:
+                all_products_data_filenames: products data jsons names list.
+
+            Returns:
+                The last file in the list.
+        """
+        last_file = all_products_data_filenames[0]
+        for file in all_products_data_filenames:
+            if int(file.split('\\')[-1].split('_')[2].split('.')[0]) > int(
+                    last_file.split('\\')[-1].split('_')[2].split('.')[0]):
+                last_file = file
+        return last_file
+
+    @classmethod
+    def convert_image_to_base64(cls, image_path):
+        """
+            Converts an image to base64 string
+
+            Parameters:
+                image_path: path to the image file
+
+            Returns:
+                :return: base64 string of the image
+        """
+        with Image.open(image_path) as image:
+            buffered = io.BytesIO()
+            image.save(buffered, format="PNG")
+            return base64.b64encode(buffered.getvalue()).decode()
+
+    @classmethod
+    def create_white_square_overlay(cls, position, size=(100, 100)):
+        # Create a PDF in memory
+        packet = io.BytesIO()
+        c = canvas.Canvas(packet)
+        c.setFillColorRGB(0, 0.807843137254902, 0.48627450980392156)  # White color
+        c.rect(position[0], position[1], size[0], size[1], stroke=0, fill=1)
+        c.save()
+
+        packet.seek(0)
+        return pypdf.PdfReader(packet)
+
+    @classmethod
+    def remove_elements_within_square(cls, pdf_path, position, size, output_pdf_path):
+        # Read the input PDF
+        try:
+            input_pdf = pypdf.PdfReader(open(pdf_path, "rb"))
+        except PdfReadError:
+            print(f"ERROR READING {pdf_path}")
+            return
+        except FileNotFoundError:
+            print(f"ERROR READING {pdf_path}")
+            return
+
+        # Create a new PDF to write the modified content
+        output_pdf = pypdf.PdfWriter()
+
+        # Create the white square overlay PDF
+        overlay_pdf = cls.create_white_square_overlay(position, size)
+
+        # Iterate through each page and apply the white square overlay
+        for i in range(len(input_pdf.pages)):
+            page = input_pdf.pages[i]
+            if i == 0:
+                page.merge_page(overlay_pdf.pages[0])
+            output_pdf.add_page(page)
+
+        # Write the modified content to a new file
+        with open(output_pdf_path, "wb") as f:
+            output_pdf.write(f)
+
+    @classmethod
+    def remove_hyperlinks_from_pdf(cls, input_pdf_path, output_pdf_path):
+        # Read the input PDF
+        try:
+            input_pdf = pypdf.PdfReader(open(input_pdf_path, "rb"))
+        except PdfReadError:
+            print(f"ERROR READING {input_pdf_path}")
+            return
+
+        # Create a new PDF to write the modified content
+        output_pdf = pypdf.PdfWriter()
+
+        # Iterate through each page and remove annotations
+        for i in range(len(input_pdf.pages)):
+            page = input_pdf.pages[i]
+            page[pypdf.generic.NameObject("/Annots")] = pypdf.generic.ArrayObject()
+            output_pdf.add_page(page)
+
+        # Write the modified content to a new file
+        with open(output_pdf_path, "wb") as f:
+            output_pdf.write(f)
+
+    @classmethod
+    def remove_hyperlinks_and_qr_code_from_pdfs(cls, parent_folder, position, size):
+        unedited_specsheets = []
+
+        for root, dirs, files in os.walk(parent_folder):
+            for file in files:
+                if file.lower().endswith('.pdf') and not file.__contains__('FICHA_TECNICA_SKU'):
+                    input_pdf_path = os.path.join(root, file)
+                    output_pdf_path = os.path.join(root, f"FICHA_TECNICA_SKU_{file}")
+                    cls.remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path)
+                    cls.remove_elements_within_square(output_pdf_path, position, size, output_pdf_path)
+                    print(f"PROCESSED {input_pdf_path}")
+                    unedited_specsheets.append(input_pdf_path)
+
+        for specsheet in unedited_specsheets:
+            os.remove(specsheet)
+
+    @classmethod
+    def remove_a_tags(cls, html_string):
+        """
+        Removes all <a> tags and their content from the given HTML string.
+
+        :param html_string: A string containing HTML content.
+        :return: A string with all <a> tags and their contents removed.
+        """
+        return re.sub(r'<a[^>]*>.*?</a>', '', html_string, flags=re.DOTALL)
+
+    @classmethod
+    def get_encoded_icons_from_excel(cls, icons_names):
+        icons = []
+        for icon_name in icons_names:
+            if not icon_name:
+                continue
+
+            icon_name = str(icon_name).lower()
+            icon_b64 = dict(Util.load_json(f'data/common/icons/icons_b64/{icon_name}.json'))
+            icons.append(icon_b64[icon_name])
+        return icons
+
+    @classmethod
+    def get_vtac_logo_icon_b64(cls):
+        return Util.load_json(f'data/common/icons/icons_b64/vtaclogo.json')

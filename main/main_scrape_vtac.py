@@ -7,7 +7,7 @@ from utils.util import Util
 from utils.loggers import Loggers
 from scrapers.scraper_vtac_uk import ScraperVtacUk
 
-# TODO TEST PROD & TEST envs
+
 # VTAC SCRAPER
 country_scrapers = {
     'es': ScraperVtacSpain,
@@ -15,21 +15,20 @@ country_scrapers = {
     'ita': ScraperVtacItalia
 }
 
+# Enlaces productos en la página de origen
+IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+
 # Datos productos
-IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = True, False
-# Extraer a directorio de test o de producción
-IF_EXTRACT_TO_TEST = False
+IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 
 # PDFs productos
 IF_DL_ITEM_PDF = False
 
-# Enlaces productos en la página de origen
-IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
+# Fichas técnicas productos UK
+IF_DL_ITEM_SPEC_SHEETS = False
+SPEC_SHEETS_BEGIN_FROM = 0
 
-# Todos los distintos campos de los productos con ejemplos de su valor
-IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES = False
-
-chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF, IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES)
+chosen_country = Util.get_chosen_country_from_menu(country_scrapers, IF_EXTRACT_ITEM_LINKS, IF_UPDATE, IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS, IF_DL_ITEM_PDF)
 scraper = country_scrapers[chosen_country]
 scraper.logger = Loggers.setup_vtac_logger(chosen_country)
 
@@ -56,27 +55,15 @@ if IF_EXTRACT_ITEM_INFO:
     scraper.instantiate_driver()
     start_time = time.time()
 
-    # Determine whether to extract to TEST env or PROD env
-    if IF_EXTRACT_TO_TEST:
-        # Determine whether to extract to default or new products files
-        if IF_ONLY_NEW_PRODUCTS:
-            products_info_path = scraper.NEW_PRODUCTS_INFO_PATH_TEST
-            products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH_TEST
-            links_path = scraper.NEW_PRODUCTS_LINKS_PATH
-        else:
-            products_info_path = scraper.PRODUCTS_INFO_PATH_TEST
-            products_media_path = scraper.PRODUCTS_MEDIA_PATH_TEST
-            links_path = scraper.PRODUCTS_LINKS_PATH
+    # Determine whether to extract to default or new products files
+    if IF_ONLY_NEW_PRODUCTS:
+        products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
+        products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
+        links_path = scraper.NEW_PRODUCTS_LINKS_PATH
     else:
-        # Determine whether to extract to default or new products files
-        if IF_ONLY_NEW_PRODUCTS:
-            products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
-            products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
-            links_path = scraper.NEW_PRODUCTS_LINKS_PATH
-        else:
-            products_info_path = scraper.PRODUCTS_INFO_PATH
-            products_media_path = scraper.PRODUCTS_MEDIA_PATH
-            links_path = scraper.PRODUCTS_LINKS_PATH
+        products_info_path = scraper.PRODUCTS_INFO_PATH
+        products_media_path = scraper.PRODUCTS_MEDIA_PATH
+        links_path = scraper.PRODUCTS_LINKS_PATH
 
     scraper.logger.info(f'BEGINNING PRODUCT INFO EXTRACTION')
 
@@ -91,6 +78,7 @@ if IF_EXTRACT_ITEM_INFO:
         products_info_path,
         products_media_path,
         scraper.logger,
+        IF_ONLY_NEW_PRODUCTS,
         scraper.BEGIN_SCRAPE_FROM
     )
 
@@ -113,13 +101,27 @@ if IF_DL_ITEM_PDF:
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
-# DISTINCT FIELDS EXTRACTION TO JSON THEN CONVERT TO EXCEL
-if IF_EXTRACT_DISTINCT_FIELDS_EXAMPLES:
-    scraper.logger.info(f'BEGINNING DISTINCT FIELDS EXAMPLES EXTRACTION TO JSON THEN EXCEL')
-    Util.extract_fields_example_to_excel(scraper.PRODUCTS_INFO_PATH, scraper.PRODUCTS_EXAMPLE_FIELDS_JSON_PATH, scraper.PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH)
-    scraper.logger.info(f'FINISHED DISTINCT FIELDS EXAMPLES EXTRACTION TO JSON THEN EXCEL')
 
+# SPEC SHEET DL
+if IF_DL_ITEM_SPEC_SHEETS:
+    scraper.instantiate_driver()
+    start_time = time.time()
 
+    scraper.logger.info(f'BEGINNING PRODUCT SPEC SHEETS DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH}')
+    Util.begin_items_uk_specsheets_download(
+        scraper,
+        scraper.PRODUCTS_LINKS_PATH,
+        scraper.logger,
+        SPEC_SHEETS_BEGIN_FROM
+    )
+
+    position = (490, 740)  # X, Y coordinates
+    size = (80, 80)  # Width, Height of the square
+    parent_folder = "data/vtac_uk/SPEC_SHEETS"
+    Util.remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
+
+    elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
+    scraper.logger.info(f'FINISHED PRODUCT SPEC SHEETS DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 try:
     url = scraper.DRIVER.current_url

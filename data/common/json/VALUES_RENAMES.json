@@ -1,0 +1,323 @@
+{
+  "Color de la luz": [
+    ["día blanco", "Blanco neutro"],
+    ["Blanco", "Blanco frío"],
+    ["Blanco frío cálido", "Blanco cálido"],
+    ["Blanco frío Cálido", "Blanco cálido"],
+    ["Blanco frío néutro", "Blanco néutro"],
+    ["Blanco frío neutro", "Blanco néutro"],
+    ["Blanco frío frío", "Blanco frío"],
+    ["Blanco frío frio", "Blanco frío"],
+    ["3 in 1", "3 en 1"],
+    ["3en1", "3 en 1"],
+    ["3in1", "3 en 1"],
+    ["3IN1", "3 en 1"],
+    ["4IN1", "4 en 1"]
+  ],
+  "Color": [
+    ["Bianco", "Blanco"],
+    ["Grigio", "Gris"],
+    ["Copper", "Cobre"],
+    ["Champagne Gold", "Oro Champagne"],
+    ["Nero", "Negri"]
+  ],
+  "Material": [
+    ["ordenador", "PC"],
+    ["vidrio", "Cristal"],
+    ["ordenador personal", "PC"],
+    ["Thermoplastico", "Termoplástico"],
+    ["Thermoplástico", "Termoplástico"],
+    ["Nano Plastic", "Nanoplástico"],
+    ["Die Cast ", ""],
+    ["Gips", "Escayola"],
+    ["Fabric", "Tela"],
+    ["Ferro", "Hierro"],
+    ["Aluminiu+PMMA+PS", "Aluminio+PMMA+PS"],
+    ["Aluminium", "Aluminio"],
+    ["Metallo", "Metal"],
+    ["Plásticoo", "Plástico"],
+    ["El plastico", "Plástico"],
+    ["Plastico", "Plástico"],
+    ["Plastic", "Plástico"],
+    ["plastic", "Plástico"],
+    ["Glass Finish", "Acabado de cristal"],
+    ["Ferro with Electric Copper Paint", "Hierro con barniz conductor de cobre"],
+    ["Ferro with Electric Copper Paint", "Barniz conductor de cobre"]
+  ],
+  "Ahorro de energía": [
+    ["energía", ""],
+    ["Energía", ""]
+  ],
+  "Vida útil": [
+    [".", ""],
+    ["ore", "h."],
+    ["horas", "h."],
+    ["HORAS", "h."],
+    ["Horas", "h."],
+    ["Hours", "h."],
+    [",", ""],
+    [" ", ""],
+    [">", ""],
+    ["<", ""],
+    ["@ Full load", ""],
+    ["@Fullload", ""],
+    ["25000", "25000h."],
+    ["20000", "20000h."],
+    ["h.h.", "h."]
+
+  ],
+  "Tipo de LED": [
+    ["Filamentoo", "Filament"],
+    ["Filamento", "Filament"],
+    ["Filament", "Filamento"],
+    ["Plastic", "Plástico"]
+  ],
+  "Tipo": [
+    ["A Plafone", "Plafón"],
+    ["a Plafone", "Plafón"],
+    ["Trimless", "Empotrable"],
+    ["Suspended", "Colgante"],
+    ["Recessed", "Empotrado"],
+    ["Bulk Head", "Mampara"]
+  ],
+  "Forma": [
+      ["Square", "Cuadrado"],
+      ["Round", "Redondo"],
+      ["Ovale", "Oval"],
+      ["Half redondo", "Semi-circular"],
+      ["50 €", "R50"],
+      ["Rojoondo", "Redondo"],
+      ["Rotonda", "Redonda"]
+  ],
+  "Forma de la bombilla": [
+    ["Candle", "Vela"]
+  ],
+  "Ancho (caja) mm": [
+    ["sesenta y cinco", "65"]
+  ],
+  "Altura (caja) mm": [
+    ["sesenta y cinco", "65"]
+  ],
+  "Altura": [
+    ["Adjustable", "Ajustable"]
+  ],
+  "Dimensiones de Montaje": [
+    ["Installation height", "Altura de instalación"],
+    ["Height", "Altura"],
+    ["height", "Altura"]
+  ],
+  "Dimensiones": [
+    ["Blades", "Aspas"]
+  ],
+  "Tiempo de espera": [
+    ["personalizados", "personalizable"],
+    ["personalizado", "personalizable"]
+  ],
+  "Ciclos de encendido/apagado": [
+    ["> ", ">"],
+    [" times", ""]
+  ],
+  "Ángulo de apertura": [
+    ["Adjustable", "Ajustable"],
+    ["Changeable", "Cambiable"]
+  ],
+  "Garantía": [
+    ["years", "Años"],
+    ["year", "Años"],
+    ["años", "Años"],
+    ["año", "Años"],
+    ["Option for extended warranty", "Opción de garantía extendida + 5 años"]
+  ],
+  "Temperaturas de trabajo": [
+    ["Not suitable for use in extreme conditions. Normal working conditions is -20° +45°", "No es adecuado para su uso en condiciones extremas. Condiciones de trabajo normales de -20 ° a + 45 °"]
+  ],
+  "Número de LEDs": [
+    ["dieciséis", "16"]
+  ],
+  "Ampolla exterior": [
+    ["Candle", "Vela"]
+  ],
+  "Cantidad de LEDs": [
+    [" pcs", " piezas"],
+    [" uds", " unidades"],
+    ["Front", "Delante"],
+    ["Back", " Detrás"]
+  ],
+  "No flicker": [
+    ["sin destellos", "Sí"]
+  ],
+  "Factor del mantenimiento de los lúmenes al final de la vida nominal": [
+    ["V-TAC Floodlights", "V-TAC Focos"]
+  ],
+  "Puntos de corte": [
+    ["Copper pads spaced every 3 LEDs. Cut only on the given cut line between the copper dots.", "Puntos de soldadura de cobre espaciadas cada 3 LEDs. Corte solo en la línea de corte indicada entre los puntos de cobre."],
+    ["Cut only on the given cut line between the copper dots.", "Corte solo en la línea de corte indicada entre los puntos de cobre."],
+    ["Cut only on the given cut copper line.", "Corte solo en la línea de cobre."]
+  ],
+  "Corriente": [
+    ["Input Current", "Corriente de Entrada"],
+    ["Output Current", "Corriente de Salida"],
+    ["each canal", "cada canal"],
+    ["channels", "canales"],
+    ["channel", "canal"],
+    ["Channels", "Canales"],
+    ["Channel", "Canal"],
+    [" Current ", "Corriente"]
+  ],
+  "Salida": [
+    ["Input", "Entrada"],
+    ["Output", "Salida"],
+    ["channels", "canales"],
+    ["channel", "canal"],
+    ["Channels", "Canales"],
+    ["Channel", "Canal"]
+  ],
+  "Longitud del cable": [
+    ["meters", "metros"],
+    ["Wire", "Cable"],
+    ["wire", "cable"]
+  ],
+  "Longitud (caja) mm": [
+    ["sesenta y cinco", "65"]
+  ],
+  "Longitud de la bobina": [
+    ["Mm", " M"],
+    [" Metros", " M"],
+    ["m", " M"],
+    [" M", "m"],
+    ["wire", "cable"]
+  ],
+  "Tipo de batería": [
+      ["Rechargable Lithium battery", " Batería de Litio recargable"],
+      ["4V,2.5AH Lead Acid Battery", "Batería de plomo y ácido 4V,2.5AH"],
+      ["3.7V, Lithium Battery 1800mAh", "Batería de Litio 3.7V 1800mAh"],
+      ["1AA battery 1.2V/500 mAH Ni-MHV", "Batería 1AA 1.2V/500 mAH Ni-MHV"],
+      ["Lithium battery", "Bateria de Litio"],
+      ["Rechargable", "Recargable"],
+      ["Not Included", "No incluido"]
+  ],
+  "Rotación": [
+    ["Yes", "Sí"],
+    ["SI", "Sí"],
+    ["Si", "Sí"],
+    ["Yes", "Sí"]
+  ],
+  "Tiempo de retado": [
+    ["Adjustable", "Ajustable"],
+    [" seconds", " segundos"]
+  ],
+  "Luz ambiental": [
+    ["(ajustable)", "Ajustable"],
+    ["Adjustable", "Ajustable"]
+  ],
+  "Cables de salida": [
+    ["connettore", "conector"]
+  ],
+  "Tiempo de carga": [
+    [" horasoras", " h"],
+    ["Sunlight Charging", "Carga solar"],
+    ["de carga bajo luz solar", "Carga solar"],
+    [" ore", " horas"],
+    [" hrs", " horas"],
+    [" horas", " h"],
+    [" h", " horas"]
+  ],
+  "IP": [
+    ["Junction box: ", ""],
+    ["diodes", "diodos"]
+  ],
+  "Distancia de detección": [
+    ["Adjustable", "Ajustable"]
+  ],
+  "Diámetro": [
+    ["Body", "Cuerpo"],
+    ["Shade", "Contorno"]
+  ],
+  "Tiempo de trabajo": [
+    [" hrs", " h"],
+    [" hours", " h"],
+    [" horas", " h"],
+    [" h", " horas"],
+    ["Mode ", "Modo "],
+    ["Nights", "noches"],
+    ["nights", "noches"],
+    ["depending on use", "dependiendo del uso"]
+  ],
+  "Potencia": [
+    [" Each Holder", ""],
+    ["75W Max", "Max. 75W"],
+    ["Max. 40", "Max. 40W"],
+    [" year", " año"],
+    ["power yield", "potencia de campo"],
+    [" day", " día"],
+    [" upto", " hasta"],
+    ["Real Watts", "Vatios reales"],
+    ["Solar Panel", "Panel Solar"],
+    ["Max. Input Power", "Max. Potencia de Entrada"],
+    ["Rated Output Power", "Potencia de Salida Nominal"],
+    ["Max. Active Power", "Potencia Activa Máxima"],
+    ["Rated AC Power", "Potencia AC Nominal"],
+    ["Rated Power", "Potencia Nominal"],
+    ["AC Power", "Potencia AC"],
+    ["Recommended Input Power", "Potencia de entrada recomendada"],
+    ["Pieces", "Piezas"]
+  ],
+ "Tensión": [
+    ["Lithium Battery", "Batería de Lítio"],
+    ["Maximum Power Voltage(Vmp)", "Potencia de Voltaje Máxima (VMP)"],
+    ["Open Circuit Voltage(Voc)", "Voltaje en circuito abierto (VOC)"],
+    ["Max. Input", "Voltaje en circuito abierto (VOC)"]
+   ],
+   "Marca del driver": [
+     ["Buenas intenciones", "MEAN WELL"],
+     ["Meanwell", "MEAN WELL"]
+   ],
+    "Sistema eléctrico": [
+      ["Tres fases", "Trifásico"]
+    ],
+    "Tipo de regulación": [
+        ["Atenuación", "Regulación"]
+      ],
+    "Regulable": [
+      ["SI", "Sí"],
+      ["Si", "Sí"],
+      ["Yes", "Sí"]
+    ],
+    "Clase de eficiencia energética": [
+      ["mi ", "E "],
+      ["Un ", "A "]
+    ],
+    "Eficiencia lumínica": [
+      ["lm/W lm/W", "lm/W"]
+    ],
+    "Tipo de sensor": [
+      ["Microwave", "Microondas"],
+      ["Microwave Sensor", "Microondas"],
+      ["Microonda", "Microondas"],
+      ["Sensor de microondas", "Microondas"],
+      ["Microwave Motion Sensor", "Microondas"],
+      ["Infrared Motion", "Infrarrojo"],
+      ["Infrared Motion Sensor", "Infrarrojo"],
+      ["Motion via Hand", "Movimiento mediante mano"],
+      ["Motion via Door", "Movimiento mediante puerta"],
+      ["Light Sensor", "Sensor de luz"],
+      ["Photocell", "Sensor de luz"],
+      ["IR movimiento", "Movimiento IR"],
+      ["PIR Motion Sensor", "PIR"],
+      ["Sensor automático de luz de encendido / apagado", "Sensor automático encendido / apagado"],
+      ["Sensor de luz diurna, Auto ON/OFF", "Sensor de luz diurna"],
+      ["Daylight sensor: Day, 2lux, 10lux,50lux optional", "Sensor de luz diurna"],
+      ["WiFi Door", "WiFi Puerta"]
+    ],
+    "Autonomía": [
+      [" ore", "h."],
+      [" horas", "h."],
+      [" Nights", " noches"],
+      ["(depending on use)", "(dependiendo del uso)"],
+      [" h ", "h."]
+    ],
+    "Frecuencia": [
+      ["Infrared", "Infrarrojo"],
+      ["Optional", "Opcional"]
+    ]
+}

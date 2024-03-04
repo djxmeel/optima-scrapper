@@ -12,14 +12,9 @@ class DataMerger:
     logger = None
 
     JSON_DUMP_FREQUENCY = 25
+
     DATA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_INFO/MERGED_INFO_{}.json'
     MEDIA_DUMP_PATH_TEMPLATE = 'data/vtac_merged/PRODUCT_MEDIA/MERGED_MEDIA_{}.json'
-
-    MERGED_PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS.json'
-    MERGED_PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_merged/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    MERGED_PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_merged/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
 
     MERGED_PRODUCT_INFO_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO'
     MERGED_PRODUCT_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA'
@@ -27,8 +22,8 @@ class DataMerger:
     UPLOADED_DATA_DIR_PATH = 'data/vtac_merged/PRODUCT_INFO_UPLOADED'
     UPLOADED_MEDIA_DIR_PATH = 'data/vtac_merged/PRODUCT_MEDIA_UPLOADED'
 
-    # Path to [CATEGORY ES|CATEGORY EN|SKU] Excel file
-    PUBLIC_CATEGORY_EXCEL_PATH = 'data/common/PUBLIC_CATEGORY_SKU.xlsx'
+    # Path to json with name -> category mapping
+    PUBLIC_CATEGORY_FROM_NAME_JSON_PATH = 'data/common/json/PUBLIC_CATEGORY_FROM_NAME.json'
 
     COUNTRY_SCRAPERS = {
         'es': ScraperVtacSpain,
@@ -40,24 +35,48 @@ class DataMerger:
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
         'website_description': ('es', 'uk'),
-        'accesorios': ('ita')
+        'description_purchase': ('es'),
+        'accesorios': ('ita'),
+        'transit': ('uk'),
+        'almacen2_custom': ('uk')
     }
 
     MEDIA_FIELDS_PRIORITIES = {
-        'icons': ('uk', 'ita', 'es'),
         'imgs': ('ita', 'uk', 'es'),
         'videos': ('uk', 'ita', 'es')
     }
 
     # Fields to delete from products
     FIELDS_TO_DELETE = [
-        "Código de producto"
+        'Evolución',
+        'Id eprel',
+        'Informe emc',
+        'Informe lvd',
+        'Licencia lvd',
+        'Informe rohs',
+        'Inmóvil',
+        'Ordenable en múltiplos de',
+        'Piezas bancales',
+        'Piezas en juego',
+        'Product information document (eu fiche)',
+        'Se puede pedir en múltiplos de',
+        'Tamaño polo',
+        'Etiqueta energética ue',
+        'Embalaje',
+        'Piezas por palet',
+        'Cantidad por palet',
+        'Cantidad por caja',
+        'Unidad de medida',
+        'SAMSUNG',
+        'Tipo de enchufe',
+        'VDE',
+        'CB Certificate'
     ]
 
     # Fields to rename for common naming between data sources
-    FIELDS_RENAMES_JSON_PATH = 'data/common/FIELDS_RENAMES.json'
+    FIELDS_RENAMES_JSON_PATH = 'data/common/json/FIELDS_RENAMES.json'
 
-    VALUES_RENAMES_JSON_PATH = 'data/common/VALUES_RENAMES.json'
+    VALUES_RENAMES_JSON_PATH = 'data/common/json/VALUES_RENAMES.json'
 
     # Fields that are always kept from a country (field must be stored as a list in json)
     # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
@@ -82,18 +101,12 @@ class DataMerger:
     }
 
     @classmethod
-    def load_data_for_country(cls, country, only_media=False, if_only_new=False):
-        if if_only_new:
-            directory_path = cls.COUNTRY_SCRAPERS[country].NEW_PRODUCTS_INFO_PATH
-        else:
-            directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_INFO_PATH
+    def load_data_for_country(cls, country, only_media=False):
+        directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_INFO_PATH
         data = []
 
         if only_media:
-            if if_only_new:
-                directory_path = cls.COUNTRY_SCRAPERS[country].NEW_PRODUCTS_MEDIA_PATH
-            else:
-                directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_MEDIA_PATH
+            directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_MEDIA_PATH
 
         # Load data
         file_list = Util.get_all_files_in_directory(directory_path)
@@ -110,20 +123,21 @@ class DataMerger:
         return data
 
     @classmethod
-    def load_all(cls, if_only_new):
+    def load_all(cls, if_omit_media):
         for country in cls.COUNTRY_SCRAPERS.keys():
             if cls.country_data.get(country):
                 if input(f"DATA for {country} already loaded. Load again? (y/n): ") == 'n':
                     continue
                 cls.country_data[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_data[country] = cls.load_data_for_country(country, if_only_new)
+            cls.country_data[country] = cls.load_data_for_country(country, False)
 
-        for country in cls.COUNTRY_SCRAPERS.keys():
-            if cls.country_media.get(country):
-                if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
-                    continue
-                cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
-            cls.country_media[country] = cls.load_data_for_country(country, True, if_only_new)
+        if not if_omit_media:
+            for country in cls.COUNTRY_SCRAPERS.keys():
+                if cls.country_media.get(country):
+                    if input(f"MEDIA for {country} already loaded. Load again? (y/n): ") == 'n':
+                        continue
+                    cls.country_media[country] = {'es': [], 'uk': [], 'ita': []}
+                cls.country_media[country] = cls.load_data_for_country(country, True)
         return cls
 
     @classmethod
@@ -158,17 +172,24 @@ class DataMerger:
         return product
 
     @classmethod
-    def merge_data(cls):
+    def merge_data(cls, if_omit_media):
         unique_product_skus = Util.get_unique_skus_from_dictionary(cls.country_data['es'] + cls.country_data['uk'] + cls.country_data['ita'])
+        skus_to_skip = Util.load_json('data/common/json/SKUS_TO_SKIP.json')
 
         for sku in unique_product_skus:
+            if sku in skus_to_skip['skus']:
+                cls.logger.info(f'SKIPPING {sku} FROM MERGE')
+                continue
+
             product_data = {'es': cls.get_product_data_from_country_sku(sku, 'es'),
                             'uk': cls.get_product_data_from_country_sku(sku, 'uk'),
                             'ita': cls.get_product_data_from_country_sku(sku, 'ita')}
-
-            product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
-                                'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
-                                'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
+            if not if_omit_media:
+                product_media = {'es': cls.get_product_data_from_country_sku(sku, 'es', True),
+                                    'uk': cls.get_product_data_from_country_sku(sku, 'uk', True),
+                                    'ita': cls.get_product_data_from_country_sku(sku, 'ita', True)}
+            else:
+                product_media = None
 
             # Add empty spaces to sku to make it 8 characters long for better readability
             sku_spaced = sku + ' ' * (8 - len(sku))
@@ -176,7 +197,7 @@ class DataMerger:
             cls.logger.info(f'\n{sku_spaced}: ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
 
             merged_product = {}
-            merged_media = {"default_code": sku}
+            merged_product_media = {"default_code": sku}
 
             # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:
@@ -203,12 +224,12 @@ class DataMerger:
             # Then, merge MEDIA fields in priority order
             for field in cls.MEDIA_FIELDS_PRIORITIES.keys():
                 for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
-                    if product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
+                    if product_media and product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
                         if type(product_media[country][field]) is list:
-                            merged_media[field] = copy.deepcopy(product_media[country][field])
+                            merged_product_media[field] = copy.deepcopy(product_media[country][field])
                             cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                             break
-                        merged_media[field] = product_media[country][field]
+                        merged_product_media[field] = product_media[country][field]
                         cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                         break
 
@@ -222,13 +243,36 @@ class DataMerger:
                 except KeyError:
                     pass
 
-            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, cls.PUBLIC_CATEGORY_EXCEL_PATH)
+            merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.SKUS_CATALOGO_Q12024_FILE_PATH, cls.logger)
 
-            if 'icons' in merged_media:
-                merged_media['icons'] = cls.get_translated_icons(merged_media['icons'])
+            # if not merged_product['public_categories']:
+            #     merged_product['public_categories'] = Util.get_public_category_from_sku(sku, Util.MANUAL_PUBLIC_CATEGS_EXCEL_PATH, cls.logger)
+
+            if 'name' in merged_product:
+                merged_product['name'] = Util.get_correct_name_from_excel(Util.CORRECT_NAMES_EXCEL_PATH, merged_product["default_code"], merged_product['name'])
+
+            if 'volume' in merged_product and merged_product['volume'] and type(merged_product['volume']) is str:
+                merged_product['volume'] = float(merged_product['volume'].replace(',', '.'))
+
+            # ASSIGNING DEFAULT V-TAC VALUES
+            merged_product['almacen1_custom'] = 0
+            merged_product['almacen2_custom'] = 0
+            merged_product['almacen3_custom'] = 0
+            merged_product['transit_stock_custom'] = 0
+            merged_product['transit'] = 0
+            merged_product['invoice_policy'] = 'delivery'
+            merged_product['detailed_type'] = 'product'
+            merged_product['show_availability'] = True
+            merged_product['allow_out_of_stock_order'] = True
+            merged_product['available_threshold'] = 100000
 
             cls.merged_data.append(merged_product)
-            cls.merged_media.append(merged_media)
+
+            # Only add media if product has more entries than just default_code
+            if not if_omit_media:
+                cls.merged_media.append(merged_product_media)
+
+        return cls.merged_data, cls.merged_media
 
     @classmethod
     def extract_merged_data(cls, data, media):
@@ -236,28 +280,20 @@ class DataMerger:
         media_path_temp = cls.MEDIA_DUMP_PATH_TEMPLATE
 
         def async_task(data_type, path):
-            for index in range(0, len(data_type), cls.JSON_DUMP_FREQUENCY):
-                counter = index + cls.JSON_DUMP_FREQUENCY
+            if data_type:
+                for index in range(0, len(data_type), cls.JSON_DUMP_FREQUENCY):
+                    counter = index + cls.JSON_DUMP_FREQUENCY
 
-                if index + cls.JSON_DUMP_FREQUENCY > len(data_type):
-                    counter = len(data_type)
+                    if index + cls.JSON_DUMP_FREQUENCY > len(data_type):
+                        counter = len(data_type)
 
-                Util.dump_to_json(data_type[index:counter], path.format(counter))
+                    Util.dump_to_json(data_type[index:counter], path.format(counter))
 
         t1 = threading.Thread(target=async_task, args=(data, data_path_temp), name='t1')
-        t2 = threading.Thread(target=async_task, args=(media, media_path_temp), name='t2')
-
         t1.start()
+
+        t2 = threading.Thread(target=async_task, args=(media, media_path_temp), name='t2')
         t2.start()
+
         t1.join()
         t2.join()
-
-    # TODO test
-    @classmethod
-    def get_translated_icons(cls, icons):
-        original_translated_icons_tuples = Util.load_json('data/common/original_translated_icons.json')
-
-        for tuple in original_translated_icons_tuples:
-            if tuple[0] in icons:
-                icons.remove(tuple[0])
-                icons.append(tuple[1])

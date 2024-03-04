@@ -12,8 +12,8 @@ from utils.util import Util
 # VTAC ITALIA SCRAPER
 class ScraperVtacItalia:
     COUNTRY = 'ita'
-
     WEBSITE_NAME = 'V-TAC Italia'
+    BRAND_NAME = 'V-TAC'
 
     DRIVER = None
     logger = None
@@ -23,32 +23,19 @@ class ScraperVtacItalia:
 
     SPECS_SUBCATEGORIES = ("Specifiche tecniche", "Packaging")
 
-    PRODUCTS_INFO_PATH = 'data/vtac_italia/PROD/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PROD/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_italia/PROD/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_italia/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_italia/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_italia/PROD/NEW/PRODUCT_PDF'
-
-    PRODUCTS_INFO_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH_TEST = 'data/vtac_italia/TEST/PRODUCT_PDF'
-
-    NEW_PRODUCTS_INFO_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH_TEST = 'data/vtac_italia/TEST/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_italia/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_italia/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_italia/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/PRODUCTS_LINKS_ITA.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_italia/LINKS/NEW_PRODUCTS_LINKS_ITA.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_italia/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_italia/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
     CATEGORIES_LINKS = (
+        #'https://led-italia.it/prodotti/v-tac',
         'https://led-italia.it/prodotti/M4E-fotovoltaico',
         'https://led-italia.it/prodotti/M54-illuminazione-led',
         'https://led-italia.it/prodotti/M68-elettronica-di-consumo'
@@ -57,6 +44,7 @@ class ScraperVtacItalia:
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
+        cls.DRIVER.maximize_window()
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -71,13 +59,18 @@ class ScraperVtacItalia:
 
         subcategories_elements = []
 
-        for subcat in subcategories:
-            subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
+        try:
+            for subcat in subcategories:
+                subcategories_elements.append(driver.find_element(By.XPATH, f'//h4[text() = \'{subcat}\']/parent::div'))
+        except NoSuchElementException:
+            cls.logger.error(f'Enlace de producto no encontrado {url}.')
+            return None
 
         # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
                 'website_description': '',
-                'imgs': [], 'icons': []}
+                'imgs': [],
+                'product_brand_id': cls.BRAND_NAME}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -122,28 +115,6 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('EL ARTICULO NO TIENE ACCESORIOS')
 
-        # Extracción del precio
-        try:
-            item['list_price'] = driver.find_element(By.XPATH,
-                                                     f'//*[normalize-space() = \'Prezzo di listino\']/parent::span/span[2]').text
-
-            if item['list_price'].__contains__('('):
-                item['list_price'] = item['list_price'].split('(')[0]
-
-            item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
-        except NoSuchElementException:
-            try:
-                item['list_price'] = driver.find_element(By.XPATH,
-                                                         f'//*[normalize-space() = \'Prezzo al pubblico\']/parent::span').text[
-                                     19:-9]
-
-                if item['list_price'].__contains__('('):
-                    item['list_price'] = item['list_price'].split('(')[0]
-
-                item['list_price'] = float(item['list_price'].replace('€', '').replace('.', '').replace(',', '.'))
-            except NoSuchElementException:
-                cls.logger.warning('PRECIO NO ENCONTRADO')
-
         # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
             desc_outer_html = driver.find_element(By.XPATH,
@@ -187,15 +158,6 @@ class ScraperVtacItalia:
                                                       driver.find_element(By.XPATH,
                                                                           '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
 
-        # Extracción de iconos
-        try:
-            icons = driver.find_elements(By.XPATH, '/html/body/main/div[1]/div/div[2]/div[2]/div[4]/div[2]/img')
-
-            # Mapeo de icons a una lista de sus base64
-            item['icons'] = [Util.src_to_base64(icon.get_attribute('src')) for icon in icons]
-        except NoSuchElementException:
-            cls.logger.warning('PRODUCT HAS NO ICONS')
-
         # Extracción de imágenes
         try:
             # Find the image elements and extract their data
@@ -209,7 +171,7 @@ class ScraperVtacItalia:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
         # Formateo del titulo
-        item['name'] = f'[{internal_ref}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'.upper()
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
@@ -301,13 +263,20 @@ class ScraperVtacItalia:
 
         pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'
         pdf_elements = []
+        pdfs_to_skip_count = 0
 
         try:
             pdf_elements = ScraperVtacItalia.DRIVER.find_elements(By.XPATH, pdf_download_xpath)
         except NoSuchElementException:
             pass
 
-        return len(pdf_elements)
+        for pdf_element in pdf_elements:
+            name = pdf_element.find_element(By.TAG_NAME, 'p').text
+
+            if 'Scheda' in name:
+                pdfs_to_skip_count += 1
+
+        return len(pdf_elements) - pdfs_to_skip_count
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
@@ -329,10 +298,13 @@ class ScraperVtacItalia:
 
         for pdf_element in pdf_elements:
             response = requests.get(pdf_element.get_attribute('href'))
-            name = pdf_element.get_attribute('data-tippy-content')
+            name = pdf_element.find_element(By.TAG_NAME, 'p').text
 
-            if '/' in name:
-                name = name.replace('/', '-')
+            if 'Scheda' in name:
+                cls.logger.warn("Skipping italian attachment with name containing 'Scheda'")
+                continue
+
+            name = Util.attachment_naming_replacements(name, 'ita')
 
             nested_dir = f'{ScraperVtacItalia.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)

@@ -4,8 +4,10 @@ import time
 import requests
 import os
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, \
+    ElementNotInteractableException
 from selenium.common.exceptions import TimeoutException
 from utils.util import Util
 
@@ -13,8 +15,8 @@ from utils.util import Util
 # VTAC UK SCRAPER
 class ScraperVtacUk:
     COUNTRY = 'uk'
-
     WEBSITE_NAME = 'V-TAC UK'
+    BRAND_NAME = 'V-TAC'
 
     DRIVER = None
     logger = None
@@ -24,99 +26,33 @@ class ScraperVtacUk:
 
     SPECS_SUBCATEGORIES = ["product-attributes", "product-packaging", "product-features"]
 
-    PRODUCTS_INFO_PATH = 'data/vtac_uk/PROD/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PROD/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH = 'data/vtac_uk/PROD/PRODUCT_PDF'
+    PRODUCTS_INFO_PATH = 'data/vtac_uk/PRODUCT_INFO'
+    PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PRODUCT_MEDIA'
+    PRODUCTS_PDF_PATH = 'data/vtac_uk/PRODUCT_PDF'
 
-    NEW_PRODUCTS_INFO_PATH = 'data/vtac_uk/PROD/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_uk/PROD/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH = 'data/vtac_uk/PROD/NEW/PRODUCT_PDF'
-
-    PRODUCTS_INFO_PATH_TEST = 'data/vtac_uk/TEST/PRODUCT_INFO'
-    PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_uk/TEST/PRODUCT_MEDIA'
-    PRODUCTS_PDF_PATH_TEST = 'data/vtac_uk/TEST/PRODUCT_PDF'
-
-    NEW_PRODUCTS_INFO_PATH_TEST = 'data/vtac_uk/TEST/NEW/PRODUCT_INFO'
-    NEW_PRODUCTS_MEDIA_PATH_TEST = 'data/vtac_uk/TEST/NEW/PRODUCT_MEDIA'
-    NEW_PRODUCTS_PDF_PATH_TEST = 'data/vtac_uk/TEST/NEW/PRODUCT_PDF'
+    NEW_PRODUCTS_INFO_PATH = 'data/vtac_uk/NEW/PRODUCT_INFO'
+    NEW_PRODUCTS_MEDIA_PATH = 'data/vtac_uk/NEW/PRODUCT_MEDIA'
+    NEW_PRODUCTS_PDF_PATH = 'data/vtac_uk/NEW/PRODUCT_PDF'
 
     PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/PRODUCTS_LINKS_UK.json'
     NEW_PRODUCTS_LINKS_PATH = 'data/vtac_uk/LINKS/NEW_PRODUCTS_LINKS_UK.json'
 
-    PRODUCTS_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS.json'
-    PRODUCTS_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXCEL.xlsx'
-
-    PRODUCTS_EXAMPLE_FIELDS_JSON_PATH = 'data/vtac_uk/FIELDS/PRODUCTS_FIELDS_EXAMPLES.json'
-    PRODUCTS_EXAMPLE_FIELDS_EXCEL_PATH = 'data/vtac_uk/FIELDS/DISTINCT_FIELDS_EXAMPLES_EXCEL.xlsx'
-
     CATEGORIES_LINKS = [
-        'https://www.vtacexports.com/eu/led-lighting/led-bulbs.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-spotlights.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-tubes.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-mini-panels.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-panels-0.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-downlights.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-dome-lights.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-strip-lights.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-tracklights.html',
-        'https://www.vtacexports.com/eu/led-lighting/linear-lights-0.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-floodlights.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-highbays.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-streetlights.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-wall-lights.html',
-        'https://www.vtacexports.com/eu/led-lighting/emergency-lights.html',
-        'https://www.vtacexports.com/eu/led-lighting/outdoor-lighting.html',
-        'https://www.vtacexports.com/eu/led-lighting/solar-lights.html',
-        'https://www.vtacexports.com/eu/led-lighting/floor-lamps-0.html',
-        'https://www.vtacexports.com/eu/led-lighting/table-lamps-0.html',
-        'https://www.vtacexports.com/eu/led-lighting/motion-sensors.html',
-        'https://www.vtacexports.com/eu/led-lighting/led-batten-fittings-1.html',
-        'https://www.vtacexports.com/eu/catalog/category/view/s/led-ring-lights/id/5056/',
-        'https://www.vtacexports.com/eu/decorative-lighting/pendant-holders.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/chandeliers.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/designer-ceiling-lights.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/designer-soft-lights.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/led-pendant-lights.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/mirror-lights.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/designer-garden-lights.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/bamboo-lights.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/designer-lamps.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/string-lights-1.html',
-        'https://www.vtacexports.com/eu/decorative-lighting/pendant-fittings.html',
-        'https://www.vtacexports.com/eu/catalog/category/view/s/accessories/id/5048/',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/sockets-0.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/plugs-0.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/doorbells.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/outdoor-cameras.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/temperature-sensor-0.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/remote-controls.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-electronics/robot-vacuums.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/led-downlights-1.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/lamp-holders-0.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/led-tracklights-0.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/strip-kits-0.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/led-floodlights-1.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/bulbs-1.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/spotlights-1.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/panels-2.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/designer-dome-lights.html',
-        'https://www.vtacexports.com/eu/smart-products/smart-led-lights/ambiance-lamp.html',
-        'https://www.vtacexports.com/eu/digital-accessories/charger.html',
-        'https://www.vtacexports.com/eu/digital-accessories/speakers.html',
-        'https://www.vtacexports.com/eu/digital-accessories/power-bank.html',
-        'https://www.vtacexports.com/eu/digital-accessories/usb-cable.html',
-        'https://www.vtacexports.com/eu/digital-accessories/headphones.html',
-        'https://www.vtacexports.com/eu/electrical/adapters-sockets.html',
-        'https://www.vtacexports.com/eu/electrical/fan.html',
-        'https://www.vtacexports.com/eu/electrical/switches-dimmer.html',
-        'https://www.vtacexports.com/eu/electrical/cable-tie.html',
-        'https://www.vtacexports.com/eu/electrical/vacuum-cleaner-0.html',
-        'https://www.vtacexports.com/eu/electrical/led-screen-1.html'
+        'https://www.vtacexports.com/default/led-lighting.html',
+        'https://www.vtacexports.com/default/decorative-lighting.html',
+        'https://www.vtacexports.com/default/smart-products.html',
+        'https://www.vtacexports.com/default/digital-accessories.html',
+        'https://www.vtacexports.com/default/electrical.html',
+        'https://www.vtacexports.com/default/energy.html',
+        'https://www.vtacexports.com/default/new-arrivals.html',
+        'https://www.vtacexports.com/default/back-in-stock.html',
+        'https://www.vtacexports.com/default/top-products.html'
     ]
 
     @classmethod
     def instantiate_driver(cls):
         cls.DRIVER = webdriver.Firefox()
+        cls.DRIVER.maximize_window()
 
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
@@ -147,7 +83,11 @@ class ScraperVtacUk:
                 continue
 
         # Diccionario que almacena todos los datos de un artículo
-        item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'icons': [], 'website_description': '', 'videos': []}
+        item = {'url': driver.current_url, 'list_price': 0,
+                'imgs': [],
+                'website_description': '',
+                'videos': [],
+                'product_brand_id': cls.BRAND_NAME}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
@@ -183,7 +123,7 @@ class ScraperVtacUk:
             driver.find_element(By.ID, 'tab-label-features').click()
             outer_html = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
             item['website_description'] = f'{Util.translate_from_to_spanish("en", outer_html)}\n'
-        except NoSuchElementException:
+        except (NoSuchElementException, ElementClickInterceptedException):
             pass
 
         # Extracción del SKU
@@ -196,16 +136,8 @@ class ScraperVtacUk:
         internal_ref = Util.get_internal_ref_from_sku(item['default_code'])
 
         if not internal_ref:
+            cls.logger.warning(f'SKIPPING: SKU NOT CONVERTED TO INTERNAL REF {item["url"]}')
             return None
-
-        # Extracción del precio
-        try:
-            item['list_price'] = driver.find_element(By.XPATH,
-                                                     f'//main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[1]/span').text
-            if len(item['list_price']) > 1:
-                item['list_price'] = float(item['list_price'].replace('£', '').replace(',', '').replace('€', ''))
-        except NoSuchElementException:
-            cls.logger.warning('PRECIO NO ENCONTRADO')
 
         # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('en',
@@ -213,7 +145,7 @@ class ScraperVtacUk:
                                                                           '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
         # Formateo del titulo
-        item['name'] = f'[{internal_ref}] {item["name"]}'
+        item['name'] = f'[{internal_ref}] {item["name"]}'.upper()
 
         # Extracción de imágenes
         try:
@@ -231,20 +163,41 @@ class ScraperVtacUk:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Extracción de iconos
-        icons = driver.find_elements(By.XPATH,
-                                     '//main/div[3]/div/div/section[1]/div/div/div[1]/div[2]//*[name()="svg"]')
-
-        for icon in icons:
-            item['icons'].append(Util.svg_to_base64(icon.get_attribute('outerHTML'), ScraperVtacUk.logger))
-
-        if not icons:
-            cls.logger.warning('PRODUCT HAS NO ICONS')
-
         # Reemplazo de campos para ODOO
         if 'Peso bruto (kg)' in item:
+
+            # Temporal fix for 16 getting translated in letters for some reason
+            if item['Peso bruto (kg)'] == 'dieciséis':
+                item['Peso bruto (kg)'] = '16'
+
             item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
             del item['Peso bruto (kg)']
+
+        # Scrape UK stock data
+
+        item['transit'] = 0
+        item['almacen2_custom'] = 0
+
+        try:
+            stockdata_dict = {}
+
+            stock_uls = driver.find_elements(By.XPATH, "//div[@class='columns']/div/div/section[1]/div/div/div[2]/div[4]//ul")
+
+            local_lis = stock_uls[0].find_elements(By.TAG_NAME, 'div')
+            global_lis = stock_uls[1].find_elements(By.TAG_NAME, 'div')
+
+            item['almacen2_custom'] = int(str(local_lis[0].text).split(':')[1].replace('pcs', '').replace('-','0').strip())
+
+            stockdata_dict['localtransit'] = local_lis[1].text
+            stockdata_dict['globaltransit'] = global_lis[1].text
+
+            # Sum local and global transit
+            for key, value in stockdata_dict.items():
+                stockdata_dict[key] = int(str(value).split(':')[1].replace('pcs', '').replace('-','0').strip())
+
+                item['transit'] += stockdata_dict[key]
+        except (IndexError, ValueError):
+            cls.logger.warning('NO UK STOCK INFO FOUND FOR SKU ' + item['default_code'])
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
 
@@ -265,7 +218,7 @@ class ScraperVtacUk:
                 return
 
             # Número total de productos por categoría
-            product_count = int(driver.find_element(By.XPATH, '//aside/h5').text.split(' ')[0])
+            product_count = int(driver.find_element(By.XPATH, '//aside//h5').text.split(' ')[0])
 
             # Número de páginas (Total / 16)
             page_count = math.ceil(product_count / 16)
@@ -316,6 +269,7 @@ class ScraperVtacUk:
                 with open(links_path, 'r') as file:
                     old_links = set(json.load(file))
                     new_links = extracted - old_links
+                    cls.logger.info(f'FOUND {len(new_links)} NEW LINKS')
                     return extracted, new_links
 
         return extracted, None
@@ -331,9 +285,19 @@ class ScraperVtacUk:
 
         pdf_elements = []
 
+        offset = 0
+        pdfs_to_skip_count = 0
+
+        # Accept cookies
+        try:
+            ScraperVtacUk.DRIVER.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
+        except (NoSuchElementException, ElementNotInteractableException):
+            pass
+
         try:
             # Specs tab certificates
             pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+            offset = len(pdf_elements)
         except NoSuchElementException:
             pass
 
@@ -342,13 +306,24 @@ class ScraperVtacUk:
             ScraperVtacUk.DRIVER.find_element(By.XPATH, pdf_download_tab_xpath).click()
         except NoSuchElementException:
             pass
+        except ElementClickInterceptedException:
+            ActionChains(ScraperVtacUk.DRIVER).scroll_by_amount(0, 500).perform()
+            time.sleep(0.2)
+            ScraperVtacUk.DRIVER.find_element(By.XPATH, pdf_download_tab_xpath).click()
 
         try:
             pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
         except NoSuchElementException:
             pass
 
-        return len(pdf_elements)
+        for pdf_element in pdf_elements[offset:]:
+            spans = pdf_element.find_elements(By.TAG_NAME, "span")
+            if len(spans) >= 2:
+                name = spans[1].text
+                if '(Fiche)' in name or 'Label UK' in name or 'Right Click' in name:
+                    pdfs_to_skip_count += 1
+
+        return len(pdf_elements) - pdfs_to_skip_count
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
@@ -367,33 +342,46 @@ class ScraperVtacUk:
 
         pdf_elements = []
 
+        # Specs tab certificates
+        pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
+
+        # Accept cookies
         try:
-            # Specs tab certificates
-            pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
-        except NoSuchElementException:
+            driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
+        except (NoSuchElementException, ElementNotInteractableException):
             pass
 
         try:
+            time.sleep(0.2)
             # Downloads tab
             driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
         except NoSuchElementException:
             pass
+        except ElementClickInterceptedException:
+            ActionChains(driver).scroll_by_amount(0, 500).perform()
+            time.sleep(0.2)
+            driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
 
-        try:
-            pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
-        except NoSuchElementException:
-            pass
+        pdf_elements += driver.find_elements(By.XPATH, "//div[@class='attachment-item']/a")
 
         cls.logger.info(f'Found {len(pdf_elements)} PDFs in SKU {sku}')
 
         for pdf_element in pdf_elements:
+            attachment_display_names = pdf_element.find_elements(By.TAG_NAME, "span")
+
+            if len(attachment_display_names) >= 2:
+                attachment_name = attachment_display_names[1].text
+            else:
+                attachment_name = ""
+
+            if '(Fiche)' in attachment_name or 'Label UK' in attachment_name or 'Right Click' in attachment_name:
+                cls.logger.info(f'SKIPPING UNWANTED PDF: {attachment_name} of SKU {sku}')
+                continue
+
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
-            os.makedirs(nested_dir, exist_ok=True)
-
-            # Get the original file name if possible
+            # Get the original file name if possible to extract the extension
             content_disposition = response.headers.get('content-disposition')
             if content_disposition:
                 filename = content_disposition.split('filename=')[-1].strip('"')
@@ -401,9 +389,47 @@ class ScraperVtacUk:
                 # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
 
-            filename = filename.replace('%20', '_')
+            if not attachment_name:
+                attachment_name = filename.split('.')[0]
 
-            with open(f'{nested_dir}/{filename}', 'wb') as file:
+            file_extension = filename.split('.')[-1]
+
+            if file_extension != 'pdf' and file_extension != 'png':
+                continue
+
+            nested_dir = f'{ScraperVtacUk.PRODUCTS_PDF_PATH}/{sku}'
+            os.makedirs(nested_dir, exist_ok=True)
+
+            attachment_name = Util.attachment_naming_replacements(attachment_name, 'uk')
+
+            with open(f'{nested_dir}/{attachment_name}.{file_extension}', 'wb') as file:
                 file.write(response.content)
 
         return len(pdf_elements)
+
+    @classmethod
+    def download_specsheet_of_sku(cls, driver, sku):
+        nested_dir = f'data/vtac_uk/SPEC_SHEETS/{sku}'
+
+        try:
+
+            if not os.path.exists(nested_dir):
+                os.makedirs(nested_dir, exist_ok=False)
+            else:
+                print(f'SKIPPING: Spec sheet of SKU {sku} already exists')
+                return
+
+            spec_sheet_path = '/html/body/div[3]/main/div[3]/div/div/section[1]/div/div/div[2]/div[3]/div/div[1]/div[2]/div[2]/div/div[2]/div/a'
+
+            specsheet_anchor = driver.find_element(By.XPATH, spec_sheet_path)
+            print(f'Found the specsheet of SKU {sku}')
+
+            name = f'{sku}.pdf'
+
+            response = requests.get(specsheet_anchor.get_attribute('href'))
+
+            with open(f'{nested_dir}/{name}', 'wb') as file:
+                file.write(response.content)
+        except NoSuchElementException:
+            os.remove(nested_dir)
+            print(f'SKIPPING: Could not download spec_sheet of SKU -> {sku}')
