@@ -223,8 +223,6 @@ class OdooImport:
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
 
-                public_categs = product['public_categories']
-
                 brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
 
 
@@ -258,7 +256,6 @@ class OdooImport:
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_attribute_values(product_id, product, created_attrs_ids_values)
-                    cls.assign_public_categories(product_id, public_categs)
                 elif not skip_existing:
                     product_id = product_ids[0]
 
@@ -282,9 +279,6 @@ class OdooImport:
 
                     cls.assign_internal_category(product_id, cls.PRODUCT_INTERNAL_CATEGORY)
                     cls.assign_attribute_values(product_id, product, created_attrs_ids_values, 'deep')
-
-                    if not browsed_product.x_lock_public_categs:
-                        cls.assign_public_categories(product_id, public_categs)
 
                     if 'product_brand_id' in product:
                         cls.assign_brand(product_id, product['product_brand_id'])
@@ -711,7 +705,7 @@ class OdooImport:
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
         # Fetch records in batches to avoid RPCerror
-        batch_size = 200
+        batch_size = 100
         offset = 0
         products = []
 
