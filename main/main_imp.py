@@ -2,15 +2,6 @@ from utils.data_merger import DataMerger
 from utils.odoo_import import OdooImport
 from utils.util import Util
 
-# write() method of the Odoo API
-# 0 is for creating a new record.
-# 1 is for updating an existing record.
-# 2 is for deleting a record (unlink).
-# 3 is for removing a relationship link (but not deleting the related record).
-# 4 is for adding an existing record.
-# 5 is for removing all linked records (similar to 3, but for all).
-# 6 is for setting a new set of records.
-
 # WEEKLY 1. New products link extraction and scraping
 # WEEKLY 2. Compare pricelists when new pricelist is available
 # WEEKLY 3. Upload stock when new stock is available
@@ -50,7 +41,7 @@ IF_IMPORT_PUBLIC_CATEGORIES = False
 
 IF_IMPORT_PRODUCTS = False
 # When False, products with changed origin URL to ES will be updated anyway
-# When True, only new SKUS will be imported
+
 IF_SKIP_EXISTING = False
 # True if you want to update products even if their origin URL is the same
 IF_FORCE_UPDATE = False
@@ -59,7 +50,7 @@ USE_PRIORITY_EXCEL = False
 IF_IMPORT_ACC = False
 
 IF_IMPORT_IMGS_AND_VIDEOS = False
-# If True, existing media will be deleted before importing. Product with x_lock_main_media will not be cleaned
+
 IF_CLEAN_EXISTING = False
 SKIP_PRODUCTS_W_MEDIA = False
 

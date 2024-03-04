@@ -31,7 +31,6 @@ class DataMerger:
         'ita': ScraperVtacItalia
     }
 
-    # Field priorities, 'default' is for fields that are not in this list
     FIELD_PRIORITIES = {
         'default': ('es', 'uk', 'ita'),
         'website_description': ('es', 'uk'),
@@ -46,7 +45,6 @@ class DataMerger:
         'videos': ('uk', 'ita', 'es')
     }
 
-    # Fields to delete from products
     FIELDS_TO_DELETE = [
         'Evolución',
         'Id eprel',
@@ -73,13 +71,10 @@ class DataMerger:
         'CB Certificate'
     ]
 
-    # Fields to rename for common naming between data sources
     FIELDS_RENAMES_JSON_PATH = 'data/common/json/FIELDS_RENAMES.json'
 
     VALUES_RENAMES_JSON_PATH = 'data/common/json/VALUES_RENAMES.json'
 
-    # Fields that are always kept from a country (field must be stored as a list in json)
-    # Example: 'imgs' priority is ['uk', 'ita', 'es'] but we want to also keep all images from 'es' country
     COUNTRY_FIELDS_ALWAYS_KEEP = [
         # All ES imgs are getting extracted, therefore we will not always keep (before: only graph_dimensions were extracted)
         # {'country': 'es', 'field': 'imgs'}
@@ -108,15 +103,12 @@ class DataMerger:
         if only_media:
             directory_path = cls.COUNTRY_SCRAPERS[country].PRODUCTS_MEDIA_PATH
 
-        # Load data
         file_list = Util.get_all_files_in_directory(directory_path)
         for file_path in file_list:
             with open(file_path, "r", encoding='utf-8') as file:
                 data += json.load(file)
 
         if not only_media:
-            # Filtering None
-            # Merging fields when necessary
             data = [cls.rename__delete_product_fields__values(p, cls.FIELDS_RENAMES_JSON_PATH, cls.FIELDS_TO_DELETE, cls.VALUES_RENAMES_JSON_PATH) for p in data if p is not None]
             cls.logger.info(f"FINISHED MERGING {country} PRODUCTS FIELDS")
 
@@ -191,7 +183,6 @@ class DataMerger:
             else:
                 product_media = None
 
-            # Add empty spaces to sku to make it 8 characters long for better readability
             sku_spaced = sku + ' ' * (8 - len(sku))
 
             cls.logger.info(f'\n{sku_spaced}: ES: {int(product_data.get("es") is not None)} | UK: {int(product_data.get("uk") is not None)} | ITA: {int(product_data.get("ita") is not None)}')
@@ -199,15 +190,12 @@ class DataMerger:
             merged_product = {}
             merged_product_media = {"default_code": sku}
 
-            # First, deepcopy product from the first country in 'default' priority order
             for country in cls.FIELD_PRIORITIES['default']:
-                # Stop at first found in priority order
                 if product_data[country] is not None:
                     merged_product = copy.deepcopy(product_data[country])
                     cls.logger.info(f'{sku_spaced}: DEFAULT -> {country}')
                     break
 
-            # Then, merge fields from other countries in priority order
             for field in cls.FIELD_PRIORITIES.keys():
                 if field == 'default':
                     continue
@@ -221,7 +209,6 @@ class DataMerger:
                         cls.logger.info(f'{sku_spaced}: MERGE {country} -> {field}')
                         break
 
-            # Then, merge MEDIA fields in priority order
             for field in cls.MEDIA_FIELDS_PRIORITIES.keys():
                 for country in cls.MEDIA_FIELDS_PRIORITIES[field]:
                     if product_media and product_media.get(country) and product_media[country].get(field) and product_media[country][field]:
@@ -268,7 +255,6 @@ class DataMerger:
 
             cls.merged_data.append(merged_product)
 
-            # Only add media if product has more entries than just default_code
             if not if_omit_media:
                 cls.merged_media.append(merged_product_media)
 

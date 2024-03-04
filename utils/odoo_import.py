@@ -32,7 +32,6 @@ class OdooImport:
     odoo = odoorpc.ODOO(odoo_host, protocol=odoo_protocol, port=odoo_port)
     print("CONNECTED TO ODOO")
 
-    # Authenticate with your credentials
     odoo.login(odoo_db, odoo_login, odoo_pass)
     print("LOGGED IN ODOO")
 
@@ -53,22 +52,16 @@ class OdooImport:
 
     PRODUCT_SPEC_SHEETS_DIR = 'data/vtac_uk/SPEC_SHEETS'
 
-    # Fields not to create as attributes in ODOO
     NOT_ATTR_FIELDS = ('accesorios', 'videos', 'kit', 'icons', 'imgs', 'Ean', 'Código de familia', 'url', 'public_categories', 'transit', 'almacen2_custom', 'almacen3_custom', 'almacen1_custom', 'transit_stock_custom')
 
-    # Invoice policy (delivery ; order)
     CURRENT_INVOICE_POLICY = 'delivery'
 
-    # Product type (consu ; service ; product)
     PRODUCT_DETAILED_TYPE = 'product'
 
-    # Product category (not eshop)
     PRODUCT_INTERNAL_CATEGORY = 'Productos de iluminación'
 
-    # USE TO ONLY UPLOAD CERTAIN PRODUCTS
     PRIORITY_EXCEL_SKUS_PATH = 'data/common/excel/Productos Comprados o Vendidos VTAC.xlsx'
 
-    # ID of the brand to assign to the products
     VTAC_BRAND_ID = 1
 
     @classmethod
@@ -103,22 +96,18 @@ class OdooImport:
         for name, value in attributes_values.items():
             existing_attr_ids = cls.ATTRIBUTE_MODEL.search([('name', '=', name)])
 
-            # Skip empty values
             if not str(value).strip():
                 continue
 
-            # Skip if the attribute already exists
             if existing_attr_ids:
                 created_attrs_values_ids[existing_attr_ids[0]] = value
                 continue
 
-            # The attr to create
             attr = {
                 'name': name,
-                'create_variant': 'no_variant'  # Variants are created "always", "no_variant", or "dynamic"
+                'create_variant': 'no_variant'
             }
 
-            # Saving the created IDs as keys in dict with their values
             created_attrs_values_ids[cls.ATTRIBUTE_MODEL.create(attr)] = value
 
         for attr_id, value in created_attrs_values_ids.items():
@@ -129,7 +118,6 @@ class OdooImport:
                     created_attrs_values_ids[attr_id] = attr_val_ids[0]
                     raise RPCError(f'Attribute\'s value {value} already exists')
 
-                # Create attribute value and store value ID
                 created_attrs_values_ids[attr_id] = cls.ATTRIBUTE_VALUE_MODEL.create({
                     'name': value,
                     'attribute_id': attr_id
@@ -169,14 +157,11 @@ class OdooImport:
             if update_mode == 'soft':
                 cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)]))
             else:
-                # Only check if the attribute line already exists
                 existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
-                # Skip if the attribute line already exists
                 if existing_lines:
                     continue
 
-            # Create the attribute line
             attr_lines.append({
                     'product_tmpl_id': product_id,
                     'attribute_id': attribute_id,
@@ -213,7 +198,6 @@ class OdooImport:
                     cls.logger.info(f"SKIPPING SKU {product['default_code']} INFO BECAUSE IT IS NOT IN PRIORITY EXCEL")
                     continue
 
-                # Removes videos from description
                 if 'website_description' in product:
                     product['website_description'] = Util.remove_a_tags(product['website_description'])
 
@@ -293,28 +277,23 @@ class OdooImport:
 
                 cls.logger.info(f"PROCESSED: {counter} products\n")
 
-            # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
             cls.logger.info(f'IMPORTED PRODUCTS OF FILE: {file_path}')
 
-        # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
     @classmethod
     def import_accessories(cls, target_dir_path):
         file_list = Util.get_all_files_in_directory(target_dir_path)
 
-        # Get the product template object
         acc_model = cls.odoo.env['x_accesorios_productos']
 
-        # Delete all accessory model records
         acc_model.unlink(acc_model.search([]))
 
         for file_path in sorted(file_list):
             products = Util.load_json(file_path)
 
-            # Iterate over the products
             for product in products:
                 desc_extension = '<h3>Accesorios incluidos</h3><ul>'
                 accessories_sku = []
@@ -324,7 +303,6 @@ class OdooImport:
                         accessories_sku.append(acc)
 
                 if accessories_sku:
-                    # Search for the product template with the given name
                     main_product_id = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'])])
                     if main_product_id:
                         main_product_id = main_product_id[0]
@@ -508,7 +486,6 @@ class OdooImport:
 
             for product in products:
 
-                # Search for the product template with the given sku
                 product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
 
                 if product_ids:
@@ -529,7 +506,6 @@ class OdooImport:
                         videos = cls.MEDIA_MODEL.browse(videos)
                         videos = [video.video_url for video in videos]
 
-                    # Iterate over the products 'videos'
                     for video_url in product['videos']:
                         if video_url not in videos:
                             name = f'{product_ids[0]}_video_{product["videos"].index(video_url)}'
@@ -540,7 +516,6 @@ class OdooImport:
                                 'product_tmpl_id': product_ids[0]
                             }
                             try:
-                                # Create the new product.image record
                                 cls.MEDIA_MODEL.create(new_video)
                             except RPCError:
                                 pass
@@ -565,11 +540,9 @@ class OdooImport:
                             time.sleep(0.3)
                             continue
                         else:
-                            # Product existing images
                             images = cls.MEDIA_MODEL.browse(images)
                             images = [image.image_1920 for image in images]
 
-                    # write/overwrite the image to the product
                     try:
                         if not browsed_product.x_lock_main_media:
                             cls.PRODUCT_MODEL.write([product_ids[0]], {'image_1920': product['imgs'][0]['img64']})
@@ -578,13 +551,11 @@ class OdooImport:
                         pass
 
                     try:
-                        # Resize images to 1920px width for Odoo
                         product['imgs'] = [Util.resize_image_b64(img['img64'], 1920) for img in product['imgs']]
                     except UnidentifiedImageError:
                         cls.logger.error(f"ERROR RESIZING IMAGE {product['default_code']}")
                         pass
 
-                    # Iterate over the products 'imgs'
                     for extra_img in product['imgs']:
                         if extra_img not in images:
                             name = f"{product_ids[0]}_{product['imgs'].index(extra_img)}"
@@ -595,7 +566,6 @@ class OdooImport:
                                 'product_tmpl_id': product_ids[0]
                             }
                             try:
-                                # Create the new product.image record
                                 cls.MEDIA_MODEL.create(new_image)
                             except RPCError:
                                 cls.logger.info(f'{product["default_code"]}: ERROR UPLOADING IMAGE with name : {name}')
@@ -606,16 +576,13 @@ class OdooImport:
                 else:
                     cls.logger.warn(f'{product["default_code"]} HAS NO IMAGES!')
 
-            # Moving uploaded files to separate dir to persist progress
             Util.move_file_or_directory(file_path, f'{uploaded_dir_path}/{os.path.basename(file_path)}')
 
-        # Restoring target dir's original name
         Util.move_file_or_directory(uploaded_dir_path, target_dir_path, True)
 
 
     @classmethod
     def import_icons(cls, begin_from=0):
-        # Try getting icons from EXCEL for products of catalog
         icons_excel = Util.load_excel_columns_in_dictionary_list('data/common/excel/product_icons.xlsx')
         products_odoo = cls.browse_all_products_in_batches('default_code', '!=', False)
 
@@ -627,17 +594,14 @@ class OdooImport:
                         icons_b64 = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
                     break
 
-            # Add V-TAC LOGO icon to all V-TAC products
             if product.product_brand_id.name == 'V-TAC':
                 icons_b64.insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
 
             cls.logger.info(f'{product.default_code}: {len(icons_b64)} ICONS')
 
             if icons_b64:
-                # Resize icons to 1920px width for Odoo
                 icons_b64 = [Util.resize_image_b64(icon, 1920) for icon in icons_b64]
 
-                # Iterate over the products
                 for index, icon in enumerate(icons_b64):
                     name = f'icon_{product.id}_{icons_b64.index(icon)}'
 
@@ -646,12 +610,11 @@ class OdooImport:
                             cls.logger.warn(f'{product.default_code}: ICONS LIMIT of 8 REACHED')
                             break
 
-                        # Create the new product.image record
                         cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
 
                         if index + 1 == len(icons_b64):
                             cls.logger.info(f'{product.default_code}: ICONS UPLOADED')
-                            # Remove not used icon fields
+
                             for i in range(index + 2, 9):
                                 cls.PRODUCT_MODEL.write([product.id], {f'x_icono{i}': False})
                     except RPCError:
@@ -659,7 +622,6 @@ class OdooImport:
 
     @classmethod
     def import_fields(cls, fields):
-        # The 'ir.model.fields' model is used to create, read, and write fields in Odoo
         fields_model = cls.odoo.env['ir.model.fields']
         product_model_id = cls.odoo.env['ir.model'].search([('model', '=', 'product.template')])[0]
 
@@ -670,18 +632,16 @@ class OdooImport:
                 cls.logger.info(f'Field {new_field} already exists in Odoo')
                 continue
 
-            # Create a dictionary for the custom field
             custom_field_data = {
                 'name': new_field_formatted,
                 'ttype': 'char',
                 'model': 'product.template',
                 'model_id': product_model_id,
-                'state': 'manual',  # This field is being added manually, not through a module
+                'state': 'manual',
                 'field_description': new_field,
                 'help': new_field
             }
 
-            # Create the custom field in the Odoo instance
             new_field_id = fields_model.create(custom_field_data)
             cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")
 
@@ -710,7 +670,6 @@ class OdooImport:
 
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
-        # Fetch records in batches to avoid RPCerror
         batch_size = 200
         offset = 0
         products = []
@@ -988,7 +947,6 @@ class OdooImport:
         else:
             out_of_stock_msg = out_of_stock_messages[0]
 
-        # Unpublish products that are not in the 'Productos de iluminación' category
         if product_dict['categ_id'] != productos_iluminacion_category_id:
             is_published = False
 

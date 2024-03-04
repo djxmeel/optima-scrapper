@@ -57,7 +57,6 @@ class ScraperVtacUk:
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
-            # Se conecta el driver instanciado a la URL
             driver.get(url)
         except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
@@ -68,7 +67,6 @@ class ScraperVtacUk:
 
         subcategories_li_elements = []
 
-        # Agree to cookies
         try:
             cookie_btn = driver.find_element(By.XPATH, "//button[@data-trigger-settings='agree']")
             if cookie_btn.is_displayed():
@@ -82,7 +80,6 @@ class ScraperVtacUk:
             except NoSuchElementException:
                 continue
 
-        # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0,
                 'imgs': [],
                 'website_description': '',
@@ -91,17 +88,13 @@ class ScraperVtacUk:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        # Para cada subcategoria, extraemos sus campos
         for subcat_li in subcategories_li_elements:
             try:
-                # <li> que contienen el campo y valor (<span1> campo <span2> valor)
                 key_value_spans = subcat_li.find_elements(By.TAG_NAME, 'span')
 
-                # Si el elemento <li> no contiene <span>. <li> es un Feature
                 if len(key_value_spans) < 1:
                     raise NoSuchElementException
 
-                # Si el span2 no es un texto plano, se ignora (ejemplo : botón)
                 try:
                     if len(key_value_spans) > 1:
                         key_value_spans[1].find_element(By.TAG_NAME, 'a')
@@ -112,21 +105,17 @@ class ScraperVtacUk:
                 key = Util.translate_from_to_spanish('en', key_value_spans[0].text)
                 value = Util.translate_from_to_spanish('en', key_value_spans[1].text)
 
-                # Guardado de campos y valor en la estructura de datos
                 item[str(key).capitalize()] = value
             except NoSuchElementException:
                 pass
 
-        # Extracción de la descripción (Features)
         try:
-            # Se hace click() sobre el botón de Features para acceder al texto
             driver.find_element(By.ID, 'tab-label-features').click()
             outer_html = driver.find_element(By.XPATH, "//div[@id='product-features']//ul").get_attribute('outerHTML')
             item['website_description'] = f'{Util.translate_from_to_spanish("en", outer_html)}\n'
         except (NoSuchElementException, ElementClickInterceptedException):
             pass
 
-        # Extracción del SKU
         try:
             item['default_code'] = f'{Util.get_sku_from_link_uk(driver)}'
         except NoSuchElementException:
@@ -139,41 +128,30 @@ class ScraperVtacUk:
             cls.logger.warning(f'SKIPPING: SKU NOT CONVERTED TO INTERNAL REF {item["url"]}')
             return None
 
-        # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('en',
                                                       driver.find_element(By.XPATH,
                                                                           '//main/div[3]/div/div/section[1]/div/div/div[2]/div[1]/div').text)
 
-        # Formateo del titulo
         item['name'] = f'[{internal_ref}] {item["name"]}'.upper()
 
-        # Extracción de imágenes
         try:
-            # Find the image elements and extract their data
             image_div_elements = driver.find_elements(By.XPATH, "//div[@id='main-carousel']/div/div/div")
 
             for image_div_element in image_div_elements:
-                # Check if data-type attr exists. If so, image-element is a VIDEO
                 if image_div_element.get_attribute('data-type') is not None:
                     item['videos'].append(image_div_element.get_attribute('data-video-url'))
                 else:
-                    # If div element does not have attr data-type, it contains an img
                     src = image_div_element.find_element(By.TAG_NAME, 'img').get_attribute('src')
                     item['imgs'].append({'src': src, 'img64': Util.src_to_base64(src)})
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Reemplazo de campos para ODOO
         if 'Peso bruto (kg)' in item:
-
-            # Temporal fix for 16 getting translated in letters for some reason
             if item['Peso bruto (kg)'] == 'dieciséis':
                 item['Peso bruto (kg)'] = '16'
 
             item['weight'] = float(item['Peso bruto (kg)'].replace(',', '.'))
             del item['Peso bruto (kg)']
-
-        # Scrape UK stock data
 
         item['transit'] = 0
         item['almacen2_custom'] = 0
@@ -191,7 +169,6 @@ class ScraperVtacUk:
             stockdata_dict['localtransit'] = local_lis[1].text
             stockdata_dict['globaltransit'] = global_lis[1].text
 
-            # Sum local and global transit
             for key, value in stockdata_dict.items():
                 stockdata_dict[key] = int(str(value).split(':')[1].replace('pcs', '').replace('-','0').strip())
 
@@ -206,7 +183,6 @@ class ScraperVtacUk:
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
         extracted = []
-        # Product links and categories {'link': 'category string'}
         product_links_categories = {}
 
         for cat in categories:
@@ -217,10 +193,8 @@ class ScraperVtacUk:
                 ScraperVtacUk.extract_all_links(driver, categories)
                 return
 
-            # Número total de productos por categoría
             product_count = int(driver.find_element(By.XPATH, '//aside//h5').text.split(' ')[0])
 
-            # Número de páginas (Total / 16)
             page_count = math.ceil(product_count / 16)
 
             for page in range(1, page_count + 1):
@@ -288,21 +262,18 @@ class ScraperVtacUk:
         offset = 0
         pdfs_to_skip_count = 0
 
-        # Accept cookies
         try:
             ScraperVtacUk.DRIVER.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
         except (NoSuchElementException, ElementNotInteractableException):
             pass
 
         try:
-            # Specs tab certificates
             pdf_elements += ScraperVtacUk.DRIVER.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
             offset = len(pdf_elements)
         except NoSuchElementException:
             pass
 
         try:
-            # Downloads tab
             ScraperVtacUk.DRIVER.find_element(By.XPATH, pdf_download_tab_xpath).click()
         except NoSuchElementException:
             pass
@@ -327,25 +298,14 @@ class ScraperVtacUk:
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
-        """
-        Downloads PDF from a given URL.
-
-        Parameters:
-        driver: Selenium WebDriver instance.
-        url (str): URL to download the PDF from.
-        sku (str): SKU of the product.
-
-        """
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         pdf_download_tab_xpath = '//div[@id = \'tab-label-product.downloads\']'
 
         pdf_elements = []
 
-        # Specs tab certificates
         pdf_elements += driver.find_elements(By.XPATH, "//span[text() = 'Check the certificate']/parent::a")
 
-        # Accept cookies
         try:
             driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div[2]/button[2]').click()
         except (NoSuchElementException, ElementNotInteractableException):
@@ -353,7 +313,6 @@ class ScraperVtacUk:
 
         try:
             time.sleep(0.2)
-            # Downloads tab
             driver.find_element(By.XPATH, pdf_download_tab_xpath).click()
         except NoSuchElementException:
             pass
@@ -381,12 +340,10 @@ class ScraperVtacUk:
             url = pdf_element.get_attribute('href')
             response = requests.get(url)
 
-            # Get the original file name if possible to extract the extension
             content_disposition = response.headers.get('content-disposition')
             if content_disposition:
                 filename = content_disposition.split('filename=')[-1].strip('"')
             else:
-                # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
 
             if not attachment_name:

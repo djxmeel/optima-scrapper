@@ -15,16 +15,16 @@ country_scrapers = {
     'ita': ScraperVtacItalia
 }
 
-# Enlaces productos en la página de origen
+
 IF_EXTRACT_ITEM_LINKS, IF_UPDATE = False, False
 
-# Datos productos
+
 IF_EXTRACT_ITEM_INFO, IF_ONLY_NEW_PRODUCTS = False, False
 
-# PDFs productos
+
 IF_DL_ITEM_PDF = False
 
-# Fichas técnicas productos UK
+
 IF_DL_ITEM_SPEC_SHEETS = False
 SPEC_SHEETS_BEGIN_FROM = 0
 
@@ -39,7 +39,7 @@ if IF_EXTRACT_ITEM_LINKS:
 
     scraper.logger.info(f'BEGINNING LINK EXTRACTION TO {scraper.PRODUCTS_LINKS_PATH}')
 
-    # EXTRACT LINKS TO A set()
+
     extracted_links, links_new = scraper.extract_all_links(scraper.DRIVER, scraper.CATEGORIES_LINKS, IF_UPDATE)
 
     Util.dump_to_json(list(extracted_links), scraper.PRODUCTS_LINKS_PATH)
@@ -55,7 +55,7 @@ if IF_EXTRACT_ITEM_INFO:
     scraper.instantiate_driver()
     start_time = time.time()
 
-    # Determine whether to extract to default or new products files
+
     if IF_ONLY_NEW_PRODUCTS:
         products_info_path = scraper.NEW_PRODUCTS_INFO_PATH
         products_media_path = scraper.NEW_PRODUCTS_MEDIA_PATH
@@ -71,7 +71,7 @@ if IF_EXTRACT_ITEM_INFO:
         scraper.logger.info(f'No links file found at {links_path}. Please extract links first.')
         exit()
 
-    # EXTRACTION OF ITEMS INFO TO PRODUCT_INFO
+
     Util.begin_items_info_extraction(
         scraper,
         links_path,
@@ -85,7 +85,7 @@ if IF_EXTRACT_ITEM_INFO:
     elapsed_hours, elapsed_minutes, elapsed_seconds = Util.get_elapsed_time(start_time, time.time())
     scraper.logger.info(f'FINISHED PRODUCT INFO EXTRACTION TO IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
-# PDF DL
+
 if IF_DL_ITEM_PDF:
     scraper.instantiate_driver()
     start_time = time.time()
@@ -102,7 +102,7 @@ if IF_DL_ITEM_PDF:
     scraper.logger.info(f'FINISHED PRODUCT PDFs DOWNLOAD TO {scraper.PRODUCTS_PDF_PATH} IN {elapsed_hours}h {elapsed_minutes}m {elapsed_seconds}s')
 
 
-# SPEC SHEET DL
+
 if IF_DL_ITEM_SPEC_SHEETS:
     scraper.instantiate_driver()
     start_time = time.time()
@@ -115,8 +115,8 @@ if IF_DL_ITEM_SPEC_SHEETS:
         SPEC_SHEETS_BEGIN_FROM
     )
 
-    position = (490, 740)  # X, Y coordinates
-    size = (80, 80)  # Width, Height of the square
+    position = (490, 740)
+    size = (80, 80)
     parent_folder = "data/vtac_uk/SPEC_SHEETS"
     Util.remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size)
 

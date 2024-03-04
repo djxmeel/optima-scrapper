@@ -1,7 +1,7 @@
 from utils.data_merger import DataMerger
 from utils.loggers import Loggers
 
-# Merge uk + eso + ita
+
 IF_MERGE = True
 IF_OMIT_MEDIA = False
 

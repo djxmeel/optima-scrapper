@@ -10,11 +10,6 @@ from utils.odoo_import import OdooImport
 from utils.util import Util
 
 
-# The scraper should be able to:
-# 1. Start the scraping process
-# 2. Get the stock data for all SKUS present in ODOO16
-# 3. Save the stock data to a json named 'buyled_stocks_{date}.json' in the output_dir_path
-
 class ScraperBuyLedStocks():
     capabilities = dict(
         platformName='Android',
@@ -36,7 +31,6 @@ class ScraperBuyLedStocks():
     btn_locator = 'className("android.widget.Button")'
     search_btn_locator = 'className("android.widget.Button").index(0)'
 
-    # Buy led stock index = 0 ; ITA stock index = 1
     stock_buyled_locator = 'className("android.view.View").index(7)'
     stock_ita_locator = 'className("android.view.View").index(9)'
     price_locator = 'className("android.view.View").index(11)'

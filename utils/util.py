@@ -41,11 +41,10 @@ class Util:
     PRODUCT_INFO_FILENAME_TEMPLATE = 'PRODUCTS_INFO_{}.json'
     PRODUCT_MEDIA_FILENAME_TEMPLATE = 'PRODUCTS_MEDIA_{}.json'
 
-    # The fields kept in ODOO as custom fields
     ODOO_CUSTOM_FIELDS = ('url', 'Código de familia')
-    # Default fields supported by Odoo (not custom)
+
     ODOO_SUPPORTED_FIELDS = ('list_price', 'volume', 'weight', 'name', 'website_description', 'default_code', 'barcode', 'product_brand_id', 'invoice_policy', 'detailed_type', 'show_availability', 'allow_out_of_stock_order', 'available_threshold', 'out_of_stock_message', 'description_purchase')
-    # Media fields
+
     MEDIA_FIELDS = ('imgs', 'icons', 'videos')
 
     ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ITA = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_ITA.json'
@@ -60,13 +59,6 @@ class Util:
 
     @staticmethod
     def dump_to_json(dump, filename, exclude=None):
-        """
-            Dumps data to a JSON file.
-
-            Parameters:
-            data (list): A list of data to be dumped to JSON.
-            filename (str): Name of the JSON file.
-            """
         products_info = []
         if exclude:
             for item in dump:
@@ -85,7 +77,7 @@ class Util:
         products_media = []
         for product in products_data:
             product_media = {}
-            # Get product SKU
+
             if 'default_code' in product:
                 product_media['default_code'] = product['default_code']
 
@@ -99,17 +91,7 @@ class Util:
 
     @staticmethod
     def translate_from_to_spanish(_from, text, to='es'):
-        """
-        Translates Italian text to Spanish using Google Translate.
-
-        Parameters:
-        text (str): The text in Italian.
-
-        Returns:
-        str: The translated text in Spanish.
-        """
         try:
-            # If text is empty, do nothing
             if len(text) < 1:
                 return text
 
@@ -193,15 +175,6 @@ class Util:
 
     @staticmethod
     def load_json(file_path):
-        """
-        Loads JSON data from a given file path.
-
-        Parameters:
-        file_path (str): Path to the JSON file.
-
-        Returns:
-        list: A list of data loaded from the JSON file.
-        """
         try:
             with open(file_path, encoding='utf-8') as file:
                 return json.load(file)
@@ -225,12 +198,10 @@ class Util:
             return
 
         if move_only_content and os.path.isdir(src_path):
-            # Iterate over all the files and directories inside the source directory
             for item in os.listdir(src_path):
                 src_item = os.path.join(src_path, item)
                 dst_item = os.path.join(dest_path, item)
 
-                # Move each item to the destination directory
                 shutil.move(src_item, dst_item)
                 print(f"'{item}' has been moved to '{dest_path}'.")
             return
@@ -308,7 +279,6 @@ class Util:
                 counter += 1
                 sku = Util.get_sku_from_link(scraper.DRIVER, link, scraper.COUNTRY)
 
-                # Check if sku directory exists and has the same number of files as the number of files
                 if pdf_existing_dirs_sku.__contains__(sku):
                     count_downloaded = len(Util.get_all_files_in_directory(f'{downloads_path}/{sku}'))
                     count_existing = scraper.count_pdfs_of_link(link)
@@ -346,13 +316,6 @@ class Util:
 
     @staticmethod
     def begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new=False, begin_from=0):
-        """
-        Begins item info extraction.
-
-        Parameters:
-        start_from (int): The index to start extraction from.
-        """
-        # Load links from JSON file
         links = Util.load_json(links_path)
 
         skipped = 0
@@ -360,7 +323,6 @@ class Util:
         products_data = []
         counter = begin_from
 
-        # Different links but same product
         duplicate_links = []
 
         try:
@@ -376,7 +338,6 @@ class Util:
 
                 product = scraper.scrape_item(scraper.DRIVER, link, scraper.SPECS_SUBCATEGORIES)
 
-                # If product is None, it's SKU contains letters (Not V-TAC)
                 if not product:
                     skipped+=1
                     logger.warn(f'Failed to scrape product with link: {link}. Skipping...')
@@ -386,7 +347,6 @@ class Util:
                 counter += 1
                 logger.info(f'{counter}/{len(links)}\n')
 
-                # Save each X to a JSON
                 if counter % Util.JSON_DUMP_FREQUENCY == 0 or counter == len(links) - skipped:
                     data_filename = f'{data_extraction_dir}/{Util.PRODUCT_INFO_FILENAME_TEMPLATE.format(counter)}'
                     media_filename = f'{media_extraction_dir}/{Util.PRODUCT_MEDIA_FILENAME_TEMPLATE.format(counter)}'
@@ -394,7 +354,6 @@ class Util:
                     products_media_only = Util.get_products_media(products_data, scraper)
 
                     Util.dump_to_json(products_data, data_filename, exclude=Util.MEDIA_FIELDS)
-                    # Dump PRODUCT MEDIA only
                     Util.dump_to_json(products_media_only, media_filename)
 
                     products_data.clear()
@@ -402,7 +361,7 @@ class Util:
             if if_only_new:
                 Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_INFO_PATH, scraper.NEW_PRODUCTS_INFO_PATH, Util.PRODUCT_INFO_FILENAME_TEMPLATE, exclude=Util.MEDIA_FIELDS)
                 Util.append_new_scrape_to_old_scrape(scraper.PRODUCTS_MEDIA_PATH, scraper.NEW_PRODUCTS_MEDIA_PATH, Util.PRODUCT_MEDIA_FILENAME_TEMPLATE)
-                # Remove new products files
+
                 os.remove(scraper.NEW_PRODUCTS_LINKS_PATH)
         except (TimeoutError, TimeoutException) as e:
             logger.error('ERROR con extracción de información de productos. Reintentando...')
@@ -412,7 +371,6 @@ class Util:
             Util.begin_items_info_extraction(scraper, links_path, data_extraction_dir, media_extraction_dir, logger, if_only_new,
                                              counter - counter % Util.JSON_DUMP_FREQUENCY)
 
-    # Replace <use> tags with the referenced element for cairosvg to work
     @staticmethod
     def resolve_svg_use_tags(match, svg_html):
         use_tag = match.group(0)
@@ -426,20 +384,16 @@ class Util:
 
     @staticmethod
     def remove_defs_tags(svg_html):
-        # Use regular expression to find and remove <defs> tags and their contents
         cleaned_svg = re.sub(r'<defs>.*?</defs>', '', svg_html, flags=re.DOTALL)
         return cleaned_svg
 
     @staticmethod
     def svg_to_base64(svg_html, logger):
         try:
-            # Replace <use> tags in the SVG content
             svg_resolved_html = Util.remove_defs_tags(re.sub(r'<use .*?<\/use>', lambda match: Util.resolve_svg_use_tags(match, svg_html), svg_html, flags=re.DOTALL))
 
-            # Convert the SVG to a PNG image using cairosvg
             png_data = cairosvg.svg2png(bytestring=svg_resolved_html.encode())
 
-            # return the image as a base64 string
             return base64.b64encode(png_data).decode('utf-8')
         except:
             logger.error('ERROR CONVERTING SVG TO BASE64. Retrying...')
@@ -448,10 +402,8 @@ class Util:
 
     @staticmethod
     def get_elapsed_time(start_seconds, end_seconds):
-        # Calculate the difference in seconds
         elapsed_seconds = end_seconds - start_seconds
 
-        # Convert seconds to minutes and hours
         elapsed_minutes = elapsed_seconds // 60
         elapsed_hours = elapsed_minutes // 60
         remaining_minutes = elapsed_minutes % 60
@@ -472,7 +424,7 @@ class Util:
     @staticmethod
     def get_chosen_country_from_menu(country_scrapers, if_extract_item_links, if_update, if_extract_item_info, if_only_new_items, if_dl_item_pdf):
         Util.print_title()
-        # Prompt user to choose country
+
         while True:
             print("\nConfiguracion de scraping actual:\n"
                   f"\nExtracción de URLs: {if_extract_item_links}\n"
@@ -550,10 +502,8 @@ class Util:
 
     @classmethod
     def load_excel_columns_in_dictionary_list(cls, file_path):
-        # Read the Excel file using pandas
         df = pd.read_excel(file_path, engine='openpyxl')
 
-        # Convert the DataFrame to dictionary
         result_dict = df.to_dict(orient='records')
 
         return result_dict
@@ -633,7 +583,6 @@ class Util:
                 break
 
         for file_name in os.listdir(new_product_data_path):
-            # construct full file path
             file = new_product_data_path +'/'+ file_name
             if os.path.isfile(file):
                 print('Deleting file:', file)
@@ -641,11 +590,9 @@ class Util:
 
     @classmethod
     def resize_image_b64(cls, image_b64, new_width):
-        # Decode the base64 string
         decoded_image = base64.b64decode(image_b64)
         image = Image.open(BytesIO(decoded_image))
 
-        # Calculate new height maintaining the aspect ratio
         original_width, original_height = image.size
 
         if original_width <= new_width:
@@ -653,10 +600,8 @@ class Util:
 
         new_height = int(new_width * original_height / original_width)
 
-        # Resize the image
         resized_image = image.resize((new_width, new_height), Image.Resampling.NEAREST)
 
-        # Convert the resized image back to base64
         buffer = BytesIO()
         resized_image.save(buffer, format="PNG")
         resized_b64 = base64.b64encode(buffer.getvalue()).decode()
@@ -674,15 +619,6 @@ class Util:
 
     @classmethod
     def find_last_product_data_file(cls, all_products_data_filenames):
-        """
-            Finds the last file in a list of files with format {any}_XXXX.json. 
-            
-            parameters:
-                all_products_data_filenames: products data jsons names list.
-
-            Returns:
-                The last file in the list.
-        """
         last_file = all_products_data_filenames[0]
         for file in all_products_data_filenames:
             if int(file.split('\\')[-1].split('_')[2].split('.')[0]) > int(
@@ -692,15 +628,6 @@ class Util:
 
     @classmethod
     def convert_image_to_base64(cls, image_path):
-        """
-            Converts an image to base64 string
-
-            Parameters:
-                image_path: path to the image file
-
-            Returns:
-                :return: base64 string of the image
-        """
         with Image.open(image_path) as image:
             buffered = io.BytesIO()
             image.save(buffered, format="PNG")
@@ -708,7 +635,6 @@ class Util:
 
     @classmethod
     def create_white_square_overlay(cls, position, size=(100, 100)):
-        # Create a PDF in memory
         packet = io.BytesIO()
         c = canvas.Canvas(packet)
         c.setFillColorRGB(0, 0.807843137254902, 0.48627450980392156)  # White color
@@ -720,7 +646,6 @@ class Util:
 
     @classmethod
     def remove_elements_within_square(cls, pdf_path, position, size, output_pdf_path):
-        # Read the input PDF
         try:
             input_pdf = pypdf.PdfReader(open(pdf_path, "rb"))
         except PdfReadError:
@@ -730,42 +655,34 @@ class Util:
             print(f"ERROR READING {pdf_path}")
             return
 
-        # Create a new PDF to write the modified content
         output_pdf = pypdf.PdfWriter()
 
-        # Create the white square overlay PDF
         overlay_pdf = cls.create_white_square_overlay(position, size)
 
-        # Iterate through each page and apply the white square overlay
         for i in range(len(input_pdf.pages)):
             page = input_pdf.pages[i]
             if i == 0:
                 page.merge_page(overlay_pdf.pages[0])
             output_pdf.add_page(page)
 
-        # Write the modified content to a new file
         with open(output_pdf_path, "wb") as f:
             output_pdf.write(f)
 
     @classmethod
     def remove_hyperlinks_from_pdf(cls, input_pdf_path, output_pdf_path):
-        # Read the input PDF
         try:
             input_pdf = pypdf.PdfReader(open(input_pdf_path, "rb"))
         except PdfReadError:
             print(f"ERROR READING {input_pdf_path}")
             return
 
-        # Create a new PDF to write the modified content
         output_pdf = pypdf.PdfWriter()
 
-        # Iterate through each page and remove annotations
         for i in range(len(input_pdf.pages)):
             page = input_pdf.pages[i]
             page[pypdf.generic.NameObject("/Annots")] = pypdf.generic.ArrayObject()
             output_pdf.add_page(page)
 
-        # Write the modified content to a new file
         with open(output_pdf_path, "wb") as f:
             output_pdf.write(f)
 
@@ -788,12 +705,6 @@ class Util:
 
     @classmethod
     def remove_a_tags(cls, html_string):
-        """
-        Removes all <a> tags and their content from the given HTML string.
-
-        :param html_string: A string containing HTML content.
-        :return: A string with all <a> tags and their contents removed.
-        """
         return re.sub(r'<a[^>]*>.*?</a>', '', html_string, flags=re.DOTALL)
 
     @classmethod

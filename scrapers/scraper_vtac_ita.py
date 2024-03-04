@@ -8,8 +8,6 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from utils.util import Util
 
-
-# VTAC ITALIA SCRAPER
 class ScraperVtacItalia:
     COUNTRY = 'ita'
     WEBSITE_NAME = 'V-TAC Italia'
@@ -49,7 +47,6 @@ class ScraperVtacItalia:
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
-            # Se conecta el driver instanciado a la URL
             driver.get(url)
         except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
@@ -66,7 +63,6 @@ class ScraperVtacItalia:
             cls.logger.error(f'Enlace de producto no encontrado {url}.')
             return None
 
-        # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'accesorios': [], 'list_price': 0, 'videos': [],
                 'website_description': '',
                 'imgs': [],
@@ -74,13 +70,11 @@ class ScraperVtacItalia:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        # Extracción de los enlaces de videos
         iframes = driver.find_elements(By.XPATH, '//main//iframe')
 
         for iframe in iframes:
             item['videos'].append(iframe.get_attribute('src'))
 
-        # Extracción del kit al campo accesorios
         try:
             kit_anchor = driver.find_elements(By.XPATH, f'//h4[text() = \'Il kit comprende\']/parent::div//a')
 
@@ -97,7 +91,6 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('EL ARTICULO NO TIENE KIT')
 
-        # Extracción de los accesorios
         try:
             acces_li_tags = driver.find_elements(By.XPATH, f'//h4[text() = \'Accessori inclusi\']/parent::div//ul/li')
 
@@ -115,7 +108,6 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('EL ARTICULO NO TIENE ACCESORIOS')
 
-        # Comprobacion de la existencia de una descripcion (Maggiori informazioni)
         try:
             desc_outer_html = driver.find_element(By.XPATH,
                                                     f'//h4[text() = \'Maggiori informazioni\']/parent::div/div').get_attribute(
@@ -125,13 +117,10 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             pass
 
-        # Para cada subcategoria, extraemos sus campos
         for subcat in subcategories_elements:
-            # Divs que contienen el campo y valor (<b> Campo | <span> Valor)
             fields = subcat.find_element(By.TAG_NAME, 'div') \
                 .find_elements(By.TAG_NAME, 'div')
 
-            # Guardado de campos y valor en la estructura de datos
             for field in fields:
                 key = Util.translate_from_to_spanish('it', field.find_element(By.TAG_NAME, 'b').text)
 
@@ -153,14 +142,11 @@ class ScraperVtacItalia:
         item['default_code'] = item['Sku']
         del item['Sku']
 
-        # Extracción del titulo
         item['name'] = Util.translate_from_to_spanish('it',
                                                       driver.find_element(By.XPATH,
                                                                           '/html/body/main/div[1]/div/div[2]/div[2]/div[1]/h2').text)
 
-        # Extracción de imágenes
         try:
-            # Find the image elements and extract their data
             image_elements = driver.find_element(By.ID, 'images-slider-list') \
                 .find_elements(By.TAG_NAME, 'img')
 
@@ -170,7 +156,6 @@ class ScraperVtacItalia:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Formateo del titulo
         item['name'] = f'[{internal_ref}] {item["name"]}'.upper()
 
         cls.logger.info(f'EXTRACTED ITEM WITH NAME: {item["name"]}')
@@ -180,7 +165,6 @@ class ScraperVtacItalia:
     @classmethod
     def extract_all_links(cls, driver, categories, update=False):
         extracted = []
-        # Product links and categories {'link': 'category string'}
         product_links_categories = {}
 
         for cat in categories:
@@ -280,15 +264,6 @@ class ScraperVtacItalia:
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
-        """
-        Downloads PDF from a given URL.
-
-        Parameters:
-        driver: Selenium WebDriver instance.
-        url (str): URL to download the PDF from.
-        sku (str): SKU of the product.
-
-        """
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         pdf_download_xpath = '//h4[text() = \'Download\']/parent::div/div/a'

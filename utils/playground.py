@@ -49,14 +49,13 @@ def change_internal_ref_odoo():
 
     product_model = odoo.env['product.template']
 
-    # Fetch records in batches to avoid RPCerror
     batch_size = 200
     offset = 0
     products = []
 
     while True:
         product_ids = product_model.search([], offset=offset, limit=batch_size)
-        if not product_ids:  # Exit the loop when no more records are found
+        if not product_ids:
             break
 
         products.extend(product_model.browse(product_ids))
@@ -78,13 +77,9 @@ def ecommerce_filter_visibility_modifier(is_visible):
 
 
 def rename_key_in_json_file(file_path, old_key, new_key):
-    """
-    Reads the JSON file, renames a specified key, and writes back the modified content.
-    """
     with open(file_path, 'r') as f:
         data = json.load(f)
 
-    # Check if the old key exists and rename it
     for product in data:
         if old_key in product:
             product[new_key] = product.pop(old_key)
@@ -94,9 +89,7 @@ def rename_key_in_json_file(file_path, old_key, new_key):
 
 
 def rename_key_in_directory_jsons(directory, old_key, new_key):
-    """
-    Processes all JSON files in the specified directory and renames the old_key to new_key.
-    """
+
     for filename in os.listdir(directory):
         if filename.endswith('.json'):
             file_path = os.path.join(directory, filename)
@@ -113,7 +106,6 @@ def process_sku_to_ref(directory):
                 print(f"OPENING {file_path}")
                 data = json.load(f)
 
-            # Check if the old key exists and rename it
             for product in data:
                 if 'Sku' in product:
                     try:
@@ -142,7 +134,6 @@ def process_ref_to_sku(directory):
                 print(f"OPENING {file_path}")
                 data = json.load(f)
 
-            # Check if the old key exists and rename it
             for product in data:
                 if 'Sku' in product:
                     product['default_code'] = product['Sku']
@@ -166,7 +157,6 @@ def process_names_to_ref__clean_bad_skus(directory):
                 print(f"OPENING {file_path}")
                 data = json.load(f)
 
-            # Check if the old key exists and rename it
             for product in data:
                 if 'name' in product:
                     try:
@@ -194,7 +184,6 @@ def process_sku_to_ref_acc(directory):
                 print(f"OPENING {file_path}")
                 data = json.load(f)
 
-            # Check if the old key exists and rename it
             for product in data:
                 if 'accesorios' in product:
                     for acc in product['accesorios']:
@@ -218,7 +207,6 @@ def process_ref_to_sku_acc(directory):
                 print(f"OPENING {file_path}")
                 data = json.load(f)
 
-            # Check if the old key exists and rename it
             for product in data:
                 if 'accesorios' in product:
                     for acc in product['accesorios']:
@@ -281,7 +269,6 @@ def get_distinct_categs():
 
 
 def stack_json_files_to_one(directory, output_file_path):
-    """Generates a JSON file with all the products info from the specified directory."""
     products_info = []
 
     for file_path in Util.get_all_files_in_directory(directory):
@@ -296,13 +283,10 @@ def stack_json_files_to_one(directory, output_file_path):
 
 
 def convert_xlsx_to_json(excel_file_path, json_file_path):
-    # Load the XLSX file into a pandas DataFrame
     df = pd.read_excel(excel_file_path)
 
-    # Convert the DataFrame to JSON
     json_data = df.to_json(orient='records', date_format='iso')
 
-    # If you want to write the JSON data to a file, you could do so like this:
     with open(json_file_path, 'w') as json_file:
         json_file.write(json_data)
 
@@ -332,15 +316,12 @@ def delete_attachments(field, condition, value):
         print(f"DELETED ATTACHMENTS FOR PRODUCT: {product_id}")
 
 def decode_and_save_b64_image(b64_string, output_folder, image_name):
-    """Decode base64 string to image and save it"""
     image_data = base64.b64decode(b64_string)
     image = Image.open(BytesIO(image_data))
     image.save(os.path.join(output_folder, image_name))
 
 
 def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
-    """Process a JSON file with base64 encoded images and save DISTINCT images to a folder"""
-    # Ensure output folder exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -348,7 +329,6 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
     b64_strings = []
 
     for file_path in files_paths:
-        # Load the JSON data
         with open(file_path, 'r') as f:
             products_media = json.load(f)
 
@@ -356,14 +336,12 @@ def get_distinct_b64_imgs_from_json(dir_path, output_folder, field):
             if field not in product:
                 continue
 
-            # Get distinct base64 strings
             b64_strings.extend(product[field])
             print(len(b64_strings))
 
     distinct_b64_strings = list(set(b64_strings))
     print(len(distinct_b64_strings))
 
-    # Decode and save each distinct image
     for index, b64_string in enumerate(distinct_b64_strings, 1):
         image_name = f'image_{index}.png'
         decode_and_save_b64_image(b64_string, output_folder, image_name)
@@ -390,10 +368,8 @@ def assign_public_categories(public_categories_path):
 
 
 def delete_excel_rows(excel_file_path):
-    """Delete rows from an Excel file."""
     data = Util.load_excel_columns_in_dictionary_list(excel_file_path)
 
-    # load merged products and compare reference with rows with brand= V-TAC then delete the rows
     merged_products = [str(p['default_code']) for p in Util.load_data_in_dir('data/vtac_merged/PRODUCT_INFO')]
 
     for product in copy(data):
@@ -440,7 +416,6 @@ def archive_products_based_on_condition(attribute, condition, value):
 
 def delete_all_unused_attributes_w_values():
     odoo = login_odoo()
-    # Delete all product.attribute records
     attribute_ids = odoo.env['product.attribute'].search([])
 
     for attr_id in attribute_ids:
@@ -476,17 +451,14 @@ def set_all_prices(price, cost_also=False):
 
 
 def merge_excel_files(path1, path2, output_path, field, is_in=False, concat=True, additional_sku_filter_path=None):
-    # Read the Excel files
     df1 = pd.read_excel(path1)
     df2 = pd.read_excel(path2)
 
     df1[field] = [str(d).replace('.0', '') for d in df1[field]]
     df2[field] = [str(d).replace('.0', '') for d in df2[field]]
 
-    # Extract unique SKUs from the first DataFrame
     unique_skus = set(df1[field])
 
-    # Filter the second DataFrame
     if is_in:
         df2_filtered = df2[df2[field].isin(unique_skus)]
     else:
@@ -497,15 +469,12 @@ def merge_excel_files(path1, path2, output_path, field, is_in=False, concat=True
         df2_filtered = df2_filtered[~df2_filtered[field].isin(skus_to_skip)]
 
     if concat:
-        # Combine the DataFrames
         result = pd.concat([df1, df2_filtered], ignore_index=True)
         result.to_excel(output_path, index=False)
     else:
-        # Write the filtered DataFrame to an Excel file
         df2_filtered.to_excel(output_path, index=False)
 
 
-# Used if you need only new products links but you don't have the last links file by comparing with Odoo skus
 def new_links_only_odoo_comparator():
     driver = webdriver.Firefox()
 
@@ -567,27 +536,21 @@ def hardcode_field_odoo(field, value):
 
 
 def find_duplicate_in_excel(excel_path, primary_key, output_path):
-    # Read the Excel file
     df = pd.read_excel(excel_path)
 
-    # Find duplicate SKUs. Keep='False' marks all duplicates as True
     duplicates = df[df.duplicated(primary_key, keep=False)]
 
-    # Save the duplicates to a new Excel file
     duplicates.to_excel(output_path, index=False)
 
     return output_path
 
 
 def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pricelist, output_file):
-    # Read the Excel files
     df1 = pd.read_excel(old_pricelist)
     df2 = pd.read_excel(new_pricelist)
 
-    # Merge the dataframes on 'SKU' with a right join
     merged_df = pd.merge(df1, df2, on=primary_k, how='right', suffixes=('_file1', '_file2'), indicator=True)
 
-    # Filter to keep rows with new SKUs and rows with different 'price' or 'promotions'
     filtered_df = merged_df[
         (merged_df['_merge'] == 'right_only') |
         ((merged_df['_merge'] == 'both') &
@@ -595,24 +558,19 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
           (merged_df['promotions_file1'] != merged_df['promotions_file2'])))
         ]
 
-    # Select columns from the second file only (excluding the merge indicator)
     relevant_columns = [col for col in merged_df.columns if '_file2' in col or col == primary_k or col == '_merge']
     filtered_df = filtered_df[relevant_columns]
 
-    # Rename columns to remove suffix
     filtered_df.columns = filtered_df.columns.str.replace('_file2', '')
 
-    # Write the result to a new Excel file
     filtered_df.to_excel(output_file, index=False)
 
-    # Open the Excel file for formatting
     workbook = load_workbook(output_file)
     worksheet = workbook.active
 
     red_fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
     green_fill = PatternFill(start_color='05ff00', end_color='05ff00', fill_type='solid')
 
-    # Apply conditional formatting
     for row in range(2, worksheet.max_row + 1):
         if worksheet[f'H{row}'].value == 'both':
             worksheet[f'H{row}'].fill = red_fill
@@ -625,26 +583,21 @@ def get_price_variations_and_new_products_excel(primary_k, old_pricelist, new_pr
     workbook.save(output_file)
 
 def load_and_convert_images(input_directory, output_directory):
-    # Create the output directory if it doesn't exist
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # Track the unique base64 strings
     unique_images = set()
 
-    # Iterate over all files in the input directory
     for filename in os.listdir(input_directory):
         if filename.endswith('.json'):
             filepath = os.path.join(input_directory, filename)
             with open(filepath, 'r') as file:
                 data = json.load(file)
                 for p in data:
-                    # Extract base64 strings from 'icons' key
                     if 'icons' in p:
                         for image_b64 in p['icons']:
                             unique_images.add(image_b64)
 
-    # Convert and save the unique images
     for i, image_b64 in enumerate(unique_images):
         image_data = base64.b64decode(image_b64)
         image = Image.open(BytesIO(image_data))
@@ -684,13 +637,6 @@ def create_products_from_excel(excel_path):
 
 
 def rename_files_in_subfolders(base_folder, new_name_pattern):
-    """
-    Renames all files in subfolders of the specified base folder.
-    The new file names will follow the specified new_name_pattern.
-
-    :param base_folder: Path to the base folder containing subfolders.
-    :param new_name_pattern: A pattern for new file names, including an '{}' to be replaced with the original file name.
-    """
     for root, dirs, files in os.walk(base_folder):
         for file in files:
             old_file_path = os.path.join(root, file)
@@ -701,23 +647,19 @@ def rename_files_in_subfolders(base_folder, new_name_pattern):
             print(f"Renamed '{old_file_path}' to '{new_file_path}'")
 
 def remove_hyperlinks_from_pdf(input_pdf_path, output_pdf_path):
-    # Read the input PDF
     try:
         input_pdf = pypdf.PdfReader(open(input_pdf_path, "rb"))
     except PdfReadError:
         print(f"ERROR READING {input_pdf_path}")
         return
 
-    # Create a new PDF to write the modified content
     output_pdf = pypdf.PdfWriter()
 
-    # Iterate through each page and remove annotations
     for i in range(len(input_pdf.pages)):
         page = input_pdf.pages[i]
         page[pypdf.generic.NameObject("/Annots")] = pypdf.generic.ArrayObject()
         output_pdf.add_page(page)
 
-    # Write the modified content to a new file
     with open(output_pdf_path, "wb") as f:
         output_pdf.write(f)
 
@@ -740,7 +682,6 @@ def remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size):
         os.remove(specsheet)
         print(f"REMOVED {specsheet}")
 
-    # Remove empty folders
     for root, dirs, files in os.walk(parent_folder):
         for dir in dirs:
             dir_path = os.path.join(root, dir)
@@ -750,10 +691,9 @@ def remove_hyperlinks_and_qr_code_from_pdfs(parent_folder, position, size):
 
 
 def create_white_square_overlay(position, size=(100, 100)):
-    # Create a PDF in memory
     packet = io.BytesIO()
     c = canvas.Canvas(packet)
-    c.setFillColorRGB(0, 0.807843137254902, 0.48627450980392156)  # White color
+    c.setFillColorRGB(0, 0.807843137254902, 0.48627450980392156)
     c.rect(position[0], position[1], size[0], size[1], stroke=0, fill=1)
     c.save()
 
@@ -762,7 +702,6 @@ def create_white_square_overlay(position, size=(100, 100)):
 
 
 def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
-    # Read the input PDF
     try:
         input_pdf = pypdf.PdfReader(open(pdf_path, "rb"))
     except PdfReadError:
@@ -772,36 +711,21 @@ def remove_elements_within_square(pdf_path, position, size, output_pdf_path):
         print(f"ERROR READING {pdf_path}")
         return
 
-    # Create a new PDF to write the modified content
     output_pdf = pypdf.PdfWriter()
 
-    # Create the white square overlay PDF
     overlay_pdf = create_white_square_overlay(position, size)
 
-    # Iterate through each page and apply the white square overlay
     for i in range(len(input_pdf.pages)):
         page = input_pdf.pages[i]
         if i == 0:
             page.merge_page(overlay_pdf.pages[0])
         output_pdf.add_page(page)
 
-    # Write the modified content to a new file
     with open(output_pdf_path, "wb") as f:
         output_pdf.write(f)
 
 
 def replace_name_files_in_subfolders(parent_folder, old_str, new_str):
-    """
-    Renames files in all subfolders of the given parent folder.
-
-    Args:
-    parent_folder (str): Path to the parent folder containing subfolders.
-    old_str (str): The substring to be replaced in file names.
-    new_str (str): The substring to replace with in file names.
-
-    Returns:
-    None: Files are renamed in place.
-    """
     for subdir, _, files in os.walk(parent_folder):
         for file in files:
             old_file_path = Path(subdir) / file
@@ -814,32 +738,25 @@ def replace_name_files_in_subfolders(parent_folder, old_str, new_str):
 def encode_images_to_json(folder_path, output_path):
     for filename in os.listdir(folder_path):
         if filename.endswith(".png"):
-            # Constructing the full file path
             file_path = os.path.join(folder_path, filename)
 
-            # Reading the image and encoding it in base64
             with open(file_path, "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
-            # Creating a dictionary with the filename as key and encoded image as value
             data = {filename.split('.png')[0]: encoded_string}
 
-            # Writing the JSON file
             json_filename = os.path.splitext(filename)[0] + '.json'
             with open(os.path.join(output_path, json_filename), 'w') as json_file:
                 json.dump(data, json_file)
 
 def find_duplicate_skus(file_path):
-    # Load the Excel file
     df = pd.read_excel(file_path, engine='openpyxl')
 
-    # Check if 'SKU' column exists
     if 'SKU' not in df.columns:
         print("The 'SKU' column does not exist in the Excel file.")
         return
 
-    # Find duplicates in the 'SKU' column
-    duplicates = df[df.duplicated('SKU', keep=False)]  # keep=False marks all duplicates as True
+    duplicates = df[df.duplicated('SKU', keep=False)]
 
     if duplicates.empty:
         print("No duplicate SKUs found.")
@@ -849,7 +766,6 @@ def find_duplicate_skus(file_path):
 
 
 def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, output_excel_path):
-    # Load JSON files
     with open(json_file_path1, 'r') as file:
         data1 = json.load(file)
     with open(json_file_path2, 'r') as file:
@@ -857,13 +773,10 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
 
     pricelist_data = Util.load_excel_columns_in_dictionary_list(pricelist_path)
 
-    # Assuming data1 and data2 are lists of dictionaries
-    # Convert them to dictionaries with IDs as keys for easier access
     data1_dict = {str(item['sku']): item for item in data1}
     data2_dict = {str(item['sku']): item for item in data2}
     pricelist_dict = {str(item['SKU']): item for item in pricelist_data}
 
-    # Find matching IDs and combine their data
     matched_data = []
     for id in data1_dict:
         coste = 'null'
@@ -872,7 +785,6 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
             coste = pricelist_dict[id]['PRECIO COMPRA']
 
         if id in data2_dict:
-            # Assuming you want to combine all fields, update with data2's fields
             matched_data.append({
                 'sku': id,
                 'Stock Italia 1': data1_dict[id]['stock_ita'],
@@ -884,7 +796,6 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
                 'Precio coste': coste,
             })
         else:
-            # Add the data from data1
             matched_data.append({
                 'sku': id,
                 'Stock Italia 1': data1_dict[id]['stock_ita'],
@@ -896,14 +807,11 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
                 'Precio coste': coste,
             })
 
-    # Convert matched data to a pandas DataFrame
     df = pd.DataFrame(matched_data)
 
-    # Write the DataFrame to an Excel file
     df.to_excel(output_excel_path, index=False)
 
 
-# Example usage
 pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
 json_file_path1 = 'data/buyled_stocks/buyled_stocks_3450.json'
 json_file_path2 = 'data/buyled_stocks/buyled_stocks_3450 - Copy.json'

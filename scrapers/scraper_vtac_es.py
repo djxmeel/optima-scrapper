@@ -55,7 +55,6 @@ class ScraperVtacSpain:
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
-            # Se conecta el driver instanciado a la URL
             driver.get(url)
         except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
@@ -67,7 +66,6 @@ class ScraperVtacSpain:
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
         graph_dimensions_xpath = "//img[@alt = 'Dimensions']"
 
-        # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0,
                 'imgs': [],
                 'website_description': '',
@@ -76,7 +74,6 @@ class ScraperVtacSpain:
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
 
         for key_value in keys_values:
@@ -89,16 +86,13 @@ class ScraperVtacSpain:
 
             item[str(key.text).capitalize()] = value.text
 
-        # Extracción y formateo del SKU
         if 'Código de orden' in item.keys():
             item['default_code'] = f'{item["Código de orden"]}'
             del item['Código de orden']
         else:
             item['default_code'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        # Extracción de imágenes
         try:
-            # Find the image elements and extract their data
             image_elements = driver.find_elements(By.XPATH, "//a[@rel='vm-additional-images']")
 
             for index, image_element in enumerate(image_elements):
@@ -107,7 +101,6 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Extracción de las dimensiones gráficas
         try:
             graph_dimensions_src = driver.find_element(By.XPATH, graph_dimensions_xpath).get_attribute('src')
             item['imgs'].append({
@@ -117,18 +110,14 @@ class ScraperVtacSpain:
         except NoSuchElementException:
             pass
 
-        # Extracción de video
         try:
             video_element = driver.find_element(By.XPATH, "//div[@uk-lightbox='']/a")
             item['videos'].append(video_element.get_attribute('href'))
         except NoSuchElementException:
             pass
 
-        # Extracción de la descripción del producto CON outerHTML
         try:
-            # Check if an <h4> exists to determine whether a description exists
             driver.find_element(By.XPATH, "//div[@class='product-description']/h4")
-            # Removing "Contáctenos" button before saving
             item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML').replace('<div><a class="uk-button uk-button-default" href="https://v-tac.es/contáctenos">Contáctenos</a></div>', '')
 
         except NoSuchElementException:
@@ -136,11 +125,9 @@ class ScraperVtacSpain:
 
         internal_ref = Util.get_internal_ref_from_sku(item['default_code'])
 
-        # If internal_ref is None, it's SKU contains letters (Not V-TAC)
         if not internal_ref:
             return None
 
-        # Extracción del título
         item['name'] = f'[{internal_ref}] {driver.find_element(By.XPATH, name_xpath).text}'.upper()
 
         item['description_purchase'] = "DESCATALOGADO WEB" if driver.find_elements(By.XPATH, "//img[@alt='badge_category']") else ""
@@ -148,7 +135,6 @@ class ScraperVtacSpain:
         if item['description_purchase']:
             item['name'] = item['name'].replace('[VS', '[VSD')
 
-        # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
             item['volume'] = float(item['Volumen del artículo'].replace(',', '.').replace(' ', ''))
             del item['Volumen del artículo']
@@ -222,7 +208,6 @@ class ScraperVtacSpain:
         pdf_elements = []
 
         try:
-            # Get the <a> elements
             pdf_elements = ScraperVtacSpain.DRIVER.find_elements(By.XPATH, attachments_xpath)
         except NoSuchElementException:
             pass
@@ -231,20 +216,10 @@ class ScraperVtacSpain:
 
     @classmethod
     def download_pdfs_of_sku(cls, driver, sku):
-        """
-        Downloads PDF from a given URL.
-
-        Parameters:
-        driver: Selenium WebDriver instance.
-        url (str): URL to download the PDF from.
-        sku (str): SKU of the product.
-
-        """
         time.sleep(Util.PDF_DOWNLOAD_DELAY)
 
         attachments_xpath = '//div[@class="downloads"]//a'
 
-        # Get the <a> elements
         pdf_elements = driver.find_elements(By.XPATH, attachments_xpath)
 
         cls.logger.info(f'Found {len(pdf_elements)} attachments in SKU {sku}')
@@ -274,12 +249,10 @@ class ScraperVtacSpain:
 
     @classmethod
     def get_internal_category(cls, link):
-        # Extracción de las categorías del producto
         cls.DRIVER.get(link)
         categories_crumbs = cls.DRIVER.find_elements(By.CLASS_NAME, "breadcrumb-item")
         categories = ""
 
-        # Ignore last crumb (product name)
         for crumb in categories_crumbs[:-1]:
             categories += f'{crumb.text} / '
 

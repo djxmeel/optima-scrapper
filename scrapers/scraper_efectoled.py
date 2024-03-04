@@ -9,7 +9,6 @@ from selenium.common.exceptions import TimeoutException
 from utils.util import Util
 
 
-# EFECTOLED SCRAPER
 class ScraperEfectoLed:
     DRIVER = None
     logger = None
@@ -53,7 +52,6 @@ class ScraperEfectoLed:
     @classmethod
     def scrape_item(cls, driver, url, subcategories=None):
         try:
-            # Se conecta el driver instanciado a la URL
             driver.get(url)
         except TimeoutException:
             cls.logger.error(f'ERROR extrayendo los datos de {url}. Reintentando...')
@@ -64,12 +62,10 @@ class ScraperEfectoLed:
         name_xpath = "//h3[@itemprop='name']"
         keys_values_xpath = "//div[@class='product-field product-field-type-S']"
 
-        # Diccionario que almacena todos los datos de un artículo
         item = {'url': driver.current_url, 'list_price': 0, 'imgs': [], 'website_description': '', 'videos': []}
 
         cls.logger.info(f'BEGINNING EXTRACTION OF: {driver.current_url}')
 
-        # Extracción de los campos
         keys_values = driver.find_elements(By.XPATH, keys_values_xpath)
 
         for key_value in keys_values:
@@ -83,16 +79,13 @@ class ScraperEfectoLed:
 
             item[key.text] = value.text
 
-        # Extracción y formateo del SKU
         if 'Código de orden' in item.keys():
             item['Sku'] = f'{item["Código de orden"]}'
             del item['Código de orden']
         else:
             item['Sku'] = f'{Util.get_sku_from_link(driver, driver.current_url, "ES")}'
 
-        # Extracción de imágenes
         try:
-            # Find the image elements and extract their data
             image_elements = driver.find_elements(By.XPATH, "//a[@rel='vm-additional-images']")
 
             for index, image_element in enumerate(image_elements):
@@ -101,27 +94,22 @@ class ScraperEfectoLed:
         except NoSuchElementException:
             cls.logger.warning('PRODUCT HAS NO IMGS')
 
-        # Extracción de video
         try:
             video_element = driver.find_element(By.XPATH, "//div[@uk-lightbox='']/a")
             item['videos'].append(video_element.get_attribute('href'))
         except NoSuchElementException:
             pass
 
-        # Extracción de la descripción del producto CON outerHTML
         try:
-            # Check if an <h4> exists to determine whether a description exists
             driver.find_element(By.XPATH, "//div[@class='product-description']/h4")
-            # Removing "Contáctenos" button before saving
+
             item['website_description'] = driver.find_element(By.XPATH, "//div[@class='product-description']").get_attribute('outerHTML').replace('<div><a class="uk-button uk-button-default" href="https://v-tac.es/contáctenos">Contáctenos</a></div>', '')
 
         except NoSuchElementException:
             pass
 
-        # Extracción del título
         item['name'] = f'[{item["Sku"]}] {driver.find_element(By.XPATH, name_xpath).text}'
 
-        # Uso de los campos de ODOO para el volumen y el peso si están disponibles
         if 'Volumen del artículo' in item.keys():
             item['volume'] = float(item['Volumen del artículo'].replace(',', '.'))
             del item['Volumen del artículo']
@@ -181,7 +169,6 @@ class ScraperEfectoLed:
         pdf_elements = []
 
         try:
-            # Get the <a> elements
             pdf_elements = ScraperEfectoLed.DRIVER.find_elements(By.XPATH, attachments_xpath)
         except NoSuchElementException:
             pass
@@ -215,12 +202,10 @@ class ScraperEfectoLed:
             nested_dir = f'{ScraperEfectoLed.PRODUCTS_PDF_PATH}/{sku}'
             os.makedirs(nested_dir, exist_ok=True)
 
-            # Get the original file name if possible
             content_disposition = response.headers.get('content-disposition')
             if content_disposition:
                 filename = content_disposition.split('filename=')[-1].strip('"')
             else:
-                # Fallback to extracting the filename from URL if no content-disposition header
                 filename = os.path.basename(url)
 
             filename = filename.replace('%20', '_')
