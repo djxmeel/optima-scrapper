@@ -915,44 +915,49 @@ class OdooImport:
             cls.generate_missing_products_excel(products, eu_stock)
 
         for index, product in enumerate(products[begin_from:]):
-            cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
+            try:
+                cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
 
-            product_dict = {'default_code': product.default_code,
-                            'description_purchase': product.description_purchase,
-                            'qty_available': product.qty_available,
-                            'categ_id': product.categ_id,
-                            'id': product.id,
-                            'name': product.name,
-                            'Stock europeo': "0 unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
-                            'transit': product.x_transit,
-                            'almacen1_custom': product.x_almacen1_custom,
-                            'almacen2_custom': product.x_almacen2_custom,
-                            'almacen3_custom': product.x_almacen3_custom,
-                            'transit_stock_custom': product.x_transit_stock_custom
-                            }
+                product_dict = {'default_code': product.default_code,
+                                'description_purchase': product.description_purchase,
+                                'qty_available': product.qty_available,
+                                'categ_id': product.categ_id,
+                                'id': product.id,
+                                'name': product.name,
+                                'Stock europeo': "0 unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
+                                'transit': product.x_transit,
+                                'almacen1_custom': product.x_almacen1_custom,
+                                'almacen2_custom': product.x_almacen2_custom,
+                                'almacen3_custom': product.x_almacen3_custom,
+                                'transit_stock_custom': product.x_transit_stock_custom
+                                }
 
-            product_dict = cls.update_product_availability(product_dict, eu_stock)
+                product_dict = cls.update_product_availability(product_dict, eu_stock)
 
-            cls.PRODUCT_MODEL.write(product.id, {'x_transit': product_dict['transit'],
-                                                 'x_almacen1_custom': product_dict['almacen1_custom'],
-                                                 'x_almacen2_custom': product_dict['almacen2_custom'],
-                                                 'x_almacen3_custom': product_dict['almacen3_custom'],
-                                                 'x_transit_stock_custom': product_dict['transit_stock_custom']})
+                cls.PRODUCT_MODEL.write(product.id, {'x_transit': product_dict['transit'],
+                                                     'x_almacen1_custom': product_dict['almacen1_custom'],
+                                                     'x_almacen2_custom': product_dict['almacen2_custom'],
+                                                     'x_almacen3_custom': product_dict['almacen3_custom'],
+                                                     'x_transit_stock_custom': product_dict['transit_stock_custom']})
 
-            attr_ids_values = cls.create_attributes_and_values({'Stock europeo': f"{product_dict['Stock europeo']} unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
-                                                                'Stock en tránsito': f'{product_dict["transit_stock_custom"]} unidades (Disponible para envío en un plazo de 1 a 2 días hábiles)',
-                                                                '- Almacén 1': f'{product_dict["almacen1_custom"]} unidades',
-                                                                '- Almacén 2': f'{product_dict["almacen2_custom"]} unidades',
-                                                                '- Almacén 3': f'{product_dict["almacen3_custom"]} unidades',
-                                                                'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
-                                                                'Disponibilidad': product_dict['Disponibilidad']
-                                                                })
+                attr_ids_values = cls.create_attributes_and_values({'Stock europeo': f"{product_dict['Stock europeo']} unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
+                                                                    'Stock en tránsito': f'{product_dict["transit_stock_custom"]} unidades (Disponible para envío en un plazo de 1 a 2 días hábiles)',
+                                                                    '- Almacén 1': f'{product_dict["almacen1_custom"]} unidades',
+                                                                    '- Almacén 2': f'{product_dict["almacen2_custom"]} unidades',
+                                                                    '- Almacén 3': f'{product_dict["almacen3_custom"]} unidades',
+                                                                    'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
+                                                                    'Disponibilidad': product_dict['Disponibilidad']
+                                                                    })
 
-            cls.assign_attribute_values(product.id, product, attr_ids_values, 'soft')
+                cls.assign_attribute_values(product.id, product, attr_ids_values, 'soft')
 
-            cls.update_availability_related_fields(product_dict)
+                cls.update_availability_related_fields(product_dict)
 
-            cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products)}")
+                cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products)}")
+            except Exception as e:
+                cls.logger.error(f"ERROR UPDATING PRODUCT {product.default_code} AVAILABILITY. RETRYING...")
+                time.sleep(20)
+                cls.import_availability_vtac(eu_stock_excel_path, generate_missing_products_excel, index + begin_from)
 
     @classmethod
     def update_availability_related_fields(cls, product_dict):
