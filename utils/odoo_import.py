@@ -227,7 +227,11 @@ class OdooImport:
                 attrs_to_create = {}
                 temp_keys = list(product.keys())
 
-                brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
+                try:
+                    brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
+                except URLError:
+                    time.sleep(5)
+                    brand_id = cls.BRAND_MODEL.search([('name', '=', product['product_brand_id'])])
 
 
                 if brand_id:
