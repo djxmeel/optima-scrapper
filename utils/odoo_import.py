@@ -1,6 +1,6 @@
 import os.path
 import time
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 import odoorpc
 import base64
@@ -123,7 +123,11 @@ class OdooImport:
 
         for attr_id, value in created_attrs_values_ids.items():
             try:
-                attr_val_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attr_id)])
+                try:
+                    attr_val_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attr_id)])
+                except URLError:
+                    time.sleep(5)
+                    attr_val_ids = cls.ATTRIBUTE_VALUE_MODEL.search([('name', '=', value), ('attribute_id', '=', attr_id)])
 
                 if attr_val_ids:
                     created_attrs_values_ids[attr_id] = attr_val_ids[0]
@@ -956,7 +960,7 @@ class OdooImport:
                 cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products)}")
             except Exception as e:
                 cls.logger.error(f"ERROR UPDATING PRODUCT {product.default_code} AVAILABILITY. RETRYING...")
-                time.sleep(20)
+                time.sleep(60)
                 cls.import_availability_vtac(eu_stock_excel_path, generate_missing_products_excel, index + begin_from)
 
     @classmethod
