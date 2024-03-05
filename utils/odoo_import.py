@@ -510,8 +510,12 @@ class OdooImport:
 
             for product in products:
 
-                # Search for the product template with the given sku
-                product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
+                try:
+                    # Search for the product template with the given sku
+                    product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
+                except URLError:
+                    time.sleep(5)
+                    product_ids = cls.PRODUCT_MODEL.search([('default_code', '=', product['default_code'].strip())])
 
                 if product_ids:
                     browsed_product = cls.PRODUCT_MODEL.browse(product_ids[0])
