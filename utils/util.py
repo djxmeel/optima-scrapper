@@ -52,7 +52,7 @@ class Util:
     ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_ES = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_ES.json'
     ATTACHMENT_NAME_REPLACEMENTS_JSON_PATH_UK = 'data/common/json/attachment_renames/ATTACHMENT_NAME_RENAMES_UK.json'
 
-    SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024.xlsx'
+    SKUS_CATALOGO_Q12024_FILE_PATH = 'data/common/excel/public_category_sku_Q1_2024_obsolete.xlsx'
     CORRECT_NAMES_EXCEL_PATH = 'data/common/excel/product_correct_names.xlsx'
 
     ODOO_FETCHED_PRODUCTS = []
