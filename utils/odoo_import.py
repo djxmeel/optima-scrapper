@@ -171,10 +171,18 @@ class OdooImport:
 
         for attribute_id, value_id in attributes_ids_values.items():
             if update_mode == 'soft':
-                cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)]))
+                try:
+                    cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)]))
+                except URLError:
+                    time.sleep(5)
+                    cls.ATTRIBUTE_LINE_MODEL.unlink(cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)]))
             else:
-                # Only check if the attribute line already exists
-                existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+                try:
+                    # Only check if the attribute line already exists
+                    existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
+                except URLError:
+                    time.sleep(5)
+                    existing_lines = cls.ATTRIBUTE_LINE_MODEL.search([('product_tmpl_id', '=', product_id), ('attribute_id', '=', attribute_id)])
 
                 # Skip if the attribute line already exists
                 if existing_lines:
