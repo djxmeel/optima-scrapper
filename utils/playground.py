@@ -565,6 +565,14 @@ def hardcode_field_odoo(field, value):
         product_model.write(product.id, {field: value})
         print(f"UPDATED SKU: {product.default_code} {field}: {value}")
 
+def hardcode_attribute_odoo(attr_id, value_id, filter_field, filter_operator, filter_value):
+    odoo = login_odoo()
+    products = OdooImport.browse_all_products_in_batches(filter_field, filter_operator, filter_value)
+
+    for product in products:
+        OdooImport.assign_attribute_values(product.id, product, {attr_id: value_id})
+        print(f"{product.default_code}: UPDATED ATTRIBUTE ID {attr_id} WITH VALUE ID {value_id}")
+
 
 def find_duplicate_in_excel(excel_path, primary_key, output_path):
     # Read the Excel file
@@ -1000,6 +1008,8 @@ output_excel_path = 'data/buyled_stocks/output.xlsx'
 #upper_allproduct_names()
 
 #hardcode_field_odoo('product_brand_id', 1)
+
+#hardcode_attribute_odoo(1, 20, 'product_brand_id', '=', 1)
 
 #delete_all_unused_attributes_w_values()
 
