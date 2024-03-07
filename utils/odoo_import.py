@@ -736,7 +736,11 @@ class OdooImport:
                     return Util.ODOO_FETCHED_PRODUCTS
                 product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
             else:
-                product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
+                try:
+                    product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
+                except URLError:
+                    time.sleep(5)
+                    product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
             if not product_ids:  # Exit the loop when no more records are found
                 break
 
