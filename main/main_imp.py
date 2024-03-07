@@ -22,6 +22,7 @@ from utils.util import Util
 # TODO NEW import for public categories
 # TODO when scraping for NEW links, generate an excel that separates skus not in odoo
 # TODO check and delete icons in extra media
+# TODO crear unidades medidas de Odoo15 en Odoo16
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
