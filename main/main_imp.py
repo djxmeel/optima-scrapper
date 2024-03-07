@@ -17,13 +17,11 @@ from utils.util import Util
 # WEEKLY 4. Delete unused attributes and values
 # WEEKLY 5. Check new spec sheets in V-TAC UK
 
-# TODO note to SOLUNTEC : reorder to show VS in the first place in website
-
 # TODO sug. Store scraped products individually (instead of 50 at a time)
-# TODO The icon excel for all products (only catalogados done)
-# TODO implement blistered products excel ( duplicate and add "-E" to skus & apply local stock from same excel)
+# TODO create missing SKUS in "blistered excel"
 # TODO NEW import for public categories
 # TODO when scraping for NEW links, generate an excel that separates skus not in odoo
+# TODO check and delete icons in extra media
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
