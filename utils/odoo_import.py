@@ -700,27 +700,20 @@ class OdooImport:
             cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")
 
     @classmethod
-    def import_public_categories(cls, public_categories_path):
-        public_categories = Util.load_excel_columns_in_dictionary_list(public_categories_path)
+    def import_public_categories(cls, products_public_categories_path):
+        products_public_categories = Util.load_excel_columns_in_dictionary_list(products_public_categories_path)
         public_categories_model = cls.odoo.env['product.public.category']
+        public_categories = []
 
-        for category in public_categories:
-            if public_categories_model.search([('name', '=', category["name"]), ('parent_id.name', '=', category["parent"])]):
-                cls.logger.info(f'Category {category} already exists in Odoo')
-                continue
+        for product in products_public_categories:
+            public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 1"]), ('parent_id.name', '=', product["parent"])]))
+            public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 2"]), ('parent_id.name', '=', product["parent"])]))
+            public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 3"]), ('parent_id.name', '=', product["parent"])]))
 
-            parent_id = public_categories_model.search([('name', '=', category["parent"])])
-
-            if parent_id:
-                parent_id = parent_id[0]
-
-            public_categories_model.create({
-                'name': category["name"],
-                'parent_id': parent_id,
-                'sequence': category["sequence"]
-            })
-
-            cls.logger.info("CREATED CATEGORY: " + category['name'])
+            for categ in public_categories:
+                if categ:
+                    cls.PRODUCT_MODEL.write(product['SKU'], {'public_categ_ids': [(4, categ[0])]})
+                    cls.logger.info(f"ASSIGNED CATEGORY {categ} TO PRODUCT {product['SKU']}")
 
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):

@@ -30,7 +30,7 @@ TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
 UPLOADED_DATA_DIR_PATH = DataMerger.UPLOADED_DATA_DIR_PATH
 UPLOADED_MEDIA_DIR_PATH = DataMerger.UPLOADED_MEDIA_DIR_PATH
 
-PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/public_categories_odoo.xlsx'
+PRODUCTS_PUBLIC_CATEGORIES_FILE_PATH = 'data/common/excel/products_public_categories_odoo.xlsx'
 
 SUPPLIER_STOCK_EXCEL_FILE_PATH = 'data/common/excel/eu_stock/eu_stock.xlsx'
 SUPPLIER_PRICELIST_EXCEL_FILE_PATH = 'data/common/excel/pricelist_compra_coste.xlsx'
@@ -45,8 +45,6 @@ IF_IMPORT_FIELDS = False
 
 IF_IMPORT_BRANDS = False
 
-IF_IMPORT_PUBLIC_CATEGORIES = False
-
 IF_IMPORT_PRODUCTS = False
 # When False, products with changed origin URL to ES will be updated anyway
 # When True, only new SKUS will be imported
@@ -54,6 +52,9 @@ IF_SKIP_EXISTING = False
 # True if you want to update products even if their origin URL is the same
 IF_FORCE_UPDATE = False
 USE_PRIORITY_EXCEL = False
+
+# TODO TEST
+IF_IMPORT_PUBLIC_CATEGORIES = False
 
 IF_IMPORT_ACC = False
 
@@ -99,9 +100,9 @@ if IF_IMPORT_FIELDS:
     OdooImport.logger.info(f'FINISHED FIELDS IMPORT')
 
 if IF_IMPORT_PUBLIC_CATEGORIES:
-    OdooImport.logger.info(f'BEGINNING PUBLIC CATEGORIES IMPORT')
-    OdooImport.import_public_categories(PUBLIC_CATEGORIES_FILE_PATH)
-    OdooImport.logger.info(f'FINISHED PUBLIC CATEGORIES IMPORT')
+    OdooImport.logger.info(f'BEGINNING PRODUCTS PUBLIC CATEGORIES IMPORT')
+    OdooImport.import_public_categories(PRODUCTS_PUBLIC_CATEGORIES_FILE_PATH)
+    OdooImport.logger.info(f'FINISHED PRODUCTS PUBLIC CATEGORIES IMPORT')
 
 if IF_IMPORT_BRANDS:
     OdooImport.logger.info(f'BEGINNING BRANDS IMPORT')
