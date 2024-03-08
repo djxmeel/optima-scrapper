@@ -5,6 +5,7 @@ import base64
 import time
 from copy import copy
 from pathlib import Path
+from urllib.error import URLError
 
 from PIL import Image
 from io import BytesIO
@@ -556,13 +557,19 @@ def new_links_only_odoo_comparator():
     driver.close()
 
 
-def hardcode_field_odoo(field, value):
+def hardcode_field_odoo(field, value, filter_field, filter_operator, filter_value):
     odoo = login_odoo()
-    products = OdooImport.browse_all_products_in_batches()
+    products = OdooImport.browse_all_products_in_batches(filter_field, filter_operator, filter_value)
     product_model = odoo.env['product.template']
 
     for product in products:
-        product_model.write(product.id, {field: value})
+        try:
+            product_model.write(product.id, {field: value})
+            # product_model.write(product.id, {field: [(6, 0, [])]})
+        except URLError:
+            time.sleep(5)
+            product_model.write(product.id, {field: value})
+            #product_model.write(product.id, {field: [(6, 0, [])]})
         print(f"UPDATED SKU: {product.default_code} {field}: {value}")
 
 def hardcode_attribute_odoo(attr_id, value_id, filter_field, filter_operator, filter_value):
@@ -1007,7 +1014,7 @@ output_excel_path = 'data/buyled_stocks/output.xlsx'
 
 #upper_allproduct_names()
 
-#hardcode_field_odoo('product_brand_id', 1)
+#hardcode_field_odoo('public_categ_ids', 1,'name','not ilike', '[VSD')
 
 #hardcode_attribute_odoo(1, 20, 'product_brand_id', '=', 1)
 
