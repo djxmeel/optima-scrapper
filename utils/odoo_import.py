@@ -706,13 +706,31 @@ class OdooImport:
         public_categories = []
 
         for product in products_public_categories:
-            public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 1"]), ('parent_id.name', '=', product["parent"])]))
-            public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 2"]), ('parent_id.name', '=', product["parent"])]))
-            public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 3"]), ('parent_id.name', '=', product["parent"])]))
+            try:
+                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 1"]), ('parent_id.name', '=', product["parent"])]))
+            except URLError:
+                time.sleep(5)
+                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 1"]), ('parent_id.name', '=', product["parent"])]))
+
+            try:
+                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 2"]), ('parent_id.name', '=', product["parent"])]))
+            except URLError:
+                time.sleep(5)
+                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 2"]), ('parent_id.name', '=', product["parent"])]))
+
+            try:
+                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 3"]), ('parent_id.name', '=', product["parent"])]))
+            except URLError:
+                time.sleep(5)
+                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 3"]), ('parent_id.name', '=', product["parent"])]))
 
             for categ in public_categories:
                 if categ:
-                    cls.PRODUCT_MODEL.write(product['SKU'], {'public_categ_ids': [(4, categ[0])]})
+                    try:
+                        cls.PRODUCT_MODEL.write(product['SKU'], {'public_categ_ids': [(4, categ[0])]})
+                    except URLError:
+                        time.sleep(5)
+                        cls.PRODUCT_MODEL.write(product['SKU'], {'public_categ_ids': [(4, categ[0])]})
                     cls.logger.info(f"ASSIGNED CATEGORY {categ} TO PRODUCT {product['SKU']}")
 
     @classmethod
