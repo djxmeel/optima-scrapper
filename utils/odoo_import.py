@@ -700,38 +700,49 @@ class OdooImport:
             cls.logger.info(f"Custom field '{new_field}' created with ID: {new_field_id}")
 
     @classmethod
-    def import_public_categories(cls, products_public_categories_path):
+    def import_public_categories(cls, products_public_categories_path, begin_from_row=0):
         products_public_categories = Util.load_excel_columns_in_dictionary_list(products_public_categories_path)
         public_categories_model = cls.odoo.env['product.public.category']
-        public_categories = []
 
-        for product in products_public_categories:
-            try:
-                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 1"]), ('parent_id.name', '=', product["parent"])]))
-            except URLError:
-                time.sleep(5)
-                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 1"]), ('parent_id.name', '=', product["parent"])]))
+        max_child_categ_number = 4
+
+        for index, product in enumerate(products_public_categories[begin_from_row:]):
+            public_categories = []
 
             try:
-                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 2"]), ('parent_id.name', '=', product["parent"])]))
+                product_id = cls.PRODUCT_MODEL.search([('default_code', '=', product['SKU'])])[0]
             except URLError:
                 time.sleep(5)
-                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 2"]), ('parent_id.name', '=', product["parent"])]))
+                product_id = cls.PRODUCT_MODEL.search([('default_code', '=', product['SKU'])])[0]
+            except IndexError:
+                cls.logger.warn(f"PRODUCT WITH SKU {product['SKU']} NOT FOUND IN ODOO")
+                continue
 
-            try:
-                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 3"]), ('parent_id.name', '=', product["parent"])]))
-            except URLError:
-                time.sleep(5)
-                public_categories.append(public_categories_model.search([('name', '=', product["CATEGORY 3"]), ('parent_id.name', '=', product["parent"])]))
+            for i in range(1, max_child_categ_number + 1):
+                try:
+                    categ = public_categories_model.search([('name', '=', str(product[f"CATEGORY {i}"]).strip()), ('parent_id.name', '=', str(product["parent"]).strip())])
+                    if categ:
+                        public_categories.append(categ[0])
+                    else:
+                        if not pd.isna(product[f'CATEGORY {i}']):
+                            cls.logger.warn(f"CATEGORY {product[f'CATEGORY {i}']} NOT FOUND IN ODOO")
+                except URLError:
+                    time.sleep(5)
+                    categ = public_categories_model.search([('name', '=', str(product[f"CATEGORY {i}"]).strip()), ('parent_id.name', '=', str(product["parent"]).strip())])
+                    if categ:
+                        public_categories.append(categ[0])
+                    else:
+                        if not pd.isna(product[f'CATEGORY {i}']):
+                            cls.logger.warn(f"CATEGORY {product[f'CATEGORY {i}']} NOT FOUND IN ODOO")
 
             for categ in public_categories:
-                if categ:
-                    try:
-                        cls.PRODUCT_MODEL.write(product['SKU'], {'public_categ_ids': [(4, categ[0])]})
-                    except URLError:
-                        time.sleep(5)
-                        cls.PRODUCT_MODEL.write(product['SKU'], {'public_categ_ids': [(4, categ[0])]})
-                    cls.logger.info(f"ASSIGNED CATEGORY {categ} TO PRODUCT {product['SKU']}")
+                try:
+                    cls.PRODUCT_MODEL.write(product_id, {'public_categ_ids': [(4, categ)]})
+                except URLError:
+                    time.sleep(5)
+                    cls.PRODUCT_MODEL.write(product_id, {'public_categ_ids': [(4, categ)]})
+                cls.logger.info(f"ASSIGNED CATEGORY_ID {categ} TO SKU {product['SKU']}")
+            cls.logger.info(f"{index + 1 + begin_from_row} / {len(products_public_categories)}")
 
     @classmethod
     def browse_all_products_in_batches(cls, field=None, operator=None, value=None):
