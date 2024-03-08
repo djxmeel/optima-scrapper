@@ -640,10 +640,14 @@ class OdooImport:
                     if not pd.isna(record['ICONS']):
                         icons_b64 = Util.get_encoded_icons_from_excel(str(record['ICONS']).split(','))
                     break
-
-            # Add V-TAC LOGO icon to all V-TAC products
-            if product.product_brand_id.name == 'V-TAC':
-                icons_b64.insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
+            try:
+                # Add V-TAC LOGO icon to all V-TAC products
+                if product.product_brand_id.name == 'V-TAC':
+                    icons_b64.insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
+            except URLError:
+                time.sleep(5)
+                if product.product_brand_id.name == 'V-TAC':
+                    icons_b64.insert(0, Util.get_vtac_logo_icon_b64()['vtaclogo'])
 
             cls.logger.info(f'{product.default_code}: {len(icons_b64)} ICONS')
 
@@ -659,9 +663,12 @@ class OdooImport:
                         if index + 1 > 8:
                             cls.logger.warn(f'{product.default_code}: ICONS LIMIT of 8 REACHED')
                             break
-
-                        # Create the new product.image record
-                        cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
+                        try:
+                            # Create the new product.image record
+                            cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
+                        except URLError:
+                            time.sleep(5)
+                            cls.PRODUCT_MODEL.write(product.id, {f'x_icono{index + 1}': icon})
 
                         if index + 1 == len(icons_b64):
                             cls.logger.info(f'{product.default_code}: ICONS UPLOADED')
