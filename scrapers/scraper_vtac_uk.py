@@ -221,7 +221,7 @@ class ScraperVtacUk:
             product_count = int(driver.find_element(By.XPATH, '//aside//h5').text.split(' ')[0])
 
             # Número de páginas (Total / 16)
-            page_count = math.ceil(product_count / 16)
+            page_count = math.ceil(product_count / 20)
 
             for page in range(1, page_count + 1):
                 driver.get(f'{cat}?p={page}')
