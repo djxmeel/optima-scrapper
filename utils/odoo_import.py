@@ -1054,7 +1054,11 @@ class OdooImport:
 
         products = cls.browse_all_products_in_batches()
         local_stock_excel_dicts = Util.load_excel_columns_in_dictionary_list(local_stock_excel_path)
-        location_id = cls.odoo.env['stock.location'].search([('name', '=', 'Stock')])[0]
+        try:
+            location_id = cls.odoo.env['stock.location'].search([('name', '=', 'Stock')])[0]
+        except URLError:
+            time.sleep(5)
+            location_id = cls.odoo.env['stock.location'].search([('name', '=', 'Stock')])[0]
 
         for product in products:
             quantity = 0
@@ -1063,16 +1067,28 @@ class OdooImport:
                 if str(line['SKU']) == product.default_code:
                     quantity = line['Cantidad']
                     break
-
-            product_stock_quant_ids = stock_quant_model.search([('product_id', '=', product.id)])
+            try:
+                product_stock_quant_ids = stock_quant_model.search([('product_id', '=', product.id)])
+            except URLError:
+                time.sleep(5)
+                product_stock_quant_ids = stock_quant_model.search([('product_id', '=', product.id)])
 
             if product_stock_quant_ids:
-                stock_quant_model.write(product_stock_quant_ids[0], {
-                    'inventory_quantity': quantity,
-                    'product_id': product.id,
-                    'location_id': location_id
-                })
-                cls.logger.info(f"UPDATED STOCK QUANT FOR PRODUCT {product.default_code} WITH QUANTITY {quantity}")
+                try:
+                    stock_quant_model.write(product_stock_quant_ids[0], {
+                        'inventory_quantity': quantity,
+                        'product_id': product.id,
+                        'location_id': location_id
+                    })
+                    cls.logger.info(f"UPDATED STOCK QUANT FOR PRODUCT {product.default_code} WITH QUANTITY {quantity}")
+                except URLError:
+                    time.sleep(5)
+                    stock_quant_model.write(product_stock_quant_ids[0], {
+                        'inventory_quantity': quantity,
+                        'product_id': product.id,
+                        'location_id': location_id
+                    })
+                    cls.logger.info(f"UPDATED STOCK QUANT FOR PRODUCT {product.default_code} WITH QUANTITY {quantity}")
             else:
                 try:
                     product_stock_quant_ids = stock_quant_model.create({
@@ -1084,8 +1100,19 @@ class OdooImport:
                 except RPCError:
                     cls.logger.warn(f"ERROR CREATING STOCK QUANT FOR PRODUCT {product.default_code}")
                     continue
-
-            stock_quant_model.action_apply_inventory(product_stock_quant_ids)
+                except URLError:
+                    time.sleep(5)
+                    product_stock_quant_ids = stock_quant_model.create({
+                        'inventory_quantity': quantity,
+                        'product_id': product.id,
+                        'location_id': location_id
+                    })
+                    cls.logger.info(f"CREATED STOCK QUANT FOR PRODUCT {product.default_code} WITH QUANTITY {quantity}")
+            try:
+                stock_quant_model.action_apply_inventory(product_stock_quant_ids)
+            except URLError:
+                time.sleep(5)
+                stock_quant_model.action_apply_inventory(product_stock_quant_ids)
 
     @classmethod
     def import_correct_names_from_excel(cls, excel_path, get_from_jsons):
