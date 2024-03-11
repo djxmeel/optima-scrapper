@@ -763,7 +763,11 @@ class OdooImport:
                 if Util.ODOO_FETCHED_PRODUCTS:
                     cls.logger.info(f"FOUND {len(Util.ODOO_FETCHED_PRODUCTS)} LOADED PRODUCTS IN MEMORY")
                     return Util.ODOO_FETCHED_PRODUCTS
-                product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
+                try:
+                    product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
+                except URLError:
+                    time.sleep(5)
+                    product_ids = cls.PRODUCT_MODEL.search([], offset=offset, limit=batch_size)
             else:
                 try:
                     product_ids = cls.PRODUCT_MODEL.search([(field, operator, value)], offset=offset, limit=batch_size)
