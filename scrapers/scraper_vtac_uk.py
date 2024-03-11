@@ -44,7 +44,7 @@ class ScraperVtacUk:
         'https://www.vtacexports.com/default/digital-accessories.html',
         'https://www.vtacexports.com/default/electrical.html',
         'https://www.vtacexports.com/default/energy.html',
-        'https://www.vtacexports.com/default/new-arrivals.html',
+        'https://www.vtacexports.com/default/uk-new-arrivals.html',
         'https://www.vtacexports.com/default/back-in-stock.html',
         'https://www.vtacexports.com/default/top-products.html'
     ]
