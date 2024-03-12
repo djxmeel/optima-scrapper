@@ -451,6 +451,7 @@ def delete_all_unused_attributes_w_values():
             try:
                 odoo.env['product.attribute.value'].unlink(attr_value_id)
                 print(f'DELETED attribute.value {attr_value_id}')
+                time.sleep(0.1)
             except RPCError:
                 print(f'attribute.value {attr_value_id} is used.')
                 continue
@@ -458,6 +459,7 @@ def delete_all_unused_attributes_w_values():
         try:
             odoo.env['product.attribute'].unlink(attr_id)
             print(f'DELETED attribute {attr_id}.')
+            time.sleep(0.1)
         except RPCError:
             print(f'attribute {attr_id} is used.')
             continue
