@@ -829,7 +829,7 @@ class OdooImport:
             product_suppl_info_ids = supplier_info_model.search([('product_tmpl_id', '=', product.id)])
 
             if product_suppl_info_ids:
-                if update_mode:
+                if update_mode and purchase_price > 0:
                     supplier_info_model.write(product_suppl_info_ids[0], {
                         'product_name': supplier_prod_name,
                         'partner_id': partner_id,

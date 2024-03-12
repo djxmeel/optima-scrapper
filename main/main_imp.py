@@ -76,6 +76,7 @@ IF_CLEAN_ATTACHMENTS = False
 SKIP_PRODUCTS_W_ATTACHMENTS = False
 
 IF_IMPORT_SUPPLIER_INFO_AND_COST = False
+# Only updates suppl. line if purchase price > 0
 IF_UPDATE_MODE = False
 
 IF_IMPORT_CORRECT_NAMES_FROM_EXCEL = False
