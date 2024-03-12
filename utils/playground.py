@@ -449,17 +449,28 @@ def delete_all_unused_attributes_w_values():
 
         for attr_value_id in attribute_value_ids:
             try:
-                odoo.env['product.attribute.value'].unlink(attr_value_id)
-                print(f'DELETED attribute.value {attr_value_id}')
-                time.sleep(0.1)
+                try:
+                    odoo.env['product.attribute.value'].unlink(attr_value_id)
+                    print(f'DELETED attribute.value {attr_value_id}')
+                    time.sleep(0.1)
+                except URLError:
+                    time.sleep(5)
+                    odoo.env['product.attribute.value'].unlink(attr_value_id)
+                    print(f'DELETED attribute.value {attr_value_id}.')
             except RPCError:
                 print(f'attribute.value {attr_value_id} is used.')
                 continue
 
+
         try:
-            odoo.env['product.attribute'].unlink(attr_id)
-            print(f'DELETED attribute {attr_id}.')
-            time.sleep(0.1)
+            try:
+                odoo.env['product.attribute'].unlink(attr_id)
+                print(f'DELETED attribute {attr_id}.')
+                time.sleep(0.1)
+            except URLError:
+                time.sleep(5)
+                odoo.env['product.attribute'].unlink(attr_id)
+                print(f'DELETED attribute {attr_id}.')
         except RPCError:
             print(f'attribute {attr_id} is used.')
             continue
@@ -1020,7 +1031,7 @@ output_excel_path = 'data/buyled_stocks/output.xlsx'
 
 #hardcode_attribute_odoo(1, 20, 'product_brand_id', '=', 1)
 
-#delete_all_unused_attributes_w_values()
+delete_all_unused_attributes_w_values()
 
 #archive_products_based_on_condition('Tipo de casquillo', '=', 'B22')
 
