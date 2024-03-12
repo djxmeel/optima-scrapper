@@ -988,8 +988,8 @@ output_excel_path = 'data/buyled_stocks/output.xlsx'
 #find_duplicate_in_excel('C:/Users/Djamel/Downloads/Producto_product.product.xlsx', 'SKU', 'data/common/excel/duplicates.xlsx')
 
 # merge_excel_files(
-#     'data/common/excel/to_compare/pricelist.xlsx',
-#     "data/common/excel/to_compare/en O15 y no en pricelist.xlsx",
+#     'data/common/excel/to_compare/Sin_coste.xlsx',
+#     "data/common/excel/to_compare/eu_stock.xlsx",
 #     'data/common/excel/to_compare/output.xlsx',
 #     'SKU',
 #     True,
@@ -1031,7 +1031,7 @@ output_excel_path = 'data/buyled_stocks/output.xlsx'
 
 #hardcode_attribute_odoo(1, 20, 'product_brand_id', '=', 1)
 
-delete_all_unused_attributes_w_values()
+#delete_all_unused_attributes_w_values()
 
 #archive_products_based_on_condition('Tipo de casquillo', '=', 'B22')
 
