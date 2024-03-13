@@ -931,11 +931,49 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
     df.to_excel(output_excel_path, index=False)
 
 
+def json_to_excel_stock_difference(json_old, json_new, pricelist_compra, output):
+    json_old = Util.load_json(json_old)
+    json_new = Util.load_json(json_new)
+
+    # Convert JSONs to pandas DataFrames
+    df_old = pd.DataFrame([json_old])
+    df_new = pd.DataFrame([json_new])
+
+    # Merge the DataFrames on 'sku', indicating the source with suffixes
+    df_merged = pd.merge(df_old, df_new, on='SKU', suffixes=('_old', '_new'))
+
+    # Calculate the differences
+    df_merged['diff. ita'] = df_merged['stock_ita_new'] - df_merged['stock_ita_old']
+    df_merged['diff. buyled'] = df_merged['stock_buyled_new'] - df_merged['stock_buyled_old']
+
+    # Define the columns to be included in the final Excel file
+    final_columns = ['sku', 'stock_buyled_old', 'stock_buyled_new', 'diff. buyled', 'stock_ita_old', 'stock_ita_new', 'diff. ita']
+
+    df_final = df_merged[final_columns]
+
+    # Load the pricelist Excel file
+    df_pricelist = pd.read_excel(pricelist_compra)
+
+    # Merge df_final with df_pricelist to include "compra" information
+    df_final_with_compra = pd.merge(df_final, df_pricelist, on='SKU', how='left')
+
+    # Write to an Excel file
+    df_final_with_compra.to_excel(output, index=False)
+
+    # Write to an Excel file
+    df_final.to_excel(output, index=False)
+
+
 # Example usage
-pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
-json_file_path1 = 'data/buyled_stocks/buyled_stocks_3450.json'
-json_file_path2 = 'data/buyled_stocks/buyled_stocks_3450 - Copy.json'
-output_excel_path = 'data/buyled_stocks/output.xlsx'
+json_old = 'data/buyled_stocks/buyled_stocks_all.json'
+json_new = 'data/buyled_stocks - copia/buyled_stocks_all.json'
+json_to_excel_stock_difference(json_old, json_new, 'data/common/excel/pricelist_compra_coste.xlsx', 'data/buyled_stocks/output.xlsx')
+
+# Example usage
+# pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
+# json_file_path1 = 'data/buyled_stocks/buyled_stocks_3450.json'
+# json_file_path2 = 'data/buyled_stocks/buyled_stocks_3450 - Copy.json'
+# output_excel_path = 'data/buyled_stocks/output.xlsx'
 
 #match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, output_excel_path)
 

@@ -90,7 +90,7 @@ class ScraperBuyLedStocks():
                 date_text = None
 
             return {
-                'sku': sku,
+                'SKU': sku,
                 'stock_buyled': int(stock_buyled_text),
                 'stock_ita': int(stock_ita_text),
                 'price': price_text,
