@@ -19,7 +19,7 @@ class ScraperBuyLedStocks():
     capabilities = dict(
         platformName='Android',
         automationName='UiAutomator2',
-        deviceName='Medium_Phone_API_23',
+        deviceName='Pixel_8_Pro_API_28',
         appPackage='es.buyled.buyledpro',
         appActivity='.MainActivity t24',
         newCommandTimeout=600,
