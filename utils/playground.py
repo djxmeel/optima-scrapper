@@ -931,13 +931,13 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
     df.to_excel(output_excel_path, index=False)
 
 
-def json_to_excel_stock_difference(json_old, json_new, pricelist_compra, output):
-    json_old = Util.load_json(json_old)
-    json_new = Util.load_json(json_new)
+def json_to_excel_stock_difference(json_old_path, json_new_path, pricelist_compra, output):
+    json_old = Util.load_json(json_old_path)
+    json_new = Util.load_json(json_new_path)
 
     # Convert JSONs to pandas DataFrames
-    df_old = pd.DataFrame([json_old])
-    df_new = pd.DataFrame([json_new])
+    df_old = pd.DataFrame(json_old)
+    df_new = pd.DataFrame(json_new)
 
     # Merge the DataFrames on 'sku', indicating the source with suffixes
     df_merged = pd.merge(df_old, df_new, on='SKU', suffixes=('_old', '_new'))
@@ -946,19 +946,36 @@ def json_to_excel_stock_difference(json_old, json_new, pricelist_compra, output)
     df_merged['diff. ita'] = df_merged['stock_ita_new'] - df_merged['stock_ita_old']
     df_merged['diff. buyled'] = df_merged['stock_buyled_new'] - df_merged['stock_buyled_old']
 
-    # Define the columns to be included in the final Excel file
-    final_columns = ['sku', 'stock_buyled_old', 'stock_buyled_new', 'diff. buyled', 'stock_ita_old', 'stock_ita_new', 'diff. ita']
-
-    df_final = df_merged[final_columns]
-
     # Load the pricelist Excel file
-    df_pricelist = pd.read_excel(pricelist_compra)
+    json_pricelist = Util.load_excel_columns_in_dictionary_list(pricelist_compra)
+
+    for item in json_pricelist:
+        item['SKU'] = str(item['SKU'])
+
+    df_pricelist = pd.DataFrame(json_pricelist)
 
     # Merge df_final with df_pricelist to include "compra" information
-    df_final_with_compra = pd.merge(df_final, df_pricelist, on='SKU', how='left')
+    df_final_with_compra = pd.merge(df_merged, df_pricelist, on='SKU', how='left')
 
-    # Write to an Excel file
-    df_final_with_compra.to_excel(output, index=False)
+    df_final_with_compra['OLD TOTAL ITA'] = df_final_with_compra['stock_ita_old'] * df_final_with_compra['PRECIO COMPRA']
+    df_final_with_compra['OLD TOTAL BUYLED'] = df_final_with_compra['stock_buyled_old'] * df_final_with_compra['PRECIO COMPRA']
+
+    df_final_with_compra['NEW TOTAL ITA'] = df_final_with_compra['stock_ita_new'] * df_final_with_compra['PRECIO COMPRA']
+    df_final_with_compra['NEW TOTAL BUYLED'] = df_final_with_compra['stock_buyled_new'] * df_final_with_compra['PRECIO COMPRA']
+
+    # Define the columns to be included in the final Excel file
+    final_columns = ['SKU',
+                     'PRODUCTO',
+                     'PRECIO COMPRA',
+                     'stock_buyled_old', 'stock_buyled_new', 'diff. buyled',
+                     'OLD TOTAL BUYLED',
+                     'NEW TOTAL BUYLED',
+                     'stock_ita_old', 'stock_ita_new','diff. ita',
+                     'OLD TOTAL ITA',
+                     'NEW TOTAL ITA'
+                     ]
+
+    df_final = df_final_with_compra[final_columns]
 
     # Write to an Excel file
     df_final.to_excel(output, index=False)
