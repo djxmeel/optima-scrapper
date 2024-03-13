@@ -1011,7 +1011,7 @@ class OdooImport:
                 cls.update_availability_related_fields(product_dict)
 
                 cls.logger.info(f"UPDATED PRODUCT {product.default_code} AVAILABILITY {index + begin_from + 1} / {len(products)}")
-            except Exception as e:
+            except URLError as e:
                 cls.logger.error(f"ERROR UPDATING PRODUCT {product.default_code} AVAILABILITY. RETRYING...")
                 time.sleep(60)
                 cls.import_availability_vtac(eu_stock_excel_path, generate_missing_products_excel, index + begin_from)
@@ -1165,7 +1165,7 @@ class OdooImport:
         data = Util.load_data_in_dir('data/buyled_stocks')
 
         for product_stock in data:
-            if product_stock['sku'] == sku:
+            if product_stock['SKU'] == sku:
                 cls.logger.info(f"FOUND {sku} IN B-LED STOCK")
                 return {'ita': product_stock['stock_ita'], 'bled': product_stock['stock_buyled']}
 
