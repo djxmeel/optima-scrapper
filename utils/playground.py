@@ -931,7 +931,7 @@ def match_and_write_to_excel(json_file_path1, json_file_path2, pricelist_path, o
     df.to_excel(output_excel_path, index=False)
 
 
-def json_to_excel_stock_difference(json_old_path, json_new_path, pricelist_compra, output):
+def json_to_excel_stock_difference(json_old_path, json_new_path, stock_o15, pricelist_compra, output):
     json_old = Util.load_json(json_old_path)
     json_new = Util.load_json(json_new_path)
 
@@ -948,11 +948,16 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, pricelist_compr
 
     # Load the pricelist Excel file
     json_pricelist = Util.load_excel_columns_in_dictionary_list(pricelist_compra)
+    json_local_stock = Util.load_excel_columns_in_dictionary_list(stock_o15)
 
     for item in json_pricelist:
         item['SKU'] = str(item['SKU'])
 
+    for item in json_local_stock:
+        item['SKU'] = str(item['SKU'])
+
     df_pricelist = pd.DataFrame(json_pricelist)
+    df_local_stock = pd.DataFrame(json_local_stock)
 
     # Merge df_final with df_pricelist to include "compra" information
     df_final_with_compra = pd.merge(df_merged, df_pricelist, on='SKU', how='left')
@@ -963,9 +968,12 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, pricelist_compr
     df_final_with_compra['NEW TOTAL ITA'] = df_final_with_compra['stock_ita_new'] * df_final_with_compra['PRECIO COMPRA']
     df_final_with_compra['NEW TOTAL BUYLED'] = df_final_with_compra['stock_buyled_new'] * df_final_with_compra['PRECIO COMPRA']
 
+    df_final_with_compra = pd.merge(df_final_with_compra, df_local_stock, on='SKU', how='left')
+
     # Define the columns to be included in the final Excel file
     final_columns = ['SKU',
                      'PRODUCTO',
+                     'LOCAL',
                      'PRECIO COMPRA',
                      'stock_buyled_old', 'stock_buyled_new', 'diff. buyled',
                      'OLD TOTAL BUYLED',
@@ -982,9 +990,10 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, pricelist_compr
 
 
 # Example usage
-# json_old = 'data/buyled_stocks - copia/buyled_stocks_all.json'
-# json_new = 'data/buyled_stocks/buyled_stocks_all.json'
-# json_to_excel_stock_difference(json_old, json_new, 'data/common/excel/pricelist_compra_coste.xlsx', 'data/buyled_stocks/output.xlsx')
+#json_old = 'data/buyled_stocks - copia/buyled_stocks_all.json'
+#json_new = 'data/buyled_stocks/buyled_stocks_all.json'
+#stock_o15 = 'data/common/excel/sku_stock O15.xlsx'
+#json_to_excel_stock_difference(json_old, json_new, stock_o15, 'data/common/excel/pricelist_compra_coste.xlsx', 'data/buyled_stocks/output.xlsx')
 
 # Example usage
 # pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
