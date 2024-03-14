@@ -570,19 +570,23 @@ def new_links_only_odoo_comparator():
     driver.close()
 
 
-def hardcode_field_odoo(field, value, filter_field, filter_operator, filter_value):
+def hardcode_field_odoo(field, value, use_filter, filter_field, filter_operator, filter_value):
     odoo = login_odoo()
-    products = OdooImport.browse_all_products_in_batches(filter_field, filter_operator, filter_value)
+    if use_filter:
+        products = OdooImport.browse_all_products_in_batches(filter_field, filter_operator, filter_value)
+    else:
+        products = OdooImport.browse_all_products_in_batches()
+
     product_model = odoo.env['product.template']
 
     for product in products:
         try:
-            product_model.write(product.id, {field: value})
-            # product_model.write(product.id, {field: [(6, 0, [])]})
+            #product_model.write(product.id, {field: value})
+            product_model.write(product.id, {field: [(6, 0, [])]})
         except URLError:
             time.sleep(5)
-            product_model.write(product.id, {field: value})
-            #product_model.write(product.id, {field: [(6, 0, [])]})
+            #product_model.write(product.id, {field: value})
+            product_model.write(product.id, {field: [(6, 0, [])]})
         print(f"UPDATED SKU: {product.default_code} {field}: {value}")
 
 def hardcode_attribute_odoo(attr_id, value_id, filter_field, filter_operator, filter_value):
@@ -1091,7 +1095,7 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, stock_o15, pric
 
 #upper_allproduct_names()
 
-#hardcode_field_odoo('public_categ_ids', 1,'name','not ilike', '[VSD')
+#hardcode_field_odoo('website_attachment_ids', [], False, '', '', '')
 
 #hardcode_attribute_odoo(1, 20, 'product_brand_id', '=', 1)
 
