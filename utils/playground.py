@@ -982,9 +982,9 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, pricelist_compr
 
 
 # Example usage
-json_old = 'data/buyled_stocks/buyled_stocks_all.json'
-json_new = 'data/buyled_stocks - copia/buyled_stocks_all.json'
-json_to_excel_stock_difference(json_old, json_new, 'data/common/excel/pricelist_compra_coste.xlsx', 'data/buyled_stocks/output.xlsx')
+# json_old = 'data/buyled_stocks - copia/buyled_stocks_all.json'
+# json_new = 'data/buyled_stocks/buyled_stocks_all.json'
+# json_to_excel_stock_difference(json_old, json_new, 'data/common/excel/pricelist_compra_coste.xlsx', 'data/buyled_stocks/output.xlsx')
 
 # Example usage
 # pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
