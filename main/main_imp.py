@@ -20,8 +20,7 @@ from utils.util import Util
 # TODO sug. Store scraped products individually (instead of 50 at a time)
 # TODO create missing SKUS in "blistered excel"
 # TODO when scraping for NEW links, generate an excel that separates skus not in odoo
-# TODO check and delete icons in extra media (5420/8213)
-# TODO delete attachments to reupload them to Prime field
+# TODO reupload the attachments to Prime field
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
