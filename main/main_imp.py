@@ -21,6 +21,8 @@ from utils.util import Util
 # TODO create missing SKUS in "blistered excel"
 # TODO when scraping for NEW links, generate an excel that separates skus not in odoo
 # TODO reupload the attachments to Prime field
+# TODO blistered -> local stock
+# TODO upload fotovoltaica prices + compare
 
 TARGET_DATA_DIR_PATH = DataMerger.MERGED_PRODUCT_INFO_DIR_PATH
 TARGET_MEDIA_DIR_PATH = DataMerger.MERGED_PRODUCT_MEDIA_DIR_PATH
