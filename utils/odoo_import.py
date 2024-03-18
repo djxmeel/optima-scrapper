@@ -973,6 +973,10 @@ class OdooImport:
 
         for index, product in enumerate(products[begin_from:]):
             try:
+                # Skip blistered
+                if '-E' in products.default_code:
+                    continue
+
                 cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
 
                 product_dict = {'default_code': product.default_code,
