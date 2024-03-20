@@ -926,21 +926,15 @@ class OdooImport:
         all_eu_stock_quant = product['almacen2_custom'] + product['almacen3_custom']
 
         product['Entrada de nuevas unidades'] = ''
-        product['Disponibilidad'] = ''
-
-        if product['description_purchase'] and 'DESCATALOGADO CATALOGO' in product['description_purchase']:
-            product['Disponibilidad'] = "PRODUCTO DESCATALOGADO (Sin opción de compra. Seleccione otro articulo similar.)"
 
         if product['default_code'] in eu_stock:
             try:
                 if int(eu_stock[product['default_code']]['AVAILABLE']) > 0:
-                    product['Disponibilidad'] = ''
                     product['almacen1_custom'] = int(eu_stock[product['default_code']]['AVAILABLE'])
             except ValueError:
                 pass
 
             if not pd.isna(eu_stock[product['default_code']]['UNDELIVERED ORDER']):
-                product['Disponibilidad'] = ''
                 product['Entrada de nuevas unidades'] = f"Próximamente"
 
                 if not pd.isna(eu_stock[product['default_code']]['next delivery']) and '-' in str(eu_stock[product['default_code']]['next delivery']):
@@ -1006,8 +1000,7 @@ class OdooImport:
                                                                     '- Almacén 1': f'{product_dict["almacen1_custom"]} unidades',
                                                                     '- Almacén 2': f'{product_dict["almacen2_custom"]} unidades',
                                                                     '- Almacén 3': f'{product_dict["almacen3_custom"]} unidades',
-                                                                    'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades'],
-                                                                    'Disponibilidad': product_dict['Disponibilidad']
+                                                                    'Entrada de nuevas unidades': product_dict['Entrada de nuevas unidades']
                                                                     })
 
                 cls.assign_attribute_values(product.id, product, attr_ids_values, 'soft')
