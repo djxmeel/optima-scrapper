@@ -1,5 +1,4 @@
 import time
-from datetime import datetime
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
@@ -19,7 +18,7 @@ class ScraperBuyLedStocks():
     capabilities = dict(
         platformName='Android',
         automationName='UiAutomator2',
-        deviceName='Pixel_8_Pro_API_28',
+        deviceName='Medium_Phone_API_23',
         appPackage='es.buyled.buyledpro',
         appActivity='.MainActivity t24',
         newCommandTimeout=600,
@@ -29,7 +28,8 @@ class ScraperBuyLedStocks():
     BEGIN_FROM = 0
     DUMP_FREQUENCY = 50
 
-    appium_server_url = 'http://localhost:4723'
+    #appium_server_url = 'http://localhost:4723'
+    appium_server_url = 'http://192.168.1.25:4723'
     driver = None
 
     search_field_locator = 'className("android.widget.EditText")'
