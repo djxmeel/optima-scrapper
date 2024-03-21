@@ -581,12 +581,12 @@ def hardcode_field_odoo(field, value, use_filter, filter_field, filter_operator,
 
     for product in products:
         try:
-            #product_model.write(product.id, {field: value})
-            product_model.write(product.id, {field: [(6, 0, [])]})
+            product_model.write(product.id, {field: value})
+            #product_model.write(product.id, {field: [(6, 0, [])]})
         except URLError:
             time.sleep(5)
-            #product_model.write(product.id, {field: value})
-            product_model.write(product.id, {field: [(6, 0, [])]})
+            product_model.write(product.id, {field: value})
+            #product_model.write(product.id, {field: [(6, 0, [])]})
         print(f"UPDATED SKU: {product.default_code} {field}: {value}")
 
 def hardcode_attribute_odoo(attr_id, value_id, filter_field, filter_operator, filter_value):
@@ -993,11 +993,52 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, stock_o15, pric
     df_final.to_excel(output, index=False)
 
 
+def get_columns_excel_and_match_on_field(primary_key_value, columns, excel_paths, output):
+    # Initialize an empty DataFrame to start the merge process
+    merged_df = None
+
+    # Loop through each file path in the list
+    for path in excel_paths:
+        # Read the current Excel file into a DataFrame
+        df = pd.read_excel(path)
+
+        # If merged_df is not initialized, set it to the current DataFrame
+        if merged_df is None:
+            merged_df = df
+        else:
+            # Merge the current DataFrame into merged_df on the primary key
+            merged_df = pd.merge(merged_df, df, on=primary_key_value, how='left')
+
+    merged_df = merged_df[columns]
+
+    merged_df.to_excel(output, index=False)
+
+
+def add_icon_to_products(icon_path, field, operator, value):
+    odoo = login_odoo()
+    products = OdooImport.browse_all_products_in_batches(field, operator, value)
+    product_model = odoo.env['product.template']
+
+    for product in products:
+        icon = Util.load_json(icon_path)['icon']
+
+        product_model.write(product.id, {'x_icono8': icon})
+        print(f"ADDED ICON TO SKU: {product.default_code}")
+
 # Example usage
 #json_old = 'data/buyled_stocks - copia/buyled_stocks_all.json'
 #json_new = 'data/buyled_stocks/buyled_stocks_all.json'
 #stock_o15 = 'data/common/excel/sku_stock O15.xlsx'
 #json_to_excel_stock_difference(json_old, json_new, stock_o15, 'data/common/excel/pricelist_compra_coste.xlsx', 'data/buyled_stocks/output.xlsx')
+
+
+# get_columns_excel_and_match_on_field('SKU',
+#                                      ['SKU','PRODUCTO', 'AVAILABLE', 'PRECIO COMPRA', 'COSTE'],
+#                                      [
+#                                          'data/common/excel/pricelist_compra_coste.xlsx',
+#                                       'data/common/excel/eu_stock/eu_stock.xlsx'
+#                                      ],
+#                                      'data/common/excel/to_compare/output.xlsx')
 
 # Example usage
 # pricelist_path = 'data/common/excel/pricelist_compra_coste.xlsx'
@@ -1057,7 +1098,7 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, stock_o15, pric
 
 # merge_excel_files(
 #     'data/common/excel/to_compare/Sin_coste.xlsx',
-#     "data/common/excel/to_compare/eu_stock.xlsx",
+#     "data/common/excel/eu_stock/eu_stock.xlsx",
 #     'data/common/excel/to_compare/output.xlsx',
 #     'SKU',
 #     True,
@@ -1095,8 +1136,9 @@ def json_to_excel_stock_difference(json_old_path, json_new_path, stock_o15, pric
 
 #upper_allproduct_names()
 
-#hardcode_field_odoo('website_attachment_ids', [], False, '', '', '')
+#hardcode_field_odoo('standard_price', 0, True, 'categ_id', '=', 'Productos descatalogados / Sin stock')
 
+#add_icon_to_products('data/common/json/icon_descatalogado.json', 'categ_id', '=', 'Productos descatalogados / Sin stock')
 #hardcode_attribute_odoo(1, 20, 'product_brand_id', '=', 1)
 
 #delete_all_unused_attributes_w_values()
