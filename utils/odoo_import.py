@@ -817,7 +817,9 @@ class OdooImport:
                 if str(line['SKU']) == product.default_code:
                     purchase_price = line['PRECIO COMPRA']
                     supplier_prod_name = line['PRODUCTO']
-                    cls.PRODUCT_MODEL.write(product.id, {'standard_price': line['COSTE']})
+
+                    if product.categ_id != 'Productos descatalogados / Sin stock':
+                        cls.PRODUCT_MODEL.write(product.id, {'standard_price': line['COSTE']})
                     break
 
             if not supplier_prod_name:
