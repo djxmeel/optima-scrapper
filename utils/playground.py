@@ -1007,7 +1007,7 @@ def get_columns_excel_and_match_on_field(primary_key_value, columns, excel_paths
             merged_df = df
         else:
             # Merge the current DataFrame into merged_df on the primary key
-            merged_df = pd.merge(merged_df, df, on=primary_key_value, how='left')
+            merged_df = pd.merge(merged_df, df, on=primary_key_value, how='inner')
 
     merged_df = merged_df[columns]
 
@@ -1054,10 +1054,10 @@ def add_b64_img_to_products(img_path, field ,operator, value):
 
 
 # get_columns_excel_and_match_on_field('SKU',
-#                                      ['SKU','PRODUCTO', 'AVAILABLE', 'PRECIO COMPRA', 'COSTE'],
+#                                      ['VS', 'SKU','PRODUCTO', 'AVAILABLE', 'UNDELIVERED ORDER', 'next delivery', 'PRECIO COMPRA', 'COSTE'],
 #                                      [
 #                                          'data/common/excel/pricelist_compra_coste.xlsx',
-#                                       'data/common/excel/eu_stock/eu_stock.xlsx'
+#                                       'data/common/excel/to_compare/eu_stock_conVS.xlsx'
 #                                      ],
 #                                      'data/common/excel/to_compare/output.xlsx')
 
@@ -1119,7 +1119,7 @@ def add_b64_img_to_products(img_path, field ,operator, value):
 
 # merge_excel_files(
 #     'data/common/excel/to_compare/Sin_coste.xlsx',
-#     "data/common/excel/eu_stock/eu_stock.xlsx",
+#     "data/common/excel/to_compare/eu_stock_conVS.xlsx",
 #     'data/common/excel/to_compare/output.xlsx',
 #     'SKU',
 #     True,
