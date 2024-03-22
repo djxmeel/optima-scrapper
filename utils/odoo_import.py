@@ -959,7 +959,8 @@ class OdooImport:
 
     @classmethod
     def import_availability_vtac(cls, eu_stock_excel_path, generate_missing_products_excel, begin_from):
-        products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
+        #products = cls.browse_all_products_in_batches('product_brand_id', '=', cls.VTAC_BRAND_ID)
+        products = cls.browse_all_products_in_batches('default_code', '=', '5008')
         eu_stock = Util.load_excel_columns_in_dictionary_list(eu_stock_excel_path)
         eu_stock_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Stock europeo')])[0]
         entradas_attr_id = cls.ATTRIBUTE_MODEL.search([('name', '=', 'Entrada de nuevas unidades')])[0]
@@ -970,7 +971,7 @@ class OdooImport:
         for index, product in enumerate(products[begin_from:]):
             try:
                 # Skip blistered
-                if '-E' in products.default_code:
+                if '-E' in product.default_code:
                     continue
 
                 cls.clear_availability_attributes(product.id, eu_stock_attr_id, entradas_attr_id)
@@ -979,6 +980,7 @@ class OdooImport:
                                 'description_purchase': product.description_purchase,
                                 'qty_available': product.qty_available,
                                 'categ_id': product.categ_id,
+                                'categ_id.name': product.categ_id.name,
                                 'id': product.id,
                                 'name': product.name,
                                 'Stock europeo': "0 unidades (Disponible para envío en un plazo de 6 a 9 días hábiles)",
@@ -1033,7 +1035,7 @@ class OdooImport:
         if stock_europeo == '0':
             allow_out_of_stock_order = False
 
-            if '[VSD' in product_dict['name']:
+            if product_dict['categ_id.name'] == 'Sin stock':
                 out_of_stock_msg = out_of_stock_messages[4]
 
             if 'Próximamente' in product_dict['Entrada de nuevas unidades']:
