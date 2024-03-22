@@ -1025,6 +1025,27 @@ def add_icon_to_products(icon_path, field, operator, value):
         product_model.write(product.id, {'x_icono8': icon})
         print(f"ADDED ICON TO SKU: {product.default_code}")
 
+
+def add_b64_img_to_products(img_path, field ,operator, value):
+    odoo = login_odoo()
+    products = OdooImport.browse_all_products_in_batches(field, operator, value)
+
+    # Your base64-encoded image data
+    image_base64 = Util.load_json(img_path)['icon']
+    for product in products:
+        # Create a new image record and get its ID
+        image_id = odoo.env['product.image'].create({
+            'name': 'descatalogado',
+            'image_1920': image_base64,
+            'product_tmpl_id': product.id,  # Linking the image to the product
+            'sequence': 1
+        })
+
+        print(f"Added new image to product {product.default_code} with Image ID: {image_id}")
+
+# add_b64_img_to_products('data/common/json/icon_descatalogado.json', 'categ_id', '=', 'Productos descatalogados / Sin stock')
+
+
 # Example usage
 #json_old = 'data/buyled_stocks - copia/buyled_stocks_all.json'
 #json_new = 'data/buyled_stocks/buyled_stocks_all.json'
