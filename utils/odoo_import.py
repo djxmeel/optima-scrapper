@@ -1033,13 +1033,13 @@ class OdooImport:
         if stock_europeo == '0':
             allow_out_of_stock_order = False
 
+            if '[VSD' in product_dict['name']:
+                out_of_stock_msg = out_of_stock_messages[4]
+
             if 'Próximamente' in product_dict['Entrada de nuevas unidades']:
                 out_of_stock_msg = out_of_stock_messages[2]
             elif '/' in product_dict['Entrada de nuevas unidades']:
                 out_of_stock_msg = out_of_stock_messages[1]
-
-            if '[VSD' in product_dict['name']:
-                is_published = False
         else:
             out_of_stock_msg = out_of_stock_messages[0]
 
